@@ -4,25 +4,55 @@ import AppNavbar from "./components/AppNavbar";
 import LandingPage from "./pages/LandingPage";
 import RegistrationPage from "./pages/RegistrationPage";
 import StatusCheckPage from "./pages/StatusCheckPage";
+import SkillsTestPage from "./pages/SkillsTestPage";
 import { useAccessibilityPreferences } from "./hooks/useAccessibilityPreferences";
 import { useRegistrationForm } from "./hooks/useRegistrationForm";
+
+function getInitialSkillsTestToken() {
+  const match = window.location.pathname.match(/^\/basic-skills-test\/([^/]+)\/?$/);
+  return match ? decodeURIComponent(match[1]) : "";
+}
 
 function App() {
   const registration = useRegistrationForm();
   const accessibility = useAccessibilityPreferences();
-  const [currentView, setCurrentView] = useState("home");
+  const initialSkillsTestToken = getInitialSkillsTestToken();
+  const [currentView, setCurrentView] = useState(initialSkillsTestToken ? "skills-test" : "home");
+  const [skillsTestReference, setSkillsTestReference] = useState("");
+  const [skillsTestToken, setSkillsTestToken] = useState(initialSkillsTestToken);
+
+  function resetBrowserPath() {
+    if (window.location.pathname !== "/") {
+      window.history.replaceState({}, "", "/");
+    }
+  }
 
   function handleShowHome() {
+    resetBrowserPath();
     setCurrentView("home");
+    setSkillsTestReference("");
+    setSkillsTestToken("");
     registration.handleBackToPathways();
   }
 
   function handleShowStatus() {
+    resetBrowserPath();
     setCurrentView("status");
+    setSkillsTestReference("");
+    setSkillsTestToken("");
+    registration.handleBackToPathways();
+  }
+
+  function handleShowSkillsTest(reference = "") {
+    resetBrowserPath();
+    setCurrentView("skills-test");
+    setSkillsTestReference(reference || "");
+    setSkillsTestToken("");
     registration.handleBackToPathways();
   }
 
   function handlePathwaySelect(pathway) {
+    resetBrowserPath();
     setCurrentView("home");
     registration.handlePathwaySelect(pathway);
   }
@@ -50,6 +80,14 @@ function App() {
         <StatusCheckPage
           onBackHome={handleShowHome}
           onStartApplication={handleShowHome}
+          onTakeSkillsTest={handleShowSkillsTest}
+        />
+      ) : currentView === "skills-test" ? (
+        <SkillsTestPage
+          initialReference={skillsTestReference}
+          initialToken={skillsTestToken}
+          onBackHome={handleShowHome}
+          onCheckStatus={handleShowStatus}
         />
       ) : !registration.selectedPathway ? (
         <LandingPage
@@ -73,6 +111,7 @@ function App() {
           draftLastSavedAt={registration.draftLastSavedAt}
           onBackToPathways={handleShowHome}
           onCheckStatus={handleShowStatus}
+          onTakeSkillsTest={handleShowSkillsTest}
           onAnswerChange={registration.handleAnswerChange}
           onMultiSelectChange={registration.handleMultiSelectChange}
           onSubmit={registration.handleSubmit}

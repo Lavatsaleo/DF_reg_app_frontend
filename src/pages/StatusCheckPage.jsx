@@ -14,27 +14,33 @@ const STATUS_STEPS = [
     description: "Your registration has been received by the system.",
   },
   {
+    key: "skills",
+    labels: ["eligible pending skills test", "eligible pending basic skills test"],
+    title: "Basic IT skills test",
+    description: "Eligible applicants complete the short skills test.",
+  },
+  {
     key: "review",
-    labels: ["under review", "review", "pending review"],
-    title: "Project team review",
-    description: "The project team checks eligibility information and supporting documents.",
+    labels: ["skills test completed pending review", "under review", "review", "pending review", "synced to dhis2 pending review"],
+    title: "Committee review",
+    description: "The committee reviews registration details, documents, and test results.",
   },
   {
     key: "decision",
-    labels: ["approved", "rejected"],
+    labels: ["approved", "rejected", "approved for enrollment", "rejected by review committee"],
     title: "Decision made",
     description: "A decision is recorded and the applicant is informed through the agreed communication channel.",
   },
   {
     key: "dhis2",
-    labels: ["synced to dhis2", "enrolled", "enrolled in dhis2"],
+    labels: ["synced to dhis2", "enrolled", "enrolled in dhis2", "enrolled in dhis2 program"],
     title: "Programme enrollment",
     description: "Approved applicants are enrolled into the correct pathway/programme workflow.",
   },
 ];
 
 function normalizeStatus(value) {
-  return String(value || "Submitted").trim().toLowerCase();
+  return String(value || "Submitted").trim().toLowerCase().replace(/_/g, " ");
 }
 
 function getActiveStepIndex(status) {
@@ -45,9 +51,10 @@ function getActiveStepIndex(status) {
   );
 
   if (exactIndex >= 0) return exactIndex;
-  if (normalizedStatus.includes("dhis2") || normalizedStatus.includes("enrolled")) return 3;
-  if (normalizedStatus.includes("approved") || normalizedStatus.includes("rejected")) return 2;
-  if (normalizedStatus.includes("review") || normalizedStatus.includes("pending")) return 1;
+  if (normalizedStatus.includes("enrolled")) return 4;
+  if (normalizedStatus.includes("approved") || normalizedStatus.includes("rejected")) return 3;
+  if (normalizedStatus.includes("completed") || normalizedStatus.includes("review") || normalizedStatus.includes("dhis2")) return 2;
+  if (normalizedStatus.includes("skills")) return 1;
   return 0;
 }
 
@@ -106,7 +113,7 @@ function StatusTimeline({ status }) {
   );
 }
 
-function StatusResultCard({ result, source }) {
+function StatusResultCard({ result, source, onTakeSkillsTest }) {
   const reference = getReferenceFromResult(result);
   const status = result?.status || "Submitted";
 
@@ -151,12 +158,33 @@ function StatusResultCard({ result, source }) {
         </div>
       )}
 
+      {result?.skillsTest?.submitted && (
+        <div className="ss-status-note" role="note">
+          <i className="bi bi-journal-check" aria-hidden="true" />
+          <p>
+            Basic IT skills test submitted. Score: {result.skillsTest.score}/{result.skillsTest.maxScore} ({result.skillsTest.percentage}%).
+          </p>
+        </div>
+      )}
+
+      {result?.requiresBasicSkillsTest && (
+        <div className="ss-status-note" role="note">
+          <i className="bi bi-exclamation-circle" aria-hidden="true" />
+          <div>
+            <p className="mb-2">You are eligible. Please open the Basic IT skills test using the secure invitation link sent to your email address.</p>
+            {result?.testInvitation?.expiresAt && (
+              <p className="mb-0">Invitation expires: {formatDate(result.testInvitation.expiresAt)}.</p>
+            )}
+          </div>
+        </div>
+      )}
+
       <StatusTimeline status={status} />
     </article>
   );
 }
 
-function StatusCheckPage({ onBackHome, onStartApplication }) {
+function StatusCheckPage({ onBackHome, onStartApplication, onTakeSkillsTest }) {
   const [reference, setReference] = useState("");
   const [lookupResult, setLookupResult] = useState(null);
   const [lookupSource, setLookupSource] = useState("");
@@ -185,7 +213,7 @@ function StatusCheckPage({ onBackHome, onStartApplication }) {
         `${API_BASE_URL}/api/registrations/status/${encodeURIComponent(cleanReference)}`
       );
 
-      const apiResult = response.data?.application || response.data?.registration || response.data;
+      const apiResult = response.data?.data || response.data?.application || response.data?.registration || response.data;
       if (apiResult && getReferenceFromResult(apiResult)) {
         setLookupResult(apiResult);
         setLookupSource("server");
@@ -200,7 +228,7 @@ function StatusCheckPage({ onBackHome, onStartApplication }) {
         setLookupResult(localResult);
         setLookupSource("local");
         setLookupMessage(
-          "Showing the confirmation saved on this device. When the backend status endpoint is added, this page will show the official review status."
+          "Showing the confirmation saved on this device because the official status lookup could not be reached."
         );
       } else {
         setLookupMessage(
@@ -292,7 +320,7 @@ function StatusCheckPage({ onBackHome, onStartApplication }) {
 
               {lookupResult && (
                 <div className="mt-4">
-                  <StatusResultCard result={lookupResult} source={lookupSource} />
+                  <StatusResultCard result={lookupResult} source={lookupSource} onTakeSkillsTest={onTakeSkillsTest} />
                 </div>
               )}
             </section>
@@ -304,7 +332,8 @@ function StatusCheckPage({ onBackHome, onStartApplication }) {
                 <span className="ss-small-label dark">What your status means</span>
                 <ul className="ss-status-help-list">
                   <li><strong>Submitted:</strong> your application was received.</li>
-                  <li><strong>Under Review:</strong> the team is checking details and documents.</li>
+                  <li><strong>Basic IT skills test:</strong> eligible applicants complete the short test.</li>
+                  <li><strong>Under Review:</strong> the committee checks registration details, documents, and test result.</li>
                   <li><strong>Approved:</strong> the applicant can move to enrollment.</li>
                   <li><strong>Synced to DHIS2:</strong> the applicant has moved into the programme system.</li>
                 </ul>

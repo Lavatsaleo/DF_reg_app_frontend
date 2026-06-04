@@ -1,6 +1,8 @@
 function getEligibilityLabel(result) {
   if (!result) return "Submitted";
-  if (result.isEligible === true) return "Eligible - Pending Review";
+  if (result.status === "ELIGIBLE_PENDING_SKILLS_TEST") return "Eligible - Pending Basic IT Skills Test";
+  if (result.status === "SKILLS_TEST_COMPLETED_PENDING_REVIEW") return "Skills Test Completed - Pending Committee Review";
+  if (result.isEligible === true) return "Eligible - Pending Basic IT Skills Test";
   if (result.isEligible === false) return "Submitted - Eligibility Review Required";
   return result.status || "Submitted";
 }
@@ -40,6 +42,7 @@ function ApplicationConfirmation({ result, selectedPathway, onStartNewApplicatio
   function handlePrint() {
     window.print();
   }
+
 
   return (
     <main id="main-content" tabIndex="-1" className="ss-confirmation-page">
@@ -90,6 +93,24 @@ function ApplicationConfirmation({ result, selectedPathway, onStartNewApplicatio
                   </div>
                 )}
 
+                {isEligible && (
+                  <div className="ss-eligibility-note" role="note">
+                    <i className="bi bi-envelope-check" aria-hidden="true" />
+                    <p>
+                      We have created a secure Basic IT skills test invitation for this application. Please check the email address used during registration and open the test from that link.
+                    </p>
+                  </div>
+                )}
+
+                {isEligible && result?.skillsTestInviteUrl && result?.testInvitationEmailSent === false && (
+                  <div className="ss-eligibility-note" role="note">
+                    <i className="bi bi-link-45deg" aria-hidden="true" />
+                    <p>
+                      Local testing link: <a href={result.skillsTestInviteUrl}>Open Basic IT skills test</a>
+                    </p>
+                  </div>
+                )}
+
                 <div className="ss-next-steps" aria-labelledby="next-steps-title">
                   <h2 id="next-steps-title">What happens next?</h2>
                   <div className="ss-timeline">
@@ -103,15 +124,23 @@ function ApplicationConfirmation({ result, selectedPathway, onStartNewApplicatio
                     <div className="ss-timeline-item active">
                       <span aria-hidden="true">2</span>
                       <div>
-                        <strong>Review by the project team</strong>
-                        <p>The team will review your eligibility information and supporting documents.</p>
+                        <strong>{isEligible ? "Basic IT skills test" : "Eligibility outcome recorded"}</strong>
+                        <p>
+                          {isEligible
+                            ? "The Basic IT skills test invitation link has been sent to your email address. Use that link to complete the test before committee review."
+                            : "This application has been recorded but did not pass the initial eligibility rules."}
+                        </p>
                       </div>
                     </div>
                     <div className="ss-timeline-item">
                       <span aria-hidden="true">3</span>
                       <div>
-                        <strong>Decision and pathway enrollment</strong>
-                        <p>Approved applicants will be enrolled into the correct Digital Futures pathway.</p>
+                        <strong>{isEligible ? "Committee review and pathway enrollment" : "Project records"}</strong>
+                        <p>
+                          {isEligible
+                            ? "The committee reviews registration details, documents, and test results before enrollment."
+                            : "The project team keeps the registration record according to the agreed data process."}
+                        </p>
                       </div>
                     </div>
                   </div>

@@ -17,6 +17,7 @@ function RegistrationPage({
   draftLastSavedAt,
   onBackToPathways,
   onCheckStatus,
+  onTakeSkillsTest,
   onAnswerChange,
   onMultiSelectChange,
   onSubmit,
@@ -35,6 +36,7 @@ function RegistrationPage({
         selectedPathway={selectedPathway}
         onStartNewApplication={onBackToPathways}
         onCheckStatus={onCheckStatus}
+        onTakeSkillsTest={onTakeSkillsTest}
       />
     );
   }
