@@ -75,7 +75,24 @@ function getNextStepCopy(result) {
   };
 }
 
-function IneligibleConfirmation({ selectedPathway, onStartNewApplication }) {
+
+function getIneligibilityFeedback(result) {
+  const feedback = Array.isArray(result?.eligibilityFeedback)
+    ? result.eligibilityFeedback.filter(Boolean)
+    : [];
+
+  if (feedback.length > 0) return feedback;
+
+  if (result?.eligibilityReason) {
+    return [result.eligibilityReason];
+  }
+
+  return [
+    "The application did not meet one or more of the current programme requirements.",
+  ];
+}
+
+function IneligibleConfirmation({ result, selectedPathway, onStartNewApplication }) {
   return (
     <main id="main-content" tabIndex="-1" className="ss-confirmation-page">
       <section className="ss-confirmation-hero" aria-labelledby="confirmation-title">
@@ -91,6 +108,22 @@ function IneligibleConfirmation({ selectedPathway, onStartNewApplication }) {
                 <h1 id="confirmation-title">Unfortunately, you are not eligible for this programme at this time.</h1>
                 <p className="ss-confirmation-lead">
                   Thank you for your interest in the <strong>{selectedPathway?.title || "Digital Futures programme"}</strong>. Your details have been received, but the application does not meet the current requirements.
+                </p>
+
+                <div className="ss-feedback-panel" role="note" aria-labelledby="ineligibility-feedback-title">
+                  <div className="ss-feedback-panel-header">
+                    <i className="bi bi-info-circle" aria-hidden="true" />
+                    <h2 id="ineligibility-feedback-title">Why this application is not eligible</h2>
+                  </div>
+                  <ul>
+                    {getIneligibilityFeedback(result).map((message) => (
+                      <li key={message}>{message}</li>
+                    ))}
+                  </ul>
+                </div>
+
+                <p className="ss-confirmation-footnote compact">
+                  Please do not submit another application with the same phone number or email address. If you believe this result is incorrect, contact the project team for support.
                 </p>
 
                 <div className="ss-confirmation-actions">
@@ -122,6 +155,7 @@ function ApplicationConfirmation({ result, selectedPathway, onStartNewApplicatio
   if (isIneligible && !isDuplicate) {
     return (
       <IneligibleConfirmation
+        result={result}
         selectedPathway={selectedPathway}
         onStartNewApplication={onStartNewApplication}
       />

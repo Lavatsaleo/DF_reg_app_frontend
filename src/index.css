@@ -3439,3 +3439,73 @@ textarea.form-control {
     width: fit-content;
   }
 }
+
+.ss-feedback-panel {
+  margin: 1.4rem 0 1rem;
+  padding: 1.15rem 1.25rem;
+  border-radius: 22px;
+  border: 1px solid rgba(217, 119, 6, 0.28);
+  background: linear-gradient(135deg, rgba(255, 251, 235, 0.96), rgba(255, 247, 237, 0.92));
+  text-align: left;
+}
+
+.ss-feedback-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-bottom: 0.85rem;
+}
+
+.ss-feedback-panel-header i {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  display: inline-grid;
+  place-items: center;
+  background: #111827;
+  color: var(--ss-yellow);
+  font-size: 1.05rem;
+}
+
+.ss-feedback-panel-header h2 {
+  margin: 0;
+  color: #111827;
+  font-size: clamp(1.05rem, 2vw, 1.25rem);
+  font-weight: 950;
+  letter-spacing: -0.02em;
+}
+
+.ss-feedback-panel ul {
+  margin: 0;
+  padding-left: 1.25rem;
+  color: #374151;
+  font-weight: 700;
+  line-height: 1.55;
+}
+
+.ss-feedback-panel li + li {
+  margin-top: 0.5rem;
+}
+
+.ss-confirmation-footnote.compact {
+  max-width: 760px;
+  margin-top: 1rem;
+  color: #475569;
+  font-weight: 650;
+}
+
+html.ss-high-contrast .ss-feedback-panel {
+  border-color: #fff;
+  background: #000;
+}
+
+html.ss-high-contrast .ss-feedback-panel-header h2,
+html.ss-high-contrast .ss-feedback-panel ul,
+html.ss-high-contrast .ss-confirmation-footnote.compact {
+  color: #fff;
+}
+
+html.ss-high-contrast .ss-feedback-panel-header i {
+  background: #fff;
+  color: #000;
+}
