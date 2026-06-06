@@ -13,17 +13,13 @@ function readStoredPreferences() {
     const stored = window.localStorage.getItem(STORAGE_KEY);
     if (!stored) return defaultPreferences;
     return { ...defaultPreferences, ...JSON.parse(stored) };
-  } catch (error) {
+  } catch {
     return defaultPreferences;
   }
 }
 
 export function useAccessibilityPreferences() {
-  const [preferences, setPreferences] = useState(defaultPreferences);
-
-  useEffect(() => {
-    setPreferences(readStoredPreferences());
-  }, []);
+  const [preferences, setPreferences] = useState(readStoredPreferences);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -34,7 +30,7 @@ export function useAccessibilityPreferences() {
 
     try {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(preferences));
-    } catch (error) {
+    } catch {
       // The app still works even when localStorage is disabled.
     }
   }, [preferences]);

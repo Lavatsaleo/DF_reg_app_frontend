@@ -1,10 +1,13 @@
 function FormProgress({ progress, sectionCount, submitting }) {
+  const remainingRequired = Math.max(0, progress.totalRequired - progress.completedRequired);
+
   return (
-    <aside className="ss-progress-card">
+    <aside className="ss-progress-card ss-executive-progress-card">
       <div className="d-flex align-items-center justify-content-between gap-3">
         <div>
-          <span className="ss-small-label dark">Progress</span>
-          <h3>Registration completion</h3>
+          <span className="ss-small-label dark">Quick application</span>
+          <h3>Progress</h3>
+          <p className="ss-progress-subtitle">Designed to take a few minutes.</p>
         </div>
         <div className="ss-progress-ring" aria-label={`${progress.percentage}% complete`}>
           {progress.percentage}%
@@ -15,29 +18,29 @@ function FormProgress({ progress, sectionCount, submitting }) {
         <div className="progress-bar" style={{ width: `${progress.percentage}%` }} />
       </div>
 
-      <div className="ss-progress-grid mt-3">
+      <div className="ss-progress-grid mt-3 compact">
         <div>
           <strong>{progress.completedRequired}</strong>
-          <span>Required answered</span>
+          <span>Completed</span>
         </div>
         <div>
-          <strong>{progress.totalRequired}</strong>
-          <span>Required total</span>
+          <strong>{remainingRequired}</strong>
+          <span>Left</span>
         </div>
         <div>
           <strong>{sectionCount}</strong>
-          <span>Sections</span>
+          <span>Steps</span>
         </div>
         <div>
-          <strong>{progress.visibleQuestions}</strong>
-          <span>Visible questions</span>
+          <strong>~5</strong>
+          <span>Minutes</span>
         </div>
       </div>
 
       <div className="ss-progress-note mt-3">
-        <i className="bi bi-info-circle" />
+        <i className="bi bi-lightning-charge" />
         <span>
-          Fields marked with <strong>*</strong> are required. Hidden questions are not submitted.
+          Only fields marked <strong>Required</strong> must be completed. Optional details can be brief.
         </span>
       </div>
 

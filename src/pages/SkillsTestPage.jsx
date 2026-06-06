@@ -202,6 +202,7 @@ function SkillsTestPage({ initialReference = "", initialToken = "", onBackHome, 
     }
   }
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     const cleanInitialToken = cleanToken(initialToken);
     const cleanInitialReference = normalizeReference(initialReference);
@@ -216,6 +217,7 @@ function SkillsTestPage({ initialReference = "", initialToken = "", onBackHome, 
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialReference, initialToken]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   function handleLookupSubmit(event) {
     event.preventDefault();
@@ -451,7 +453,7 @@ function SkillsTestPage({ initialReference = "", initialToken = "", onBackHome, 
                 <span className="ss-small-label dark">How this works</span>
                 <ol>
                   <li>The applicant submits the registration form.</li>
-                  <li>If they pass the first eligibility screening, the system emails a private test link.</li>
+                  <li>If the application moves to the next step, the system emails a private test link.</li>
                   <li>The link opens the Basic IT skills test and ties the result to the same applicant record.</li>
                   <li>The committee reviews registration details, documents, and the test result together.</li>
                 </ol>

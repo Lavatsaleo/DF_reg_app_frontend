@@ -57,6 +57,12 @@ function App() {
     registration.handlePathwaySelect(pathway);
   }
 
+  const showStatusButton = !(
+    registration.submitResult?.hideApplicationReference === true ||
+    registration.submitResult?.status === "INELIGIBLE" ||
+    registration.submitResult?.screeningStatus === "NOT_ELIGIBLE"
+  );
+
   return (
     <>
       <a className="ss-skip-link" href="#main-content">
@@ -68,6 +74,7 @@ function App() {
         currentView={currentView}
         onBackToPathways={handleShowHome}
         onCheckStatus={handleShowStatus}
+        showStatusButton={showStatusButton}
       />
 
       <AccessibilityToolbar

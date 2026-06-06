@@ -12,12 +12,10 @@ function LandingPage({ pathwayMessage, onPathwaySelect, onCheckStatus }) {
                 <i className="bi bi-stars" /> Sightsavers Digital Futures
               </span>
               <h1 className="ss-title mt-4">
-                Build digital skills for <span>inclusive futures</span>
+                Digital skills. <span>Inclusive futures.</span>
               </h1>
               <p className="ss-subtitle mt-4">
-                The Digital Futures Project supports young people with disabilities
-                to access practical digital skills, employment readiness support,
-                and pathway-specific learning opportunities.
+                A streamlined registration portal for the Digital Futures Project, designed for fast application, accessible participation, and end-to-end participant tracking.
               </p>
               <div className="d-flex flex-column flex-sm-row gap-3 mt-4">
                 <a href="#pathways" className="btn ss-btn-primary">
@@ -39,7 +37,7 @@ function LandingPage({ pathwayMessage, onPathwaySelect, onCheckStatus }) {
                 <div className="ss-panel-content">
                   <span>Registration</span>
                   <strong>Open</strong>
-                  <p>Physical Academy workflow</p>
+                  <p>Physical Academy intake</p>
                 </div>
                 <div className="ss-metric-row">
                   <div>
@@ -51,11 +49,30 @@ function LandingPage({ pathwayMessage, onPathwaySelect, onCheckStatus }) {
                     <span>Open now</span>
                   </div>
                   <div>
-                    <strong>24/7</strong>
-                    <span>Online access</span>
+                    <strong>~5m</strong>
+                    <span>To apply</span>
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="ss-before-apply-section py-5" aria-labelledby="before-apply-title">
+        <div className="container">
+          <div className="ss-before-apply-card">
+            <div>
+              <span className="ss-small-label dark">Before you apply</span>
+              <h2 id="before-apply-title">Simple, accessible, and trackable</h2>
+              <p>
+                Applicants complete one short application. The system checks first-level eligibility in the background, prevents duplicates, and keeps the same participant identifier across testing and review.
+              </p>
+            </div>
+            <div className="ss-before-apply-steps" role="list">
+              <div role="listitem"><span>1</span><strong>Apply in minutes</strong><small>Only essential questions are required.</small></div>
+              <div role="listitem"><span>2</span><strong>Background screening</strong><small>Eligibility runs quietly after submission.</small></div>
+              <div role="listitem"><span>3</span><strong>Secure test link</strong><small>Eligible applicants receive the Basic IT skills test by email.</small></div>
             </div>
           </div>
         </div>

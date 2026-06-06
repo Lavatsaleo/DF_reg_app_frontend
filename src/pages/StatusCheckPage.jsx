@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import axios from "axios";
 import { API_BASE_URL } from "../config/api";
+import { formatPathwayLabel, formatStatusLabel } from "../utils/displayLabels";
 import {
   findSubmittedApplication,
   listSubmittedApplications,
@@ -9,19 +10,25 @@ import {
 const STATUS_STEPS = [
   {
     key: "submitted",
-    labels: ["submitted", "eligible - pending review", "submitted - eligibility review required"],
+    labels: ["submitted"],
     title: "Application submitted",
-    description: "Your registration has been received by the system.",
+    description: "Your registration has been received and a participant identifier has been assigned.",
+  },
+  {
+    key: "screening",
+    labels: ["pending review", "ineligible"],
+    title: "Application review",
+    description: "The application information is reviewed and may be flagged for manual review.",
   },
   {
     key: "skills",
     labels: ["eligible pending skills test", "eligible pending basic skills test"],
     title: "Basic IT skills test",
-    description: "Eligible applicants complete the short skills test.",
+    description: "Eligible applicants complete the short skills test using the secure email invitation link.",
   },
   {
     key: "review",
-    labels: ["skills test completed pending review", "under review", "review", "pending review", "synced to dhis2 pending review"],
+    labels: ["skills test completed pending review", "under review", "review", "synced to dhis2 pending review"],
     title: "Committee review",
     description: "The committee reviews registration details, documents, and test results.",
   },
@@ -51,10 +58,11 @@ function getActiveStepIndex(status) {
   );
 
   if (exactIndex >= 0) return exactIndex;
-  if (normalizedStatus.includes("enrolled")) return 4;
-  if (normalizedStatus.includes("approved") || normalizedStatus.includes("rejected")) return 3;
-  if (normalizedStatus.includes("completed") || normalizedStatus.includes("review") || normalizedStatus.includes("dhis2")) return 2;
-  if (normalizedStatus.includes("skills")) return 1;
+  if (normalizedStatus.includes("enrolled")) return 5;
+  if (normalizedStatus.includes("approved") || normalizedStatus.includes("rejected")) return 4;
+  if (normalizedStatus.includes("completed") || normalizedStatus.includes("committee") || normalizedStatus.includes("dhis2")) return 3;
+  if (normalizedStatus.includes("skills")) return 2;
+  if (normalizedStatus.includes("eligible") || normalizedStatus.includes("review") || normalizedStatus.includes("ineligible")) return 1;
   return 0;
 }
 
@@ -85,6 +93,12 @@ function getReferenceFromResult(result) {
   );
 }
 
+function getScreeningLabel(result) {
+  if (result?.screeningStatus === "ELIGIBLE" || result?.isEligible === true) return "Eligible";
+  if (result?.screeningStatus === "NOT_ELIGIBLE" || result?.status === "INELIGIBLE") return "Not eligible";
+  return "Pending review";
+}
+
 function StatusTimeline({ status }) {
   const activeStepIndex = getActiveStepIndex(status);
 
@@ -113,9 +127,10 @@ function StatusTimeline({ status }) {
   );
 }
 
-function StatusResultCard({ result, source, onTakeSkillsTest }) {
+function StatusResultCard({ result, source }) {
   const reference = getReferenceFromResult(result);
   const status = result?.status || "Submitted";
+  const statusLabel = formatStatusLabel(status);
 
   return (
     <article className="ss-status-result-card" aria-labelledby="status-result-title">
@@ -127,19 +142,27 @@ function StatusResultCard({ result, source, onTakeSkillsTest }) {
             The information below shows the latest status available to this portal.
           </p>
         </div>
-        <div className="ss-status-badge" aria-label={`Current status is ${status}`}>
-          {status}
+        <div className="ss-status-badge" aria-label={`Current status is ${statusLabel}`}>
+          {statusLabel}
         </div>
       </div>
 
       <div className="ss-status-summary-grid" role="list">
         <div role="listitem">
-          <span>Reference</span>
+          <span>Application reference</span>
           <strong>{reference || "Not available"}</strong>
         </div>
         <div role="listitem">
+          <span>Unique participant ID</span>
+          <strong>{result?.participantCode || "Not available"}</strong>
+        </div>
+        <div role="listitem">
+          <span>Application review</span>
+          <strong>{getScreeningLabel(result)}</strong>
+        </div>
+        <div role="listitem">
           <span>Pathway</span>
-          <strong>{result?.pathwayTitle || result?.pathway || "Physical Academy"}</strong>
+          <strong>{formatPathwayLabel(result?.pathwayTitle || result?.pathway, "Physical Academy")}</strong>
         </div>
         <div role="listitem">
           <span>Submitted</span>
@@ -150,6 +173,13 @@ function StatusResultCard({ result, source, onTakeSkillsTest }) {
           <strong>{source === "server" ? "Official system" : "This device"}</strong>
         </div>
       </div>
+
+      {result?.nextStepMessage && (
+        <div className="ss-status-note" role="note">
+          <i className="bi bi-signpost-2" aria-hidden="true" />
+          <p>{result.nextStepMessage}</p>
+        </div>
+      )}
 
       {result?.eligibilityReason && (
         <div className="ss-status-note" role="note">
@@ -169,7 +199,7 @@ function StatusResultCard({ result, source, onTakeSkillsTest }) {
 
       {result?.requiresBasicSkillsTest && (
         <div className="ss-status-note" role="note">
-          <i className="bi bi-exclamation-circle" aria-hidden="true" />
+          <i className="bi bi-envelope-check" aria-hidden="true" />
           <div>
             <p className="mb-2">You are eligible. Please open the Basic IT skills test using the secure invitation link sent to your email address.</p>
             {result?.testInvitation?.expiresAt && (
@@ -184,8 +214,8 @@ function StatusResultCard({ result, source, onTakeSkillsTest }) {
   );
 }
 
-function StatusCheckPage({ onBackHome, onStartApplication, onTakeSkillsTest }) {
-  const [reference, setReference] = useState("");
+function StatusCheckPage({ onBackHome, onStartApplication }) {
+  const [identifier, setIdentifier] = useState("");
   const [lookupResult, setLookupResult] = useState(null);
   const [lookupSource, setLookupSource] = useState("");
   const [lookupMessage, setLookupMessage] = useState("");
@@ -196,13 +226,13 @@ function StatusCheckPage({ onBackHome, onStartApplication, onTakeSkillsTest }) {
   async function handleSubmit(event) {
     event.preventDefault();
 
-    const cleanReference = reference.trim().toUpperCase();
+    const cleanIdentifier = identifier.trim();
     setLookupResult(null);
     setLookupSource("");
     setLookupMessage("");
 
-    if (!cleanReference) {
-      setLookupMessage("Please enter your application reference number.");
+    if (!cleanIdentifier) {
+      setLookupMessage("Please enter your application reference number or mobile number.");
       return;
     }
 
@@ -210,7 +240,7 @@ function StatusCheckPage({ onBackHome, onStartApplication, onTakeSkillsTest }) {
       setLoading(true);
 
       const response = await axios.get(
-        `${API_BASE_URL}/api/registrations/status/${encodeURIComponent(cleanReference)}`
+        `${API_BASE_URL}/api/registrations/status/${encodeURIComponent(cleanIdentifier)}`
       );
 
       const apiResult = response.data?.data || response.data?.application || response.data?.registration || response.data;
@@ -221,8 +251,8 @@ function StatusCheckPage({ onBackHome, onStartApplication, onTakeSkillsTest }) {
       }
 
       throw new Error("No official status returned");
-    } catch (error) {
-      const localResult = findSubmittedApplication(cleanReference);
+    } catch {
+      const localResult = findSubmittedApplication(cleanIdentifier);
 
       if (localResult) {
         setLookupResult(localResult);
@@ -232,7 +262,7 @@ function StatusCheckPage({ onBackHome, onStartApplication, onTakeSkillsTest }) {
         );
       } else {
         setLookupMessage(
-          "We could not find that reference on this device. Please check the reference number, or contact the project team if you submitted from another device."
+          "We could not find an application using that reference or mobile number. Check the details and use the same mobile number entered during registration."
         );
       }
     } finally {
@@ -242,7 +272,7 @@ function StatusCheckPage({ onBackHome, onStartApplication, onTakeSkillsTest }) {
 
   function handleRecentClick(application) {
     const recentReference = getReferenceFromResult(application);
-    setReference(recentReference);
+    setIdentifier(recentReference);
     setLookupResult(application);
     setLookupSource("local");
     setLookupMessage("Showing a recently submitted application saved on this device.");
@@ -260,14 +290,14 @@ function StatusCheckPage({ onBackHome, onStartApplication, onTakeSkillsTest }) {
               <span className="ss-small-label light">Application tracking</span>
               <h1 id="status-page-title">Check your registration status</h1>
               <p>
-                Enter the reference number shown after submission to see the latest status available to this portal.
+                Enter your application reference or the mobile number used during registration to see the latest status available to this portal.
               </p>
             </div>
             <div className="col-12 col-lg-4">
               <div className="ss-selected-card">
                 <span>Applicant support</span>
-                <strong>Use your reference</strong>
-                <small>Example: SS-PHYS-20260525-ABCDE</small>
+                <strong>Use your reference or mobile number</strong>
+                <small>Example: SS-PHYS-20260525-ABCDE or +254712345678</small>
               </div>
             </div>
           </div>
@@ -279,24 +309,24 @@ function StatusCheckPage({ onBackHome, onStartApplication, onTakeSkillsTest }) {
           <div className="col-12 col-xl-8">
             <section className="ss-status-lookup-card" aria-labelledby="lookup-title">
               <span className="ss-small-label dark">Find application</span>
-              <h2 id="lookup-title">Enter your application reference</h2>
+              <h2 id="lookup-title">Find your application</h2>
               <p>
-                The reference number is shown on the confirmation page after submitting the form.
+                Use the application reference shown after submission or the same mobile number entered in the application form.
               </p>
 
               <form onSubmit={handleSubmit} noValidate>
                 <label className="form-label" htmlFor="application-reference">
-                  Application reference number
+                  Application reference or mobile number
                 </label>
                 <div className="ss-status-search-row">
                   <input
                     id="application-reference"
                     className="form-control"
                     type="text"
-                    value={reference}
-                    onChange={(event) => setReference(event.target.value)}
-                    placeholder="Example: SS-PHYS-20260525-ABCDE"
-                    autoComplete="off"
+                    value={identifier}
+                    onChange={(event) => setIdentifier(event.target.value)}
+                    placeholder="Reference or mobile number"
+                    autoComplete="tel"
                   />
                   <button type="submit" className="btn ss-btn-primary" disabled={loading}>
                     {loading ? (
@@ -320,7 +350,7 @@ function StatusCheckPage({ onBackHome, onStartApplication, onTakeSkillsTest }) {
 
               {lookupResult && (
                 <div className="mt-4">
-                  <StatusResultCard result={lookupResult} source={lookupSource} onTakeSkillsTest={onTakeSkillsTest} />
+                  <StatusResultCard result={lookupResult} source={lookupSource} />
                 </div>
               )}
             </section>
@@ -332,10 +362,10 @@ function StatusCheckPage({ onBackHome, onStartApplication, onTakeSkillsTest }) {
                 <span className="ss-small-label dark">What your status means</span>
                 <ul className="ss-status-help-list">
                   <li><strong>Submitted:</strong> your application was received.</li>
-                  <li><strong>Basic IT skills test:</strong> eligible applicants complete the short test.</li>
+                  <li><strong>Pending Review:</strong> the project team needs to review eligibility details before sending a test invitation.</li>
+                  <li><strong>Eligible Pending Skills Test:</strong> check your email for the secure test link.</li>
                   <li><strong>Under Review:</strong> the committee checks registration details, documents, and test result.</li>
                   <li><strong>Approved:</strong> the applicant can move to enrollment.</li>
-                  <li><strong>Synced to DHIS2:</strong> the applicant has moved into the programme system.</li>
                 </ul>
               </div>
 
@@ -364,7 +394,7 @@ function StatusCheckPage({ onBackHome, onStartApplication, onTakeSkillsTest }) {
               <div className="ss-help-card mt-4">
                 <span className="ss-small-label dark">No reference yet?</span>
                 <p>
-                  Start a new application and keep the confirmation reference after submission.
+                  Start one application and keep the confirmation reference after submission. You can also use the same mobile number entered in the form to check the application status.
                 </p>
                 <button type="button" className="btn ss-btn-outline w-100" onClick={onStartApplication}>
                   Start application

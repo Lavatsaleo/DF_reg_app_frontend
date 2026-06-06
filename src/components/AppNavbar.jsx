@@ -1,6 +1,6 @@
 import logo from "../assets/sightsavers-logo.png";
 
-function AppNavbar({ selectedPathway, currentView, onBackToPathways, onCheckStatus }) {
+function AppNavbar({ selectedPathway, currentView, onBackToPathways, onCheckStatus, showStatusButton = true }) {
   const isStatusPage = currentView === "status";
 
   return (
@@ -22,14 +22,16 @@ function AppNavbar({ selectedPathway, currentView, onBackToPathways, onCheckStat
             <i className="bi bi-shield-check" aria-hidden="true" /> Registration Portal
           </span>
 
-          <button
-            type="button"
-            className={`btn ${isStatusPage ? "ss-nav-back" : "ss-nav-status"}`}
-            onClick={onCheckStatus}
-            aria-current={isStatusPage ? "page" : undefined}
-          >
-            <i className="bi bi-search" aria-hidden="true" /> Check status
-          </button>
+          {showStatusButton && (
+            <button
+              type="button"
+              className={`btn ${isStatusPage ? "ss-nav-back" : "ss-nav-status"}`}
+              onClick={onCheckStatus}
+              aria-current={isStatusPage ? "page" : undefined}
+            >
+              <i className="bi bi-search" aria-hidden="true" /> Check status
+            </button>
+          )}
 
           {(selectedPathway || isStatusPage) && (
             <button

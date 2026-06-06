@@ -2534,3 +2534,908 @@ html:not(.ss-high-contrast) .ss-btn-muted {
     padding: 1rem;
   }
 }
+
+/* Eligibility screening and first-contact guidance */
+.ss-before-apply-section {
+  background: #f6f9fc;
+}
+
+.ss-before-apply-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  gap: 2rem;
+  align-items: center;
+  padding: 2rem;
+  border: 1px solid rgba(0, 95, 182, 0.14);
+  border-radius: 1.25rem;
+  background: #ffffff;
+  box-shadow: 0 16px 40px rgba(19, 45, 70, 0.08);
+}
+
+.ss-before-apply-card h2 {
+  margin-top: 0.5rem;
+  color: #16344f;
+}
+
+.ss-before-apply-card p {
+  margin-bottom: 0;
+  color: #4d6172;
+}
+
+.ss-before-apply-steps {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.ss-before-apply-steps > div {
+  display: grid;
+  grid-template-columns: 2.25rem 1fr;
+  gap: 0 0.85rem;
+  align-items: center;
+  padding: 0.9rem 1rem;
+  border-radius: 0.9rem;
+  background: #f7fbff;
+  border: 1px solid rgba(0, 95, 182, 0.1);
+}
+
+.ss-before-apply-steps span {
+  grid-row: 1 / span 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  background: #005fb6;
+  color: #ffffff;
+  font-weight: 800;
+}
+
+.ss-before-apply-steps strong {
+  color: #16344f;
+}
+
+.ss-before-apply-steps small {
+  color: #5c6f7f;
+}
+
+.ss-eligibility-field-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.55rem;
+  padding: 0.3rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(82, 174, 50, 0.12);
+  color: #2d6e1d;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.ss-question-help {
+  margin: -0.15rem 0 0.75rem;
+  color: #607485;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.ss-wizard-section-intro.eligibility {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  border-left: 4px solid #52ae32;
+  background: rgba(82, 174, 50, 0.08);
+}
+
+.ss-wizard-section-intro.eligibility i {
+  color: #3d8f27;
+  font-size: 1.2rem;
+  margin-top: 0.1rem;
+}
+
+.ss-wizard-section-intro.eligibility p {
+  margin-bottom: 0;
+}
+
+.ss-eligibility-help-card {
+  border-top: 4px solid #52ae32;
+}
+
+.ss-eligibility-check-list {
+  display: grid;
+  gap: 0.65rem;
+  padding: 0;
+  margin: 1rem 0;
+  list-style: none;
+}
+
+.ss-eligibility-check-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  color: #3f5568;
+}
+
+.ss-eligibility-check-list i {
+  color: #005fb6;
+  margin-top: 0.1rem;
+}
+
+.ss-submit-once-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  margin-top: 1.25rem;
+  padding: 0.9rem 1rem;
+  border-radius: 0.85rem;
+  background: #f7fbff;
+  border: 1px solid rgba(0, 95, 182, 0.12);
+  color: #3e566b;
+}
+
+.ss-submit-once-note i {
+  color: #005fb6;
+  margin-top: 0.1rem;
+}
+
+.ss-submit-once-note p {
+  margin: 0;
+}
+
+html.ss-high-contrast .ss-before-apply-card,
+html.ss-high-contrast .ss-before-apply-steps > div,
+html.ss-high-contrast .ss-submit-once-note,
+html.ss-high-contrast .ss-wizard-section-intro.eligibility {
+  border-color: currentColor;
+  background: #000000;
+  color: #ffffff;
+}
+
+html.ss-high-contrast .ss-before-apply-card h2,
+html.ss-high-contrast .ss-before-apply-card p,
+html.ss-high-contrast .ss-before-apply-steps strong,
+html.ss-high-contrast .ss-before-apply-steps small,
+html.ss-high-contrast .ss-question-help,
+html.ss-high-contrast .ss-eligibility-check-list li,
+html.ss-high-contrast .ss-submit-once-note,
+html.ss-high-contrast .ss-eligibility-field-badge {
+  color: #ffffff;
+}
+
+html.ss-high-contrast .ss-eligibility-field-badge {
+  border: 1px solid #ffffff;
+  background: #000000;
+}
+
+@media (max-width: 991.98px) {
+  .ss-before-apply-card {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Accessible date-of-birth selector */
+.ss-dob-picker {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.ss-dob-fields {
+  display: grid;
+  grid-template-columns: minmax(8rem, 0.8fr) minmax(12rem, 1.4fr) minmax(10rem, 1fr);
+  gap: 0.8rem;
+  align-items: end;
+}
+
+.ss-dob-field {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.ss-dob-field label,
+.ss-dob-field-label {
+  display: block;
+  color: #334155;
+  font-size: 0.9rem;
+  font-weight: 900;
+}
+
+.ss-year-picker-trigger {
+  width: 100%;
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border-radius: 16px;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  color: #111827;
+  font-weight: 800;
+  text-align: left;
+}
+
+.ss-year-picker-trigger:hover,
+.ss-year-picker-trigger:focus-visible {
+  border-color: var(--ss-yellow);
+  box-shadow: 0 0 0 0.25rem rgba(255, 191, 0, 0.22);
+  outline: none;
+}
+
+.ss-dob-picker.has-error .ss-year-picker-trigger,
+.ss-year-picker-trigger.is-invalid {
+  border-color: var(--ss-danger);
+}
+
+.ss-year-picker-panel {
+  border: 2px solid var(--ss-yellow);
+  border-radius: 20px;
+  background: #fffdf6;
+  padding: 1rem;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+}
+
+.ss-year-picker-toolbar {
+  display: grid;
+  grid-template-columns: minmax(10rem, 1fr) minmax(12rem, 1fr) minmax(10rem, 1fr);
+  gap: 0.75rem;
+  align-items: end;
+}
+
+.ss-year-picker-toolbar label {
+  display: grid;
+  gap: 0.35rem;
+  color: #334155;
+  font-size: 0.88rem;
+  font-weight: 900;
+}
+
+.ss-year-decade-button,
+.ss-year-picker-close {
+  min-height: 48px;
+  border: 1px solid #111827;
+  border-radius: 14px;
+  background: #ffffff;
+  color: #111827;
+  font-weight: 900;
+  padding: 0.7rem 0.9rem;
+}
+
+.ss-year-decade-button:hover,
+.ss-year-decade-button:focus-visible,
+.ss-year-picker-close:hover,
+.ss-year-picker-close:focus-visible {
+  background: #000000;
+  color: var(--ss-yellow);
+  outline: 4px solid var(--ss-yellow);
+  outline-offset: 2px;
+}
+
+.ss-year-decade-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.ss-year-picker-instruction,
+.ss-dob-guidance {
+  color: #52606d;
+  line-height: 1.55;
+}
+
+.ss-year-picker-instruction {
+  margin: 1rem 0 0.75rem;
+  font-weight: 750;
+}
+
+.ss-dob-guidance {
+  font-size: 0.88rem;
+}
+
+.ss-year-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(4.5rem, 1fr));
+  gap: 0.65rem;
+}
+
+.ss-year-option {
+  min-height: 54px;
+  border: 2px solid #d1d5db;
+  border-radius: 14px;
+  background: #ffffff;
+  color: #111827;
+  font-size: 1.05rem;
+  font-weight: 950;
+}
+
+.ss-year-option:hover,
+.ss-year-option:focus-visible {
+  border-color: #000000;
+  background: #fff7df;
+  outline: 4px solid var(--ss-yellow);
+  outline-offset: 2px;
+}
+
+.ss-year-option[aria-pressed="true"] {
+  background: #000000;
+  color: var(--ss-yellow);
+  border-color: #000000;
+}
+
+.ss-year-picker-close {
+  width: 100%;
+  margin-top: 0.9rem;
+}
+
+html.ss-large-text .ss-dob-field label,
+html.ss-large-text .ss-dob-field-label,
+html.ss-large-text .ss-dob-guidance,
+html.ss-large-text .ss-year-picker-toolbar label,
+html.ss-large-text .ss-year-picker-instruction {
+  font-size: 1rem;
+}
+
+html.ss-large-text .ss-year-option,
+html.ss-large-text .ss-year-picker-trigger,
+html.ss-large-text .ss-year-decade-button,
+html.ss-large-text .ss-year-picker-close {
+  min-height: 58px;
+  font-size: 1.1rem;
+}
+
+html.ss-high-contrast .ss-dob-field label,
+html.ss-high-contrast .ss-dob-field-label,
+html.ss-high-contrast .ss-year-picker-toolbar label,
+html.ss-high-contrast .ss-year-picker-instruction,
+html.ss-high-contrast .ss-dob-guidance {
+  color: #ffffff;
+}
+
+html.ss-high-contrast .ss-year-picker-panel,
+html.ss-high-contrast .ss-year-picker-trigger,
+html.ss-high-contrast .ss-year-decade-button,
+html.ss-high-contrast .ss-year-picker-close,
+html.ss-high-contrast .ss-year-option {
+  background: #000000;
+  color: #ffffff;
+  border-color: var(--ss-yellow);
+}
+
+html.ss-high-contrast .ss-year-option[aria-pressed="true"],
+html.ss-high-contrast .ss-year-decade-button:hover,
+html.ss-high-contrast .ss-year-decade-button:focus-visible,
+html.ss-high-contrast .ss-year-picker-close:hover,
+html.ss-high-contrast .ss-year-picker-close:focus-visible {
+  background: var(--ss-yellow);
+  color: #000000;
+}
+
+@media (max-width: 767.98px) {
+  .ss-dob-fields,
+  .ss-year-picker-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .ss-year-grid {
+    grid-template-columns: repeat(2, minmax(6rem, 1fr));
+  }
+}
+
+/* UI polish: keep date of birth and status cards readable on all screens */
+.ss-question-card.wide {
+  max-width: 100%;
+}
+
+.ss-question-card.wide .ss-dob-picker {
+  max-width: 100%;
+}
+
+.ss-dob-fields {
+  grid-template-columns: minmax(8rem, 0.75fr) minmax(12rem, 1fr) minmax(12rem, 1fr);
+  width: 100%;
+}
+
+.ss-dob-field.year,
+.ss-year-picker-trigger {
+  min-width: 0;
+}
+
+.ss-year-picker-panel {
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.ss-year-picker-toolbar {
+  grid-template-columns: minmax(10rem, 1fr) minmax(14rem, 1.15fr) minmax(10rem, 1fr);
+}
+
+.ss-year-picker-toolbar label,
+.ss-year-picker-toolbar .form-select {
+  min-width: 0;
+}
+
+.ss-confirmation-grid,
+.ss-status-summary-grid {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.ss-confirmation-detail,
+.ss-status-summary-grid > div {
+  min-width: 0;
+}
+
+.ss-confirmation-detail strong,
+.ss-status-summary-grid strong,
+.ss-status-badge {
+  overflow-wrap: anywhere;
+  word-break: normal;
+  hyphens: auto;
+}
+
+.ss-confirmation-detail strong,
+.ss-status-summary-grid strong {
+  font-size: clamp(0.95rem, 1.8vw, 1.08rem);
+}
+
+.ss-status-badge {
+  max-width: 100%;
+  border-radius: 18px;
+  line-height: 1.25;
+  text-align: center;
+  white-space: normal;
+}
+
+@media (max-width: 1199.98px) {
+  .ss-dob-fields,
+  .ss-year-picker-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .ss-year-grid {
+    grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+  }
+}
+
+@media (min-width: 1200px) {
+  .ss-question-card.wide {
+    padding: 1.2rem;
+  }
+}
+
+/* Executive presentation polish — cleaner, shorter-looking application flow */
+:root {
+  --ss-surface: rgba(255, 255, 255, 0.92);
+  --ss-surface-solid: #ffffff;
+  --ss-ink: #111111;
+  --ss-text: #172033;
+  --ss-subtle: #6b7280;
+  --ss-line: rgba(15, 23, 42, 0.08);
+  --ss-card-shadow: 0 22px 60px rgba(15, 23, 42, 0.08);
+  --ss-card-shadow-strong: 0 36px 90px rgba(15, 23, 42, 0.14);
+}
+
+body {
+  background:
+    radial-gradient(circle at 12% -5%, rgba(255, 191, 0, 0.2), transparent 28%),
+    radial-gradient(circle at 94% 4%, rgba(0, 0, 0, 0.08), transparent 26%),
+    linear-gradient(180deg, #ffffff 0%, #f7f9fc 42%, #fff8e6 100%);
+}
+
+.ss-navbar {
+  background: rgba(255, 255, 255, 0.86);
+  border-bottom: 1px solid rgba(17, 17, 17, 0.06);
+  box-shadow: 0 12px 40px rgba(15, 23, 42, 0.06);
+}
+
+.ss-hero {
+  min-height: auto;
+  padding: clamp(3.5rem, 7vw, 6.5rem) 0 clamp(2.75rem, 5vw, 4.5rem);
+}
+
+.ss-title {
+  max-width: 850px;
+  font-size: clamp(2.7rem, 6.2vw, 5.75rem);
+  letter-spacing: -0.085em;
+}
+
+.ss-subtitle {
+  max-width: 740px;
+  color: #4b5563;
+  font-size: clamp(1.05rem, 1.45vw, 1.22rem);
+}
+
+.ss-hero-panel {
+  min-height: 420px;
+  border: 1px solid rgba(255, 191, 0, 0.28);
+  background:
+    radial-gradient(circle at 88% 14%, rgba(255, 191, 0, 0.52), transparent 30%),
+    linear-gradient(145deg, #020202 0%, #171717 58%, #2b2304 100%);
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.22);
+}
+
+.ss-before-apply-section,
+.ss-pathway-section {
+  background: transparent;
+}
+
+.ss-before-apply-card,
+.ss-pathway-card,
+.ss-form-shell,
+.ss-progress-card,
+.ss-help-card,
+.ss-status-lookup-card,
+.ss-status-result-card,
+.ss-confirmation-card {
+  backdrop-filter: blur(14px);
+}
+
+.ss-before-apply-card {
+  border-radius: 32px;
+  border: 1px solid var(--ss-line);
+  box-shadow: var(--ss-card-shadow);
+}
+
+.ss-before-apply-steps > div {
+  border-radius: 20px;
+  background: linear-gradient(180deg, #ffffff, #fffaf0);
+}
+
+.ss-form-hero,
+.ss-status-hero {
+  padding: clamp(2.5rem, 5vw, 4.5rem) 0;
+  background:
+    radial-gradient(circle at 85% 0%, rgba(255, 191, 0, 0.36), transparent 30%),
+    linear-gradient(135deg, #020202 0%, #151515 62%, #2e2500 100%);
+}
+
+.ss-form-hero h1,
+.ss-status-hero h1 {
+  max-width: 900px;
+  letter-spacing: -0.07em;
+}
+
+.ss-selected-card {
+  border-radius: 28px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.12);
+}
+
+.ss-form-shell {
+  border-radius: 34px;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  box-shadow: var(--ss-card-shadow-strong);
+}
+
+.ss-executive-wizard-topper {
+  padding: clamp(1.35rem, 2.4vw, 2.25rem);
+  background:
+    radial-gradient(circle at top right, rgba(255, 191, 0, 0.24), transparent 30%),
+    linear-gradient(135deg, #ffffff 0%, #fffdf6 100%);
+}
+
+.ss-executive-wizard-topper h2 {
+  font-size: clamp(1.65rem, 3vw, 2.45rem);
+  letter-spacing: -0.06em;
+}
+
+.ss-quick-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+
+.ss-quick-facts span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  border-radius: 999px;
+  background: #111111;
+  color: var(--ss-yellow);
+  padding: 0.5rem 0.78rem;
+  font-size: 0.84rem;
+  font-weight: 900;
+}
+
+.ss-draft-status {
+  min-width: 0;
+  color: #111827;
+  border-radius: 999px;
+  padding: 0.65rem 0.8rem 0.65rem 1rem;
+}
+
+.ss-wizard-progress {
+  padding: 1.05rem clamp(1.1rem, 2vw, 2rem) 0;
+}
+
+.ss-wizard-stack {
+  gap: 0.85rem;
+  padding: 1rem clamp(1.1rem, 2vw, 2rem) clamp(1.2rem, 2.5vw, 2.25rem);
+}
+
+.ss-wizard-section {
+  border-radius: 26px;
+  box-shadow: 0 16px 42px rgba(15, 23, 42, 0.05);
+}
+
+.ss-wizard-section.active {
+  transform: translateY(-1px);
+  border-color: rgba(255, 191, 0, 0.85);
+  box-shadow: 0 28px 70px rgba(15, 23, 42, 0.11);
+}
+
+.ss-wizard-section-trigger {
+  padding: 1rem 1.1rem;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
+
+.ss-wizard-step-number {
+  width: 48px;
+  height: 48px;
+  border-radius: 18px;
+  font-size: 1.15rem;
+}
+
+.ss-wizard-step-copy span {
+  font-size: 1.16rem;
+}
+
+.ss-wizard-step-copy small {
+  font-size: 0.82rem;
+}
+
+.ss-wizard-status-badge {
+  min-width: 74px;
+  padding: 0.48rem 0.72rem;
+  box-shadow: none;
+}
+
+.ss-wizard-section-panel {
+  padding: 0 1rem 1.15rem;
+}
+
+.ss-wizard-section-intro {
+  background: #fffaf0;
+  border-color: rgba(255, 191, 0, 0.32);
+  border-radius: 18px;
+  padding: 0.85rem 1rem;
+  margin: 0.95rem 0;
+}
+
+.ss-wizard-section-intro p {
+  color: #3f3f46;
+  font-weight: 650;
+}
+
+.ss-polished-question-row {
+  --bs-gutter-x: 1rem;
+  --bs-gutter-y: 1rem;
+}
+
+.ss-question-card {
+  position: relative;
+  border-radius: 22px;
+  border: 1px solid rgba(15, 23, 42, 0.07);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.04);
+  padding: 1rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.ss-question-card:focus-within {
+  border-color: rgba(255, 191, 0, 0.9);
+  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+  transform: translateY(-1px);
+}
+
+.form-label {
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 0.55rem;
+}
+
+.form-label > span {
+  line-height: 1.28;
+}
+
+.ss-required-chip,
+.ss-optional-chip {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.68rem;
+  font-weight: 950;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  font-style: normal;
+}
+
+.ss-required-chip {
+  background: #111111;
+  color: var(--ss-yellow) !important;
+}
+
+.ss-optional-chip {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.ss-question-help {
+  color: #5b6472;
+  font-size: 0.85rem;
+  margin: 0 0 0.65rem;
+}
+
+.form-control,
+.form-select,
+.ss-year-picker-trigger {
+  min-height: 54px;
+  border-radius: 18px;
+  background-color: #ffffff;
+  border-color: #d7dde6;
+  font-weight: 650;
+}
+
+textarea.form-control {
+  min-height: 116px;
+}
+
+.ss-option-grid {
+  gap: 0.55rem;
+}
+
+.ss-option-pill {
+  padding: 0.72rem 0.92rem;
+  border-radius: 18px;
+  border-color: #d7dde6;
+  background: #ffffff;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.03);
+}
+
+.ss-option-pill.selected,
+.ss-option-pill:hover {
+  background: #111111;
+  color: var(--ss-yellow);
+}
+
+.ss-checkbox-item {
+  border-radius: 18px;
+  min-height: 52px;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.03);
+}
+
+.ss-voice-input {
+  margin-top: 0.55rem;
+}
+
+.ss-voice-btn {
+  padding: 0.42rem 0.7rem;
+  background: #ffffff;
+}
+
+.ss-dob-picker {
+  gap: 0.75rem;
+}
+
+.ss-dob-fields {
+  grid-template-columns: minmax(7rem, 0.72fr) minmax(12rem, 1fr) minmax(13rem, 1fr);
+}
+
+.ss-year-picker-panel {
+  border-radius: 24px;
+  background: #fffaf0;
+}
+
+.ss-year-option {
+  border-radius: 16px;
+  min-height: 56px;
+}
+
+.ss-wizard-actions {
+  margin-top: 1rem;
+  padding-top: 1rem;
+}
+
+.ss-wizard-actions .btn,
+.ss-confirmation-actions .btn,
+.ss-status-search-row .btn {
+  min-height: 50px;
+  padding-inline: 1.2rem;
+}
+
+.ss-executive-progress-card h3 {
+  margin-bottom: 0.15rem;
+}
+
+.ss-progress-subtitle {
+  margin: 0.15rem 0 0;
+  color: var(--ss-subtle);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.ss-progress-grid.compact {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.ss-clean-help-list {
+  list-style: none;
+  margin: 1rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.ss-clean-help-list li {
+  display: flex;
+  gap: 0.55rem;
+  align-items: flex-start;
+  color: #334155;
+  font-weight: 750;
+}
+
+.ss-clean-help-list i {
+  color: #111111;
+  margin-top: 0.12rem;
+}
+
+.ss-confirmation-grid,
+.ss-status-summary-grid {
+  gap: 0.8rem;
+}
+
+.ss-confirmation-detail,
+.ss-status-summary-grid > div {
+  border-radius: 20px;
+}
+
+.ss-status-badge {
+  box-shadow: none;
+}
+
+.ss-status-help-list li strong {
+  color: #111111;
+}
+
+@media (max-width: 1199.98px) {
+  .ss-registration-wizard .ss-wizard-topper {
+    flex-direction: column;
+  }
+
+  .ss-draft-status {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .ss-hero,
+  .ss-form-hero,
+  .ss-status-hero {
+    padding: 2.5rem 0;
+  }
+
+  .ss-quick-facts span {
+    width: 100%;
+  }
+
+  .ss-wizard-section-trigger {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .ss-wizard-status-badge {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+
+  .ss-question-card {
+    padding: 0.95rem;
+  }
+
+  .form-label {
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .ss-required-chip,
+  .ss-optional-chip {
+    width: fit-content;
+  }
+}

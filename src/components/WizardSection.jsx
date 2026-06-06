@@ -1,17 +1,63 @@
 import FormSection from "./FormSection";
 
+const SECTION_META = {
+  "Personal Details": {
+    icon: "bi-person-badge",
+    caption: "Your identity and contact details",
+    intro: "Start with the basic details we need to create one application record and contact you safely.",
+  },
+  Location: {
+    icon: "bi-geo-alt",
+    caption: "Where you are applying from",
+    intro: "Tell us where you are based so the programme team can route your application correctly.",
+  },
+  "Disability and Support": {
+    icon: "bi-universal-access-circle",
+    caption: "Eligibility and accessibility support",
+    intro: "These answers help the system run the first screening and help the team plan reasonable accommodation support.",
+  },
+  "Education and Work": {
+    icon: "bi-mortarboard",
+    caption: "A quick profile of your background",
+    intro: "Select the options that best describe your education and current work situation. Short answers are enough.",
+  },
+  "Trusted Contact": {
+    icon: "bi-telephone-forward",
+    caption: "Backup contact for follow-up",
+    intro: "Provide a trusted contact in case the project team cannot reach you on your own number.",
+  },
+  "Final Step": {
+    icon: "bi-check2-square",
+    caption: "Source and consent",
+    intro: "Finish with how you heard about the project and confirm consent so we can process the application.",
+  },
+  Consent: {
+    icon: "bi-check2-square",
+    caption: "Confirm consent",
+    intro: "Consent is required before submission. It is not used as an eligibility score.",
+  },
+};
+
 function statusLabel(status) {
-  if (status === "complete") return "Completed";
-  if (status === "needs_attention") return "Needs attention";
-  if (status === "in_progress") return "In progress";
-  return "Not started";
+  if (status === "complete") return "Done";
+  if (status === "needs_attention") return "Check";
+  if (status === "in_progress") return "Open";
+  return "Next";
 }
 
 function statusIcon(status) {
   if (status === "complete") return "bi-check2";
   if (status === "needs_attention") return "bi-exclamation-triangle";
   if (status === "in_progress") return "bi-pencil";
-  return "bi-circle";
+  return "bi-arrow-right";
+}
+
+function getSectionMeta(title) {
+  return SECTION_META[title] || {
+    icon: "bi-ui-checks-grid",
+    caption: "Quick application step",
+    intro: "Complete this step, then continue. Required fields are checked before you move forward.",
+  };
 }
 
 function WizardSection({
@@ -31,6 +77,8 @@ function WizardSection({
   const panelId = `wizard-section-panel-${index}`;
   const buttonId = `wizard-section-button-${index}`;
   const describedById = `wizard-section-desc-${index}`;
+  const sectionMeta = getSectionMeta(title);
+  const requiredCount = questions.filter((question) => question.required).length;
 
   return (
     <section className={`ss-wizard-section ${isActive ? "active" : ""} ${status}`}>
@@ -44,11 +92,11 @@ function WizardSection({
           onClick={onToggle}
         >
           <span className="ss-wizard-step-number" aria-hidden="true">
-            {index + 1}
+            <i className={`bi ${sectionMeta.icon}`} />
           </span>
           <span className="ss-wizard-step-copy">
             <span>{title}</span>
-            <small id={describedById}>{questions.length} question{questions.length === 1 ? "" : "s"}</small>
+            <small id={describedById}>{sectionMeta.caption} · {requiredCount} required</small>
           </span>
           <span className={`ss-wizard-status-badge ${status}`}>
             <i className={`bi ${statusIcon(status)}`} aria-hidden="true" />
@@ -65,9 +113,7 @@ function WizardSection({
         hidden={!isActive}
       >
         <div className="ss-wizard-section-intro">
-          <p>
-            Complete this section, then continue. We will only check the questions in this section before moving you forward.
-          </p>
+          <p>{sectionMeta.intro}</p>
         </div>
 
         <FormSection
@@ -91,7 +137,7 @@ function WizardSection({
           </button>
 
           <button type="button" className="btn ss-btn-primary" onClick={onContinue}>
-            Save and continue <i className="bi bi-arrow-right" aria-hidden="true" />
+            Continue <i className="bi bi-arrow-right" aria-hidden="true" />
           </button>
         </div>
       </div>

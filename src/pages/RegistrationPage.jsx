@@ -28,7 +28,6 @@ function RegistrationPage({
 }) {
   const sectionEntries = Object.entries(groupedQuestions);
 
-
   if (submitResult) {
     return (
       <ApplicationConfirmation
@@ -65,7 +64,7 @@ function RegistrationPage({
               <span className="ss-small-label light">Sightsavers Digital Futures</span>
               <h1 id="registration-title">{selectedPathway.title} Registration</h1>
               <p>
-                Complete this guided application one section at a time. Your answers are saved on this device while you work, and the project team will review your submission before any programme enrollment.
+                A clean, fast application experience. Complete the required fields, review once, and submit. Eligibility screening runs quietly in the background after submission.
               </p>
             </div>
 
@@ -112,6 +111,13 @@ function RegistrationPage({
                 sectionCount={sectionEntries.length}
                 submitting={submitting}
               />
+
+              <div className="ss-help-card mt-4">
+                <span className="ss-small-label dark">Submit only once</span>
+                <p className="mb-0">
+                  Do not create another application using the same email address or phone number. If an application already exists, the system will open the existing application summary instead of creating another record.
+                </p>
+              </div>
 
               <div className="ss-help-card mt-4">
                 <span className="ss-small-label dark">Better experience</span>

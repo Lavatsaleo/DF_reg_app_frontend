@@ -41,6 +41,7 @@ export function useLocalDraft({ storageKey, enabled, answers, documentType, onRe
     [answers, documentType]
   );
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (!enabled || !storageKey) return;
 
@@ -62,6 +63,7 @@ export function useLocalDraft({ storageKey, enabled, answers, documentType, onRe
       hasCompletedInitialRestore.current = true;
     });
   }, [enabled, storageKey, onRestoreDraft]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   useEffect(() => {
     if (!enabled || !storageKey || !hasCompletedInitialRestore.current) return;

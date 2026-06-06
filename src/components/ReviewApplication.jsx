@@ -104,6 +104,13 @@ function ReviewApplication({
           </article>
         </div>
 
+        <div className="ss-submit-once-note" role="note">
+          <i className="bi bi-shield-check" aria-hidden="true" />
+          <p>
+            Submit this application only once. If the same application is submitted again, the system will open the existing application summary instead of creating a duplicate record.
+          </p>
+        </div>
+
         <div className="ss-wizard-actions final">
           <button type="button" className="btn ss-btn-outline" onClick={onPrevious} disabled={submitting}>
             <i className="bi bi-arrow-left" aria-hidden="true" /> Previous

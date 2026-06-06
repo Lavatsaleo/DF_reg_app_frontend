@@ -68,6 +68,7 @@ function RegistrationWizard({
   const [activeStep, setActiveStep] = useState(0);
   const [announcement, setAnnouncement] = useState("Start with the first section of the registration form.");
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (activeStep > reviewStepIndex) {
       setActiveStep(0);
@@ -87,6 +88,7 @@ function RegistrationWizard({
       setAnnouncement("Some questions need attention. The first section with an error is now open.");
     }
   }, [fieldErrors, sectionEntries]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   function goToStep(stepIndex) {
     const nextStep = Math.max(0, Math.min(stepIndex, reviewStepIndex));
@@ -133,20 +135,25 @@ function RegistrationWizard({
         This is a guided step-by-step form. Fields marked with an asterisk are required. Use the Save and continue button to move through each section.
       </p>
 
-      <div className="ss-wizard-topper">
+      <div className="ss-wizard-topper ss-executive-wizard-topper">
         <div>
-          <span className="ss-small-label dark">Guided application</span>
+          <span className="ss-small-label dark">Fast guided application</span>
           <h2>{selectedPathway.title} Registration</h2>
           <p>
-            Answer one section at a time. Your progress is saved on this device as you type.
+            A short, accessible application. Complete the required fields, review once, and submit.
           </p>
+          <div className="ss-quick-facts" aria-label="Application summary">
+            <span><i className="bi bi-clock" aria-hidden="true" /> About 5 minutes</span>
+            <span><i className="bi bi-shield-check" aria-hidden="true" /> One application per person</span>
+            <span><i className="bi bi-envelope-check" aria-hidden="true" /> Test link sent if eligible</span>
+          </div>
         </div>
 
         <div className="ss-draft-status" aria-live="polite">
           <i className="bi bi-cloud-check" aria-hidden="true" />
-          <span>Draft: {formatSavedTime(draftLastSavedAt)}</span>
+          <span>Draft saved: {formatSavedTime(draftLastSavedAt)}</span>
           <button type="button" className="btn btn-sm ss-link-button" onClick={onClearDraft}>
-            Clear draft
+            Clear
           </button>
         </div>
       </div>
@@ -154,7 +161,7 @@ function RegistrationWizard({
       <div className="ss-wizard-progress" aria-label={`Step ${activeStep + 1} of ${totalSteps}`}>
         <div className="ss-wizard-progress-meta">
           <span>Step {activeStep + 1} of {totalSteps}</span>
-          <span>{formProgress.percentage}% required fields complete</span>
+          <span>{formProgress.completedRequired}/{formProgress.totalRequired} required fields completed</span>
         </div>
         <div className="progress ss-progress-bar" role="progressbar" aria-valuenow={formProgress.percentage} aria-valuemin="0" aria-valuemax="100">
           <div className="progress-bar" style={{ width: `${formProgress.percentage}%` }} />

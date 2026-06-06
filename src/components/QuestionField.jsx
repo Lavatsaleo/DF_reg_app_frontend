@@ -1,3 +1,4 @@
+import AccessibleDateOfBirthPicker from "./AccessibleDateOfBirthPicker";
 import VoiceInputButton from "./VoiceInputButton";
 
 function getInputMode(question) {
@@ -24,18 +25,37 @@ function supportsVoiceInput(question) {
   return ["TEXT", "LONG_TEXT", "PHONE", "EMAIL", "NUMBER"].includes(question.responseType) || !question.responseType;
 }
 
+function isPersonNameQuestion(question) {
+  return question.validationType === "PERSON_NAME" ||
+    ["FIRST_NAME", "LAST_NAME", "NEXT_OF_KIN_NAME"].includes(question.questionCode);
+}
+
+function sanitizeAnswerValue(question, value) {
+  if (!isPersonNameQuestion(question)) return value;
+
+  // Keep letters from all languages and normal name punctuation, but remove numbers.
+  return String(value || "").replace(/[^\p{L}\p{M}\s'.-]/gu, "");
+}
+
+function getSafeValue(value) {
+  if (value === true) return "Yes";
+  if (value === false) return "No";
+  return value ?? "";
+}
+
 function QuestionField({
   question,
   value,
   error,
   labelId,
+  helpId,
   errorId,
   onAnswerChange,
   onMultiSelectChange,
 }) {
-  const safeValue = value || "";
+  const safeValue = getSafeValue(value);
   const invalidClass = error ? "is-invalid" : "";
-  const describedBy = error ? errorId : undefined;
+  const describedBy = [helpId, error ? errorId : null].filter(Boolean).join(" ") || undefined;
 
   const commonInputProps = {
     id: question.questionCode,
@@ -48,7 +68,7 @@ function QuestionField({
   const voiceButton = supportsVoiceInput(question) ? (
     <VoiceInputButton
       question={question}
-      onTranscript={(transcript) => onAnswerChange(question, transcript)}
+      onTranscript={(transcript) => onAnswerChange(question, sanitizeAnswerValue(question, transcript))}
     />
   ) : null;
 
@@ -88,6 +108,24 @@ function QuestionField({
   }
 
   if (question.responseType === "DATE") {
+    const isDateOfBirth = question.questionCode === "DATE_OF_BIRTH";
+
+    if (isDateOfBirth) {
+      return (
+        <AccessibleDateOfBirthPicker
+          key={safeValue || "empty-date-of-birth"}
+          id={question.questionCode}
+          value={safeValue}
+          error={error}
+          labelId={labelId}
+          helpId={helpId}
+          errorId={errorId}
+          required={question.required}
+          onChange={(nextValue) => onAnswerChange(question, nextValue)}
+        />
+      );
+    }
+
     return (
       <input
         {...commonInputProps}
@@ -227,9 +265,13 @@ function QuestionField({
         type="text"
         inputMode={getInputMode(question)}
         value={safeValue}
-        onChange={(event) => onAnswerChange(question, event.target.value)}
+        onChange={(event) =>
+          onAnswerChange(question, sanitizeAnswerValue(question, event.target.value))
+        }
         placeholder="Type your response here"
         autoComplete={getAutocomplete(question)}
+        pattern={isPersonNameQuestion(question) ? "[A-Za-zÀ-ÖØ-öø-ÿĀ-ž' .-]+" : undefined}
+        title={isPersonNameQuestion(question) ? "Use letters only. Numbers are not allowed." : undefined}
       />
       {voiceButton}
     </>

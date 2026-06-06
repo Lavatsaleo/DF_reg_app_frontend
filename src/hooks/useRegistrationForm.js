@@ -14,22 +14,33 @@ function createLocalReference(pathwayId) {
   return `SS-${pathwayPart}-${datePart}-${randomPart}`;
 }
 
-function normalizeSubmissionResult(apiResult, selectedPathway) {
-  const result = apiResult || {};
+function normalizeSubmissionResult(apiResult, selectedPathway, contactNumber) {
+  const rawResult = apiResult || {};
+  const nestedData = rawResult.data && typeof rawResult.data === "object" ? rawResult.data : {};
+  const result = { ...rawResult, ...nestedData };
   const existingReference =
     result.applicationReference ||
     result.referenceNumber ||
     result.registrationReference ||
     result.registrationId ||
     result.id;
+  const hideApplicationReference =
+    result.hideApplicationReference === true ||
+    result.screeningStatus === "NOT_ELIGIBLE" ||
+    result.status === "INELIGIBLE";
 
   return {
     ...result,
-    applicationReference: existingReference || createLocalReference(selectedPathway?.id),
+    hideApplicationReference,
+    allowStatusCheck: result.allowStatusCheck !== false && !hideApplicationReference,
+    applicationReference: hideApplicationReference
+      ? null
+      : existingReference || createLocalReference(selectedPathway?.id),
     pathway: result.pathway || selectedPathway?.id,
     registrationMode: result.registrationMode || selectedPathway?.mode,
     status: result.status || "Submitted",
     message: result.message || "Your application has been submitted successfully.",
+    contactNumber: result.contactNumber || contactNumber || null,
     submittedAt: result.submittedAt || new Date().toISOString(),
   };
 }
@@ -264,7 +275,11 @@ export function useRegistrationForm() {
         }
       );
 
-      const normalizedResult = normalizeSubmissionResult(response.data, selectedPathway);
+      const normalizedResult = normalizeSubmissionResult(
+        response.data,
+        selectedPathway,
+        answers.CONTACT_NUMBER
+      );
       saveSubmittedApplication(normalizedResult, selectedPathway);
       setSubmitResult(normalizedResult);
       setAnswers({});
@@ -275,9 +290,44 @@ export function useRegistrationForm() {
     } catch (error) {
       console.error(error);
 
+      const responseData = error.response?.data || {};
+
+      if (error.response?.status === 409 && responseData.duplicate) {
+        const duplicateResult = normalizeSubmissionResult(
+          { ...responseData, duplicate: true },
+          selectedPathway,
+          answers.CONTACT_NUMBER
+        );
+
+        saveSubmittedApplication(duplicateResult, selectedPathway);
+        setSubmitResult(duplicateResult);
+        setAnswers({});
+        setDocuments([]);
+        setFieldErrors({});
+        clearDraft();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+
+      if (Array.isArray(responseData.missingRequiredQuestions)) {
+        const missingErrors = responseData.missingRequiredQuestions.reduce((accumulator, item) => {
+          accumulator[item.questionCode] = `${item.questionText || item.questionCode} is required.`;
+          return accumulator;
+        }, {});
+        setFieldErrors(missingErrors);
+      }
+
+      if (Array.isArray(responseData.invalidQuestions)) {
+        const formatErrors = responseData.invalidQuestions.reduce((accumulator, item) => {
+          accumulator[item.questionCode] = item.message || `${item.questionText || item.questionCode} is not valid.`;
+          return accumulator;
+        }, {});
+        setFieldErrors(formatErrors);
+      }
+
       const apiMessage =
-        error.response?.data?.message ||
-        error.response?.data?.error ||
+        responseData.message ||
+        responseData.error ||
         "Failed to submit registration. Please try again.";
 
       setErrorMessage(apiMessage);

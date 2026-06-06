@@ -26,6 +26,15 @@ function isLikelyAgeQuestion(question) {
   return question.responseType === "NUMBER" && text.includes("age");
 }
 
+function isPersonNameQuestion(question) {
+  return question.validationType === "PERSON_NAME" ||
+    ["FIRST_NAME", "LAST_NAME", "NEXT_OF_KIN_NAME"].includes(question.questionCode);
+}
+
+function isValidPersonName(value) {
+  return /^(?=.*\p{L})[\p{L}\p{M}\s'.-]+$/u.test(String(value || "").trim());
+}
+
 function isValidEmail(value) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value).trim());
 }
@@ -33,6 +42,26 @@ function isValidEmail(value) {
 function isValidPhone(value) {
   const normalized = String(value).replace(/[\s()-]/g, "");
   return /^\+?[0-9]{7,15}$/.test(normalized);
+}
+
+function isAffirmative(value) {
+  if (value === true) return true;
+  return ["yes", "true", "1", "y"].includes(String(value || "").trim().toLowerCase());
+}
+
+function getAgeFromDate(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+
+  const today = new Date();
+  let age = today.getFullYear() - date.getFullYear();
+  const monthDifference = today.getMonth() - date.getMonth();
+
+  if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < date.getDate())) {
+    age -= 1;
+  }
+
+  return age;
 }
 
 export function validateAnswers({ questions, answers, isQuestionVisible }) {
@@ -51,6 +80,16 @@ export function validateAnswers({ questions, answers, isQuestionVisible }) {
 
     if (isEmpty(value)) continue;
 
+    if (question.questionCode === "REGISTRATION_CONSENT" && !isAffirmative(value)) {
+      errors[question.questionCode] = "You must provide consent before submitting the application.";
+      continue;
+    }
+
+    if (isPersonNameQuestion(question) && !isValidPersonName(value)) {
+      errors[question.questionCode] = "Use letters only. Numbers are not allowed in a name.";
+      continue;
+    }
+
     if (isLikelyEmailQuestion(question) && !isValidEmail(value)) {
       errors[question.questionCode] = "Enter a valid email address.";
       continue;
@@ -59,6 +98,29 @@ export function validateAnswers({ questions, answers, isQuestionVisible }) {
     if (isLikelyPhoneQuestion(question) && !isValidPhone(value)) {
       errors[question.questionCode] = "Enter a valid phone number. Use digits only or include country code, for example +2547XXXXXXXX.";
       continue;
+    }
+
+    if (question.responseType === "DATE") {
+      const dateValue = new Date(value);
+
+      if (Number.isNaN(dateValue.getTime())) {
+        errors[question.questionCode] = "Enter a valid date.";
+        continue;
+      }
+
+      if (question.questionCode === "DATE_OF_BIRTH") {
+        const age = getAgeFromDate(value);
+
+        if (age === null || age < 0) {
+          errors[question.questionCode] = "Date of birth cannot be in the future.";
+          continue;
+        }
+
+        if (age > 120) {
+          errors[question.questionCode] = "Enter a realistic date of birth.";
+          continue;
+        }
+      }
     }
 
     if (question.responseType === "NUMBER") {
