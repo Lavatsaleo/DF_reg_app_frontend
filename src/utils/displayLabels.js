@@ -7,6 +7,7 @@ const STATUS_LABELS = {
   ELIGIBLE_PENDING_SKILLS_TEST: "Eligible — pending IT skills test",
   SKILLS_TEST_COMPLETED_PENDING_REVIEW: "IT skills test completed — pending review",
   SYNCED_TO_DHIS2_PENDING_REVIEW: "Pending committee review",
+  UNDER_REVIEW: "Under committee review",
   APPROVED: "Approved",
   APPROVED_FOR_ENROLLMENT: "Approved for enrollment",
   REJECTED: "Rejected",

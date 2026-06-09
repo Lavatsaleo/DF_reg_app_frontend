@@ -5,6 +5,7 @@ import LandingPage from "./pages/LandingPage";
 import RegistrationPage from "./pages/RegistrationPage";
 import StatusCheckPage from "./pages/StatusCheckPage";
 import SkillsTestPage from "./pages/SkillsTestPage";
+import CommitteeDashboardPage from "./pages/CommitteeDashboardPage";
 import { useAccessibilityPreferences } from "./hooks/useAccessibilityPreferences";
 import { useRegistrationForm } from "./hooks/useRegistrationForm";
 
@@ -43,6 +44,15 @@ function App() {
     registration.handleBackToPathways();
   }
 
+
+  function handleShowCommittee() {
+    resetBrowserPath();
+    setCurrentView("committee");
+    setSkillsTestReference("");
+    setSkillsTestToken("");
+    registration.handleBackToPathways();
+  }
+
   function handleShowSkillsTest(reference = "") {
     resetBrowserPath();
     setCurrentView("skills-test");
@@ -75,6 +85,7 @@ function App() {
         onBackToPathways={handleShowHome}
         onCheckStatus={handleShowStatus}
         showStatusButton={showStatusButton}
+        onShowCommittee={handleShowCommittee}
       />
 
       <AccessibilityToolbar
@@ -83,7 +94,9 @@ function App() {
         onResetPreferences={accessibility.resetPreferences}
       />
 
-      {currentView === "status" ? (
+      {currentView === "committee" ? (
+        <CommitteeDashboardPage onBackHome={handleShowHome} />
+      ) : currentView === "status" ? (
         <StatusCheckPage
           onBackHome={handleShowHome}
           onStartApplication={handleShowHome}

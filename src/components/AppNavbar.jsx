@@ -1,7 +1,8 @@
 import logo from "../assets/sightsavers-logo.png";
 
-function AppNavbar({ selectedPathway, currentView, onBackToPathways, onCheckStatus, showStatusButton = true }) {
+function AppNavbar({ selectedPathway, currentView, onBackToPathways, onCheckStatus, onShowCommittee, showStatusButton = true }) {
   const isStatusPage = currentView === "status";
+  const isCommitteePage = currentView === "committee";
 
   return (
     <nav className="navbar navbar-expand-lg ss-navbar sticky-top" aria-label="Main navigation">
@@ -33,7 +34,18 @@ function AppNavbar({ selectedPathway, currentView, onBackToPathways, onCheckStat
             </button>
           )}
 
-          {(selectedPathway || isStatusPage) && (
+          {onShowCommittee && (
+            <button
+              type="button"
+              className={`btn ${isCommitteePage ? "ss-nav-back" : "ss-nav-status"}`}
+              onClick={onShowCommittee}
+              aria-current={isCommitteePage ? "page" : undefined}
+            >
+              <i className="bi bi-person-badge" aria-hidden="true" /> Committee
+            </button>
+          )}
+
+          {(selectedPathway || isStatusPage || isCommitteePage) && (
             <button
               type="button"
               className="btn ss-nav-back"
