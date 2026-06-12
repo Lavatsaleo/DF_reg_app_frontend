@@ -10,6 +10,8 @@ const EMPTY_MEMBER_FORM = {
   email: "",
   phone: "",
   role: "MEMBER",
+  createLogin: true,
+  temporaryPassword: "",
   notes: "",
 };
 
@@ -65,7 +67,7 @@ function StatCard({ label, value, icon, tone = "blue" }) {
   );
 }
 
-function MemberWorkloadCard({ member, onToggleActive }) {
+function MemberWorkloadCard({ member, onToggleActive, canManage }) {
   return (
     <article className="committee-member-card">
       <div className="committee-member-avatar" aria-hidden="true">
@@ -87,13 +89,15 @@ function MemberWorkloadCard({ member, onToggleActive }) {
           <span><strong>{member.workload?.total || 0}</strong> total</span>
         </div>
       </div>
-      <button
-        type="button"
-        className={`btn committee-small-action ${member.isActive ? "committee-danger-ghost" : "committee-success-ghost"}`}
-        onClick={() => onToggleActive(member)}
-      >
-        {member.isActive ? "Deactivate" : "Activate"}
-      </button>
+      {canManage && (
+        <button
+          type="button"
+          className={`btn committee-small-action ${member.isActive ? "committee-danger-ghost" : "committee-success-ghost"}`}
+          onClick={() => onToggleActive(member)}
+        >
+          {member.isActive ? "Deactivate" : "Activate"}
+        </button>
+      )}
     </article>
   );
 }
@@ -148,6 +152,28 @@ function AddMemberForm({ memberForm, onChange, onSubmit, submitting }) {
           </select>
         </label>
       </div>
+
+      <label className="committee-checkbox-row">
+        <input
+          type="checkbox"
+          checked={memberForm.createLogin}
+          onChange={(event) => onChange("createLogin", event.target.checked)}
+        />
+        Create staff login for this member
+      </label>
+
+      {memberForm.createLogin && (
+        <label className="committee-notes-field">
+          Temporary password
+          <input
+            type="text"
+            value={memberForm.temporaryPassword}
+            onChange={(event) => onChange("temporaryPassword", event.target.value)}
+            placeholder="Minimum 8 characters"
+            required={memberForm.createLogin}
+          />
+        </label>
+      )}
 
       <label className="committee-notes-field">
         Notes
@@ -217,7 +243,7 @@ function ApplicantMiniProfile({ applicant }) {
   );
 }
 
-function UnassignedApplicantCard({ applicant, onAssign, assigning }) {
+function UnassignedApplicantCard({ applicant, onAssign, assigning, canAssign = true }) {
   const test = applicant?.skillsTest;
 
   return (
@@ -234,20 +260,22 @@ function UnassignedApplicantCard({ applicant, onAssign, assigning }) {
           <span><i className="bi bi-clock" aria-hidden="true" /> Ready {formatDate(applicant.updatedAt)}</span>
         </div>
       </div>
-      <button
-        type="button"
-        className="btn committee-primary-action"
-        onClick={() => onAssign(applicant.id)}
-        disabled={assigning}
-      >
-        <i className="bi bi-magic" aria-hidden="true" />
-        {assigning ? "Assigning..." : "Auto-assign"}
-      </button>
+      {canAssign && (
+        <button
+          type="button"
+          className="btn committee-primary-action"
+          onClick={() => onAssign(applicant.id)}
+          disabled={assigning}
+        >
+          <i className="bi bi-magic" aria-hidden="true" />
+          {assigning ? "Assigning..." : "Auto-assign"}
+        </button>
+      )}
     </article>
   );
 }
 
-function ApplicantsWaitingPanel({ applicants, onAssignApplicant, assigningApplicantId, onAutoAssignAll, assigningAll }) {
+function ApplicantsWaitingPanel({ applicants, onAssignApplicant, assigningApplicantId, onAutoAssignAll, assigningAll, canAssign }) {
   if (!applicants.length) return null;
 
   return (
@@ -258,10 +286,12 @@ function ApplicantsWaitingPanel({ applicants, onAssignApplicant, assigningApplic
           <h2>Applicants who need to be assigned</h2>
           <p>These applicants have completed the Basic IT Skills Test but are not yet assigned to any committee member.</p>
         </div>
-        <button type="button" className="btn committee-primary-action" onClick={onAutoAssignAll} disabled={assigningAll}>
-          <i className="bi bi-magic" aria-hidden="true" />
-          {assigningAll ? "Assigning..." : "Auto-assign all"}
-        </button>
+        {canAssign && (
+          <button type="button" className="btn committee-primary-action" onClick={onAutoAssignAll} disabled={assigningAll}>
+            <i className="bi bi-magic" aria-hidden="true" />
+            {assigningAll ? "Assigning..." : "Auto-assign all"}
+          </button>
+        )}
       </div>
       <div className="committee-waiting-list">
         {applicants.map((applicant) => (
@@ -269,7 +299,8 @@ function ApplicantsWaitingPanel({ applicants, onAssignApplicant, assigningApplic
             key={applicant.id}
             applicant={applicant}
             onAssign={onAssignApplicant}
-            assigning={assigningApplicantId === applicant.id}
+            assigning={canAssign && assigningApplicantId === applicant.id}
+            canAssign={canAssign}
           />
         ))}
       </div>
@@ -277,7 +308,7 @@ function ApplicantsWaitingPanel({ applicants, onAssignApplicant, assigningApplic
   );
 }
 
-function AssignmentCard({ assignment, members, onSelect, onReassign, activeAssignmentId, reassigning }) {
+function AssignmentCard({ assignment, members, onSelect, onReassign, activeAssignmentId, reassigning, canReassign }) {
   const [toMemberId, setToMemberId] = useState(assignment.committeeMember?.id || "");
   const [reason, setReason] = useState("");
   const isActive = activeAssignmentId === assignment.id;
@@ -304,6 +335,7 @@ function AssignmentCard({ assignment, members, onSelect, onReassign, activeAssig
         )}
       </div>
 
+      {canReassign && (
       <div className="committee-reassign-row">
         <select value={toMemberId} onChange={(event) => setToMemberId(event.target.value)}>
           <option value="">Reassign to...</option>
@@ -330,11 +362,12 @@ function AssignmentCard({ assignment, members, onSelect, onReassign, activeAssig
           Reassign
         </button>
       </div>
+      )}
     </article>
   );
 }
 
-function ReviewPanel({ assignment, onStartReview, onSubmitReview, submittingReview }) {
+function ReviewPanel({ assignment, onStartReview, onSubmitReview, submittingReview, canReview }) {
   const [decision, setDecision] = useState("SELECTED");
   const [comments, setComments] = useState("");
 
@@ -383,7 +416,7 @@ function ReviewPanel({ assignment, onStartReview, onSubmitReview, submittingRevi
           <p>{review.comments || "No comment was provided."}</p>
           <small>Reviewed on {formatDate(review.reviewedAt)}</small>
         </div>
-      ) : (
+      ) : canReview ? (
         <form
           className="committee-decision-form"
           onSubmit={(event) => {
@@ -433,12 +466,18 @@ function ReviewPanel({ assignment, onStartReview, onSubmitReview, submittingRevi
             {submittingReview ? "Saving decision..." : "Save committee decision"}
           </button>
         </form>
+      ) : (
+        <div className="committee-existing-review">
+          <span>Read-only access</span>
+          <h3>Decision not yet submitted</h3>
+          <p>You can view this assignment, but your role cannot submit committee decisions.</p>
+        </div>
       )}
     </aside>
   );
 }
 
-function CommitteeDashboardPage({ onBackHome }) {
+function CommitteeDashboardPage({ onBackHome, currentUser, onLogout }) {
   const [overview, setOverview] = useState(null);
   const [members, setMembers] = useState([]);
   const [assignments, setAssignments] = useState([]);
@@ -456,6 +495,13 @@ function CommitteeDashboardPage({ onBackHome }) {
   const [assigningApplicantId, setAssigningApplicantId] = useState("");
   const [reassigning, setReassigning] = useState(false);
   const [submittingReview, setSubmittingReview] = useState(false);
+
+  const userRole = currentUser?.role || "";
+  const canManageCommittee = ["ADMIN", "COMMITTEE_CHAIRPERSON"].includes(userRole);
+  const canAssignApplicants = canManageCommittee;
+  const canReviewAssignments = ["ADMIN", "COMMITTEE_CHAIRPERSON", "COMMITTEE_MEMBER"].includes(userRole);
+  const canSeeUnassignedApplicants = canManageCommittee || userRole === "VIEWER";
+  const isCommitteeMemberUser = userRole === "COMMITTEE_MEMBER";
 
   const selectedAssignmentFromList = useMemo(() => {
     if (!selectedAssignment?.id) return selectedAssignment;
@@ -475,7 +521,9 @@ function CommitteeDashboardPage({ onBackHome }) {
       const [overviewResponse, assignmentsResponse, unassignedResponse] = await Promise.all([
         axios.get(`${API_BASE_URL}/api/committee/overview`),
         axios.get(`${API_BASE_URL}/api/committee/assignments?${query.toString()}`),
-        axios.get(`${API_BASE_URL}/api/committee/unassigned-ready`),
+        canSeeUnassignedApplicants
+          ? axios.get(`${API_BASE_URL}/api/committee/unassigned-ready`)
+          : Promise.resolve({ data: { applicants: [] } }),
       ]);
 
       setOverview(overviewResponse.data?.overview || null);
@@ -483,6 +531,10 @@ function CommitteeDashboardPage({ onBackHome }) {
       setAssignments(assignmentsResponse.data?.assignments || []);
       setUnassignedApplicants(unassignedResponse.data?.applicants || []);
     } catch (loadError) {
+      if (loadError.response?.status === 401 && onLogout) {
+        onLogout();
+        return;
+      }
       setError(loadError.response?.data?.message || "Failed to load committee dashboard data.");
     } finally {
       setLoading(false);
@@ -622,6 +674,9 @@ function CommitteeDashboardPage({ onBackHome }) {
           <p>
             Add committee members, monitor workload, automatically assign applicants, reassign reviews, and record committee decisions.
           </p>
+          {currentUser && (
+            <p className="committee-user-note">Signed in as <strong>{currentUser.fullName}</strong></p>
+          )}
         </div>
         <div className="committee-hero-card">
           <span>Review stage</span>
@@ -650,13 +705,15 @@ function CommitteeDashboardPage({ onBackHome }) {
             <button type="button" className="btn committee-secondary-action" onClick={loadCommitteeData} disabled={loading}>
               <i className="bi bi-arrow-clockwise" aria-hidden="true" /> Refresh
             </button>
-            <button type="button" className="btn committee-primary-action" onClick={handleAutoAssign} disabled={assigning}>
-              <i className="bi bi-magic" aria-hidden="true" /> {assigning ? "Assigning..." : "Auto-assign ready applicants"}
-            </button>
+            {canAssignApplicants && (
+              <button type="button" className="btn committee-primary-action" onClick={handleAutoAssign} disabled={assigning}>
+                <i className="bi bi-magic" aria-hidden="true" /> {assigning ? "Assigning..." : "Auto-assign ready applicants"}
+              </button>
+            )}
           </div>
         </div>
 
-        {unassignedApplicants.length > 0 && (
+        {canSeeUnassignedApplicants && unassignedApplicants.length > 0 && (
           <div className="committee-unassigned-strip">
             <i className="bi bi-info-circle" aria-hidden="true" />
             <span>
@@ -665,22 +722,27 @@ function CommitteeDashboardPage({ onBackHome }) {
           </div>
         )}
 
-        <ApplicantsWaitingPanel
-          applicants={unassignedApplicants}
-          onAssignApplicant={handleAssignApplicant}
-          assigningApplicantId={assigningApplicantId}
-          onAutoAssignAll={handleAutoAssign}
-          assigningAll={assigning}
-        />
+        {canSeeUnassignedApplicants && (
+          <ApplicantsWaitingPanel
+            applicants={unassignedApplicants}
+            onAssignApplicant={handleAssignApplicant}
+            assigningApplicantId={assigningApplicantId}
+            onAutoAssignAll={handleAutoAssign}
+            assigningAll={assigning}
+            canAssign={canAssignApplicants}
+          />
+        )}
 
         <div className="committee-layout">
           <div className="committee-management-grid">
-            <AddMemberForm
-              memberForm={memberForm}
-              onChange={(field, value) => setMemberForm((current) => ({ ...current, [field]: value }))}
-              onSubmit={handleAddMember}
-              submitting={addingMember}
-            />
+            {canManageCommittee && (
+              <AddMemberForm
+                memberForm={memberForm}
+                onChange={(field, value) => setMemberForm((current) => ({ ...current, [field]: value }))}
+                onSubmit={handleAddMember}
+                submitting={addingMember}
+              />
+            )}
 
             <section className="committee-section-card committee-workload-card">
               <div className="committee-section-header">
@@ -695,7 +757,7 @@ function CommitteeDashboardPage({ onBackHome }) {
                   <p className="committee-empty-text">No committee members have been added yet.</p>
                 ) : (
                   members.map((member) => (
-                    <MemberWorkloadCard key={member.id} member={member} onToggleActive={handleToggleMember} />
+                    <MemberWorkloadCard key={member.id} member={member} onToggleActive={handleToggleMember} canManage={canManageCommittee} />
                   ))
                 )}
               </div>
@@ -716,7 +778,7 @@ function CommitteeDashboardPage({ onBackHome }) {
                   onChange={(event) => setSearch(event.target.value)}
                   placeholder="Search name, ID, phone, or reference"
                 />
-                <select value={filterMemberId} onChange={(event) => setFilterMemberId(event.target.value)}>
+                <select value={filterMemberId} onChange={(event) => setFilterMemberId(event.target.value)} disabled={isCommitteeMemberUser}>
                   <option value="">All members</option>
                   {members.map((member) => (
                     <option key={member.id} value={member.id}>{member.fullName}</option>
@@ -740,7 +802,7 @@ function CommitteeDashboardPage({ onBackHome }) {
                   <div className="committee-empty-state">
                     <i className="bi bi-inboxes" aria-hidden="true" />
                     <h3>No assignments yet</h3>
-                    <p>Add committee members, then run auto-assignment after applicants complete the Basic IT Skills Test.</p>
+                    <p>{isCommitteeMemberUser ? "No applicants are currently assigned to you." : "Add committee members, then run auto-assignment after applicants complete the Basic IT Skills Test."}</p>
                   </div>
                 ) : (
                   assignments.map((assignment) => (
@@ -752,6 +814,7 @@ function CommitteeDashboardPage({ onBackHome }) {
                       reassigning={reassigning}
                       onSelect={setSelectedAssignment}
                       onReassign={handleReassign}
+                      canReassign={canManageCommittee}
                     />
                   ))
                 )}
@@ -763,6 +826,7 @@ function CommitteeDashboardPage({ onBackHome }) {
                   onStartReview={handleStartReview}
                   onSubmitReview={handleSubmitReview}
                   submittingReview={submittingReview}
+                  canReview={canReviewAssignments}
                 />
               )}
             </div>

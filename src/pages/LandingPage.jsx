@@ -15,7 +15,7 @@ function LandingPage({ pathwayMessage, onPathwaySelect, onCheckStatus }) {
                 Digital skills. <span>Inclusive futures.</span>
               </h1>
               <p className="ss-subtitle mt-4">
-                A streamlined registration portal for the Digital Futures Project, designed for fast application, accessible participation, and end-to-end participant tracking.
+                Apply for the Digital Futures Project and choose the pathway that is right for you.
               </p>
               <div className="d-flex flex-column flex-sm-row gap-3 mt-4">
                 <a href="#pathways" className="btn ss-btn-primary">
@@ -39,20 +39,6 @@ function LandingPage({ pathwayMessage, onPathwaySelect, onCheckStatus }) {
                   <strong>Open</strong>
                   <p>Physical Academy intake</p>
                 </div>
-                <div className="ss-metric-row">
-                  <div>
-                    <strong>3</strong>
-                    <span>Pathways</span>
-                  </div>
-                  <div>
-                    <strong>1</strong>
-                    <span>Open now</span>
-                  </div>
-                  <div>
-                    <strong>~5m</strong>
-                    <span>To apply</span>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
@@ -64,15 +50,15 @@ function LandingPage({ pathwayMessage, onPathwaySelect, onCheckStatus }) {
           <div className="ss-before-apply-card">
             <div>
               <span className="ss-small-label dark">Before you apply</span>
-              <h2 id="before-apply-title">Simple, accessible, and trackable</h2>
+              <h2 id="before-apply-title">Simple and accessible</h2>
               <p>
-                Applicants complete one short application. The system checks first-level eligibility in the background, prevents duplicates, and keeps the same participant identifier across testing and review.
+                Complete one application, save your progress when needed, and use your mobile number or application reference to check your status.
               </p>
             </div>
             <div className="ss-before-apply-steps" role="list">
               <div role="listitem"><span>1</span><strong>Apply in minutes</strong><small>Only essential questions are required.</small></div>
-              <div role="listitem"><span>2</span><strong>Background screening</strong><small>Eligibility runs quietly after submission.</small></div>
-              <div role="listitem"><span>3</span><strong>Secure test link</strong><small>Eligible applicants receive the Basic IT skills test by email.</small></div>
+              <div role="listitem"><span>2</span><strong>Save and return later</strong><small>Use the same mobile number to continue.</small></div>
+              <div role="listitem"><span>3</span><strong>Next steps</strong><small>Eligible applicants proceed to the Basic IT skills test.</small></div>
             </div>
           </div>
         </div>

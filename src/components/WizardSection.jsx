@@ -14,7 +14,7 @@ const SECTION_META = {
   "Disability and Support": {
     icon: "bi-universal-access-circle",
     caption: "Eligibility and accessibility support",
-    intro: "These answers help the system run the first screening and help the team plan reasonable accommodation support.",
+    intro: "These answers help the team understand your eligibility and any support you may need.",
   },
   "Education and Work": {
     icon: "bi-mortarboard",
@@ -34,7 +34,7 @@ const SECTION_META = {
   Consent: {
     icon: "bi-check2-square",
     caption: "Confirm consent",
-    intro: "Consent is required before submission. It is not used as an eligibility score.",
+    intro: "Consent is required before you submit the application.",
   },
 };
 

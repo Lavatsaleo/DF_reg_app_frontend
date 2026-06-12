@@ -14,7 +14,10 @@ function RegistrationPage({
   errorMessage,
   fieldErrors,
   formProgress,
-  draftLastSavedAt,
+  serverDraftReference,
+  serverDraftLastSavedAt,
+  serverDraftMessage,
+  savingServerDraft,
   onBackToPathways,
   onCheckStatus,
   onTakeSkillsTest,
@@ -25,6 +28,8 @@ function RegistrationPage({
   onDocumentsChange,
   onDocumentTypeChange,
   onClearDraft,
+  onSaveDraftNow,
+  onSectionComplete,
 }) {
   const sectionEntries = Object.entries(groupedQuestions);
 
@@ -64,7 +69,7 @@ function RegistrationPage({
               <span className="ss-small-label light">Sightsavers Digital Futures</span>
               <h1 id="registration-title">{selectedPathway.title} Registration</h1>
               <p>
-                A clean, fast application experience. Complete the required fields, review once, and submit. Eligibility screening runs quietly in the background after submission.
+                Complete the form one section at a time. You can save your progress and return later using the same mobile number.
               </p>
             </div>
 
@@ -72,7 +77,7 @@ function RegistrationPage({
               <div className="ss-selected-card" aria-label={`Selected pathway is ${selectedPathway.title}`}>
                 <span>Selected pathway</span>
                 <strong>{selectedPathway.title}</strong>
-                <small>{selectedPathway.mode} workflow</small>
+                <small>Open for registration</small>
               </div>
             </div>
           </div>
@@ -93,7 +98,10 @@ function RegistrationPage({
               errorMessage={errorMessage}
               fieldErrors={fieldErrors}
               formProgress={formProgress}
-              draftLastSavedAt={draftLastSavedAt}
+              serverDraftReference={serverDraftReference}
+              serverDraftLastSavedAt={serverDraftLastSavedAt}
+              serverDraftMessage={serverDraftMessage}
+              savingServerDraft={savingServerDraft}
               onAnswerChange={onAnswerChange}
               onMultiSelectChange={onMultiSelectChange}
               onSubmit={onSubmit}
@@ -101,6 +109,8 @@ function RegistrationPage({
               onDocumentsChange={onDocumentsChange}
               onDocumentTypeChange={onDocumentTypeChange}
               onClearDraft={onClearDraft}
+              onSaveDraftNow={onSaveDraftNow}
+              onSectionComplete={onSectionComplete}
             />
           </div>
 
@@ -120,18 +130,9 @@ function RegistrationPage({
               </div>
 
               <div className="ss-help-card mt-4">
-                <span className="ss-small-label dark">Better experience</span>
-                <ol>
-                  <li>Complete one section at a time.</li>
-                  <li>Each section checks its own missing answers before you move on.</li>
-                  <li>Review everything before final submission.</li>
-                </ol>
-              </div>
-
-              <div className="ss-help-card mt-4">
                 <span className="ss-small-label dark">Need help using the form?</span>
                 <p className="mb-0">
-                  Use the accessibility tools above to increase text size, switch to high contrast, reduce movement, or read the page aloud. Text fields also include a speak answer option where supported by your browser.
+                  Use the accessibility tools above to increase text size, switch to high contrast, reduce movement, or read the page aloud.
                 </p>
               </div>
             </div>

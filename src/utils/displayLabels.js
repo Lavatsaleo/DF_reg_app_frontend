@@ -1,4 +1,5 @@
 const STATUS_LABELS = {
+  INCOMPLETE: "Incomplete application",
   SUBMITTED: "Submitted",
   PENDING_REVIEW: "Pending review",
   ELIGIBLE: "Eligible",

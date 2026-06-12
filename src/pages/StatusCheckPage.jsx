@@ -1,36 +1,39 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import axios from "axios";
 import { API_BASE_URL } from "../config/api";
 import { formatPathwayLabel, formatStatusLabel } from "../utils/displayLabels";
-import {
-  findSubmittedApplication,
-  listSubmittedApplications,
-} from "../utils/applicationStatusStorage";
+import { findSubmittedApplication } from "../utils/applicationStatusStorage";
 
 const STATUS_STEPS = [
+  {
+    key: "incomplete",
+    labels: ["incomplete"],
+    title: "Application incomplete",
+    description: "Your application has been saved but has not yet been submitted.",
+  },
   {
     key: "submitted",
     labels: ["submitted"],
     title: "Application submitted",
-    description: "Your registration has been received and a participant identifier has been assigned.",
+    description: "Your registration has been received.",
   },
   {
     key: "screening",
     labels: ["pending review", "ineligible"],
     title: "Application review",
-    description: "The application information is reviewed and may be flagged for manual review.",
+    description: "Your application information is being reviewed.",
   },
   {
     key: "skills",
     labels: ["eligible pending skills test", "eligible pending basic skills test"],
     title: "Basic IT skills test",
-    description: "Eligible applicants complete the short skills test using the secure email invitation link.",
+    description: "Eligible applicants complete the short Basic IT skills test.",
   },
   {
     key: "review",
     labels: ["skills test completed pending review", "under review", "review", "synced to dhis2 pending review"],
     title: "Committee review",
-    description: "The committee reviews registration details, documents, and test results.",
+    description: "The project team reviews registration details, documents, and test results.",
   },
   {
     key: "decision",
@@ -42,7 +45,7 @@ const STATUS_STEPS = [
     key: "dhis2",
     labels: ["synced to dhis2", "enrolled", "enrolled in dhis2", "enrolled in dhis2 program"],
     title: "Programme enrollment",
-    description: "Approved applicants are enrolled into the correct pathway/programme workflow.",
+    description: "Approved applicants are enrolled into the selected pathway.",
   },
 ];
 
@@ -58,11 +61,12 @@ function getActiveStepIndex(status) {
   );
 
   if (exactIndex >= 0) return exactIndex;
-  if (normalizedStatus.includes("enrolled")) return 5;
-  if (normalizedStatus.includes("approved") || normalizedStatus.includes("rejected")) return 4;
-  if (normalizedStatus.includes("completed") || normalizedStatus.includes("committee") || normalizedStatus.includes("dhis2")) return 3;
-  if (normalizedStatus.includes("skills")) return 2;
-  if (normalizedStatus.includes("eligible") || normalizedStatus.includes("review") || normalizedStatus.includes("ineligible")) return 1;
+  if (normalizedStatus.includes("enrolled")) return 6;
+  if (normalizedStatus.includes("approved") || normalizedStatus.includes("rejected")) return 5;
+  if (normalizedStatus.includes("completed") || normalizedStatus.includes("committee") || normalizedStatus.includes("dhis2")) return 4;
+  if (normalizedStatus.includes("skills")) return 3;
+  if (normalizedStatus.includes("eligible") || normalizedStatus.includes("review") || normalizedStatus.includes("ineligible")) return 2;
+  if (normalizedStatus.includes("submitted")) return 1;
   return 0;
 }
 
@@ -85,6 +89,7 @@ function formatDate(value) {
 function getReferenceFromResult(result) {
   return (
     result?.applicationReference ||
+    result?.draftReference ||
     result?.referenceNumber ||
     result?.registrationReference ||
     result?.registrationId ||
@@ -94,6 +99,7 @@ function getReferenceFromResult(result) {
 }
 
 function getScreeningLabel(result) {
+  if (result?.status === "INCOMPLETE") return "Incomplete";
   if (result?.screeningStatus === "ELIGIBLE" || result?.isEligible === true) return "Eligible";
   if (result?.screeningStatus === "NOT_ELIGIBLE" || result?.status === "INELIGIBLE") return "Not eligible";
   return "Pending review";
@@ -127,7 +133,7 @@ function StatusTimeline({ status }) {
   );
 }
 
-function StatusResultCard({ result, source }) {
+function StatusResultCard({ result }) {
   const reference = getReferenceFromResult(result);
   const status = result?.status || "Submitted";
   const statusLabel = formatStatusLabel(status);
@@ -139,7 +145,7 @@ function StatusResultCard({ result, source }) {
           <span className="ss-small-label dark">Application found</span>
           <h2 id="status-result-title">Current application status</h2>
           <p className="mb-0">
-            The information below shows the latest status available to this portal.
+            The information below shows the latest status for this application.
           </p>
         </div>
         <div className="ss-status-badge" aria-label={`Current status is ${statusLabel}`}>
@@ -150,11 +156,7 @@ function StatusResultCard({ result, source }) {
       <div className="ss-status-summary-grid" role="list">
         <div role="listitem">
           <span>Application reference</span>
-          <strong>{reference || "Not available"}</strong>
-        </div>
-        <div role="listitem">
-          <span>Unique participant ID</span>
-          <strong>{result?.participantCode || "Not available"}</strong>
+          <strong>{result?.status === "INCOMPLETE" ? "Not submitted yet" : reference || "Not available"}</strong>
         </div>
         <div role="listitem">
           <span>Application review</span>
@@ -165,12 +167,8 @@ function StatusResultCard({ result, source }) {
           <strong>{formatPathwayLabel(result?.pathwayTitle || result?.pathway, "Physical Academy")}</strong>
         </div>
         <div role="listitem">
-          <span>Submitted</span>
-          <strong>{formatDate(result?.submittedAt || result?.savedAt)}</strong>
-        </div>
-        <div role="listitem">
-          <span>Source</span>
-          <strong>{source === "server" ? "Official system" : "This device"}</strong>
+          <span>{result?.status === "INCOMPLETE" ? "Last saved" : "Submitted"}</span>
+          <strong>{formatDate(result?.submittedAt || result?.savedAt || result?.lastSavedAt)}</strong>
         </div>
       </div>
 
@@ -201,9 +199,9 @@ function StatusResultCard({ result, source }) {
         <div className="ss-status-note" role="note">
           <i className="bi bi-envelope-check" aria-hidden="true" />
           <div>
-            <p className="mb-2">You are eligible. Please open the Basic IT skills test using the secure invitation link sent to your email address.</p>
+            <p className="mb-2">You are eligible. Please complete the Basic IT skills test using your invitation link.</p>
             {result?.testInvitation?.expiresAt && (
-              <p className="mb-0">Invitation expires: {formatDate(result.testInvitation.expiresAt)}.</p>
+              <p className="mb-0">Invitation expiry: {formatDate(result.testInvitation.expiresAt)}.</p>
             )}
           </div>
         </div>
@@ -214,22 +212,25 @@ function StatusResultCard({ result, source }) {
   );
 }
 
-function StatusCheckPage({ onBackHome, onStartApplication }) {
+function StatusCheckPage({ onBackHome, onStartApplication, onResumeApplication }) {
   const [identifier, setIdentifier] = useState("");
   const [lookupResult, setLookupResult] = useState(null);
-  const [lookupSource, setLookupSource] = useState("");
   const [lookupMessage, setLookupMessage] = useState("");
   const [loading, setLoading] = useState(false);
-
-  const recentApplications = useMemo(() => listSubmittedApplications().slice(0, 3), []);
+  const [resumeDateOfBirth, setResumeDateOfBirth] = useState("");
+  const [resumeEmail, setResumeEmail] = useState("");
+  const [resumeLoading, setResumeLoading] = useState(false);
+  const [resumeMessage, setResumeMessage] = useState("");
 
   async function handleSubmit(event) {
     event.preventDefault();
 
     const cleanIdentifier = identifier.trim();
     setLookupResult(null);
-    setLookupSource("");
     setLookupMessage("");
+    setResumeMessage("");
+    setResumeDateOfBirth("");
+    setResumeEmail("");
 
     if (!cleanIdentifier) {
       setLookupMessage("Please enter your application reference number or mobile number.");
@@ -244,9 +245,8 @@ function StatusCheckPage({ onBackHome, onStartApplication }) {
       );
 
       const apiResult = response.data?.data || response.data?.application || response.data?.registration || response.data;
-      if (apiResult && getReferenceFromResult(apiResult)) {
+      if (apiResult && (getReferenceFromResult(apiResult) || apiResult.status === "INCOMPLETE")) {
         setLookupResult(apiResult);
-        setLookupSource("server");
         return;
       }
 
@@ -256,9 +256,8 @@ function StatusCheckPage({ onBackHome, onStartApplication }) {
 
       if (localResult) {
         setLookupResult(localResult);
-        setLookupSource("local");
         setLookupMessage(
-          "Showing the confirmation saved on this device because the official status lookup could not be reached."
+          "Showing the confirmation saved on this device. Please try again later for the latest online status."
         );
       } else {
         setLookupMessage(
@@ -270,12 +269,47 @@ function StatusCheckPage({ onBackHome, onStartApplication }) {
     }
   }
 
-  function handleRecentClick(application) {
-    const recentReference = getReferenceFromResult(application);
-    setIdentifier(recentReference);
-    setLookupResult(application);
-    setLookupSource("local");
-    setLookupMessage("Showing a recently submitted application saved on this device.");
+  async function handleResumeDraft(event) {
+    event.preventDefault();
+
+    if (!lookupResult?.draftReference) {
+      setResumeMessage("No incomplete application is selected.");
+      return;
+    }
+
+    if (!resumeDateOfBirth && !resumeEmail.trim()) {
+      setResumeMessage("Enter the date of birth or email address used in the saved form to continue.");
+      return;
+    }
+
+    try {
+      setResumeLoading(true);
+      setResumeMessage("");
+
+      const response = await axios.post(`${API_BASE_URL}/api/registrations/drafts/resume`, {
+        draftReference: lookupResult.draftReference,
+        contactNumber: identifier.trim(),
+        dateOfBirth: resumeDateOfBirth || undefined,
+        email: resumeEmail.trim() || undefined,
+      });
+
+      const draft = response.data?.data;
+
+      if (!draft?.answers) {
+        throw new Error("The saved application could not be opened.");
+      }
+
+      onResumeApplication?.(draft);
+    } catch (error) {
+      console.error(error);
+      setResumeMessage(
+        error.response?.data?.message ||
+          error.message ||
+          "We could not open the incomplete application. Check the details and try again."
+      );
+    } finally {
+      setResumeLoading(false);
+    }
   }
 
   return (
@@ -290,7 +324,7 @@ function StatusCheckPage({ onBackHome, onStartApplication }) {
               <span className="ss-small-label light">Application tracking</span>
               <h1 id="status-page-title">Check your registration status</h1>
               <p>
-                Enter your application reference or the mobile number used during registration to see the latest status available to this portal.
+                Enter your application reference or the mobile number used during registration to see the latest status available.
               </p>
             </div>
             <div className="col-12 col-lg-4">
@@ -350,7 +384,56 @@ function StatusCheckPage({ onBackHome, onStartApplication }) {
 
               {lookupResult && (
                 <div className="mt-4">
-                  <StatusResultCard result={lookupResult} source={lookupSource} />
+                  <StatusResultCard result={lookupResult} />
+
+                  {lookupResult?.status === "INCOMPLETE" && lookupResult?.allowResume && (
+                    <form className="ss-status-note mt-4" onSubmit={handleResumeDraft}>
+                      <i className="bi bi-pencil-square" aria-hidden="true" />
+                      <div className="w-100">
+                        <h3 className="h5">Continue incomplete application</h3>
+                        <p>For privacy, confirm your date of birth or email address before continuing.</p>
+                        <div className="row g-3">
+                          <div className="col-12 col-md-6">
+                            <label className="form-label" htmlFor="resume-date-of-birth">Date of birth</label>
+                            <input
+                              id="resume-date-of-birth"
+                              className="form-control"
+                              type="date"
+                              value={resumeDateOfBirth}
+                              onChange={(event) => setResumeDateOfBirth(event.target.value)}
+                            />
+                          </div>
+                          <div className="col-12 col-md-6">
+                            <label className="form-label" htmlFor="resume-email">Email address</label>
+                            <input
+                              id="resume-email"
+                              className="form-control"
+                              type="email"
+                              value={resumeEmail}
+                              onChange={(event) => setResumeEmail(event.target.value)}
+                              placeholder="name@example.org"
+                            />
+                          </div>
+                        </div>
+                        {resumeMessage && (
+                          <div className="alert ss-alert-info mt-3" role="status">
+                            <i className="bi bi-info-circle" aria-hidden="true" /> {resumeMessage}
+                          </div>
+                        )}
+                        <button type="submit" className="btn ss-btn-primary mt-3" disabled={resumeLoading}>
+                          {resumeLoading ? (
+                            <>
+                              <span className="spinner-border spinner-border-sm" aria-hidden="true" /> Opening...
+                            </>
+                          ) : (
+                            <>
+                              <i className="bi bi-box-arrow-in-right" aria-hidden="true" /> Continue application
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </form>
+                  )}
                 </div>
               )}
             </section>
@@ -362,34 +445,13 @@ function StatusCheckPage({ onBackHome, onStartApplication }) {
                 <span className="ss-small-label dark">What your status means</span>
                 <ul className="ss-status-help-list">
                   <li><strong>Submitted:</strong> your application was received.</li>
-                  <li><strong>Pending Review:</strong> the project team needs to review eligibility details before sending a test invitation.</li>
-                  <li><strong>Eligible Pending Skills Test:</strong> check your email for the secure test link.</li>
-                  <li><strong>Under Review:</strong> the committee checks registration details, documents, and test result.</li>
+                  <li><strong>Incomplete:</strong> your form has been saved but not yet submitted.</li>
+                  <li><strong>Pending review:</strong> your application is being checked.</li>
+                  <li><strong>Eligible pending skills test:</strong> complete the Basic IT skills test.</li>
+                  <li><strong>Under review:</strong> your application and test result are being reviewed.</li>
                   <li><strong>Approved:</strong> the applicant can move to enrollment.</li>
                 </ul>
               </div>
-
-              {recentApplications.length > 0 && (
-                <div className="ss-help-card mt-4">
-                  <span className="ss-small-label dark">Recent on this device</span>
-                  <div className="ss-recent-reference-list">
-                    {recentApplications.map((application) => {
-                      const recentReference = getReferenceFromResult(application);
-                      return (
-                        <button
-                          key={recentReference}
-                          type="button"
-                          className="ss-recent-reference"
-                          onClick={() => handleRecentClick(application)}
-                        >
-                          <strong>{recentReference}</strong>
-                          <span>{application.pathwayTitle || application.pathway || "Physical Academy"}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
 
               <div className="ss-help-card mt-4">
                 <span className="ss-small-label dark">No reference yet?</span>

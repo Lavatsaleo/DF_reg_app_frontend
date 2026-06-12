@@ -41,7 +41,7 @@ function formatSubmittedAt(value) {
 function getOutcomeLabel(result) {
   const screeningStatus = getScreeningStatus(result);
 
-  if (screeningStatus === "ELIGIBLE") return "Eligible - Pending Basic IT Skills Test";
+  if (screeningStatus === "ELIGIBLE") return "Eligible - Basic IT Skills Test";
   if (screeningStatus === "PENDING_REVIEW") return "Pending manual review";
   if (screeningStatus === "NOT_ELIGIBLE") return "Not eligible";
   return "Existing application";
@@ -63,6 +63,13 @@ function getNextStepCopy(result) {
   }
 
   if (screeningStatus === "ELIGIBLE") {
+    if (result?.testInvitationEmailSent === false && result?.skillsTestInviteUrl) {
+      return {
+        title: "Complete the Basic IT skills test",
+        body: "Your Basic IT skills test is ready. Use the button below to continue.",
+      };
+    }
+
     return {
       title: "Complete the Basic IT skills test",
       body: "A secure Basic IT skills test invitation link has been sent to the email address used during registration.",
@@ -70,8 +77,8 @@ function getNextStepCopy(result) {
   }
 
   return {
-    title: "Manual review",
-    body: "The project team will review the application before deciding the next step.",
+    title: "Internal data review",
+    body: "The project team needs to check the information because the initial eligibility check could not be completed automatically.",
   };
 }
 
@@ -200,12 +207,6 @@ function ApplicationConfirmation({ result, selectedPathway, onStartNewApplicatio
                 )}
 
                 <div className="ss-confirmation-grid" role="list">
-                  {result?.participantCode && (
-                    <div className="ss-confirmation-detail" role="listitem">
-                      <span>Unique participant ID</span>
-                      <strong>{result.participantCode}</strong>
-                    </div>
-                  )}
                   {result?.status && (
                     <div className="ss-confirmation-detail" role="listitem">
                       <span>Status</span>
@@ -231,11 +232,11 @@ function ApplicationConfirmation({ result, selectedPathway, onStartNewApplicatio
                   </div>
                 )}
 
-                {isEligible && (
+                {isEligible && result?.testInvitationEmailSent !== false && (
                   <div className="ss-eligibility-note" role="note">
                     <i className="bi bi-envelope-check" aria-hidden="true" />
                     <p>
-                      Please check the email address used during registration. The secure test link is tied to this participant ID and can only be used for this application.
+                      Please check the email address used during registration. The secure test link can only be used for this application.
                     </p>
                   </div>
                 )}
@@ -244,7 +245,7 @@ function ApplicationConfirmation({ result, selectedPathway, onStartNewApplicatio
                   <div className="ss-eligibility-note" role="note">
                     <i className="bi bi-link-45deg" aria-hidden="true" />
                     <p>
-                      Local testing link: <a href={result.skillsTestInviteUrl}>Open Basic IT skills test</a>
+                      Your Basic IT skills test is ready. <a href={result.skillsTestInviteUrl}>Open Basic IT skills test</a>
                     </p>
                   </div>
                 )}
@@ -256,7 +257,7 @@ function ApplicationConfirmation({ result, selectedPathway, onStartNewApplicatio
                       <span aria-hidden="true">1</span>
                       <div>
                         <strong>Application received</strong>
-                        <p>The application record is retained in the system.</p>
+                        <p>Your application has been saved.</p>
                       </div>
                     </div>
                     <div className="ss-timeline-item active">
@@ -269,8 +270,8 @@ function ApplicationConfirmation({ result, selectedPathway, onStartNewApplicatio
                     <div className="ss-timeline-item">
                       <span aria-hidden="true">3</span>
                       <div>
-                        <strong>Committee review and pathway enrollment</strong>
-                        <p>Applicants who complete the required steps are reviewed before final enrollment.</p>
+                        <strong>Review and enrollment</strong>
+                        <p>Applicants who complete the required steps are reviewed before enrollment.</p>
                       </div>
                     </div>
                   </div>

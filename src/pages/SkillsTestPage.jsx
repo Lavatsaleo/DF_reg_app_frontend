@@ -170,7 +170,7 @@ function SkillsTestPage({ initialReference = "", initialToken = "", onBackHome, 
     setFieldErrors({});
 
     if (!endpoint) {
-      setMessage("Please open the test using the invitation link sent to your email. For local testing, you may enter the application reference number.");
+      setMessage("Please open the test using the invitation link provided after registration.");
       return;
     }
 
@@ -320,8 +320,8 @@ function SkillsTestPage({ initialReference = "", initialToken = "", onBackHome, 
             <div className="col-12 col-lg-4">
               <div className="ss-selected-card">
                 <span>Review package</span>
-                <strong>Registration + test</strong>
-                <small>Used by the review committee</small>
+                <strong>Basic IT skills test</strong>
+                <small>One test per application</small>
               </div>
             </div>
           </div>
@@ -337,7 +337,7 @@ function SkillsTestPage({ initialReference = "", initialToken = "", onBackHome, 
               <p>
                 {hasInvitationToken
                   ? "This page was opened from your secure Basic IT skills test invitation link."
-                  : "Use the invitation link sent to your email. For local testing only, you can load the test using the application reference."}
+                  : "Use the invitation link provided after registration."}
               </p>
 
               {!hasInvitationToken && (
@@ -415,7 +415,7 @@ function SkillsTestPage({ initialReference = "", initialToken = "", onBackHome, 
                   <div className="ss-skills-applicant-strip" role="note">
                     <i className="bi bi-person-check" aria-hidden="true" />
                     <span>
-                      Test for <strong>{applicant.firstName} {applicant.lastName}</strong> · {applicant.applicationReference} · {applicant.participantCode}
+                      Test for <strong>{applicant.firstName} {applicant.lastName}</strong>
                     </span>
                   </div>
                 )}
@@ -454,15 +454,15 @@ function SkillsTestPage({ initialReference = "", initialToken = "", onBackHome, 
                 <ol>
                   <li>The applicant submits the registration form.</li>
                   <li>If the application moves to the next step, the system emails a private test link.</li>
-                  <li>The link opens the Basic IT skills test and ties the result to the same applicant record.</li>
-                  <li>The committee reviews registration details, documents, and the test result together.</li>
+                  <li>The link opens the Basic IT skills test for your application.</li>
+                  <li>The project team reviews completed applications and test results.</li>
                 </ol>
               </div>
 
               <div className="ss-help-card mt-4">
                 <span className="ss-small-label dark">Important</span>
                 <p className="mb-0">
-                  The test can only be submitted once for the applicant. Re-opening the link after submission will show the saved result instead of a new test.
+                  The test can only be submitted once. After submission, reopening the link will show the saved result.
                 </p>
               </div>
             </div>

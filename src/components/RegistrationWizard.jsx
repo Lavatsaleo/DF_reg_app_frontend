@@ -52,7 +52,9 @@ function RegistrationWizard({
   errorMessage,
   fieldErrors,
   formProgress,
-  draftLastSavedAt,
+  serverDraftLastSavedAt,
+  serverDraftMessage,
+  savingServerDraft,
   onAnswerChange,
   onMultiSelectChange,
   onSubmit,
@@ -60,6 +62,8 @@ function RegistrationWizard({
   onDocumentsChange,
   onDocumentTypeChange,
   onClearDraft,
+  onSaveDraftNow,
+  onSectionComplete,
 }) {
   const sectionEntries = useMemo(() => Object.entries(groupedQuestions), [groupedQuestions]);
   const documentStepIndex = sectionEntries.length;
@@ -100,7 +104,7 @@ function RegistrationWizard({
     });
   }
 
-  function continueFromSection(index, questions) {
+  async function continueFromSection(index, questions) {
     const isValid = onValidateQuestions(questions);
 
     if (!isValid) {
@@ -108,14 +112,47 @@ function RegistrationWizard({
       return;
     }
 
+    await onSectionComplete?.({
+      stepIndex: index,
+      stepTitle: sectionEntries[index]?.[0],
+      questions,
+      totalSteps,
+    });
+
     const nextStep = Math.min(index + 1, reviewStepIndex);
-    setAnnouncement(`Section completed. Moving to step ${nextStep + 1} of ${totalSteps}.`);
+    setAnnouncement(`Section completed and saved. Moving to step ${nextStep + 1} of ${totalSteps}.`);
     goToStep(nextStep);
   }
 
   function handleSubmit(event) {
     onSubmit(event);
   }
+  function getSectionSaveState() {
+    if (savingServerDraft) {
+      return {
+        label: "Saving progress...",
+        icon: "bi-arrow-repeat",
+        tone: "saving",
+      };
+    }
+
+    if (serverDraftLastSavedAt) {
+      return {
+        label: `Progress saved at ${formatSavedTime(serverDraftLastSavedAt)}`,
+        icon: "bi-cloud-check",
+        tone: "saved",
+      };
+    }
+
+    return {
+      label: "Complete Personal details first",
+      icon: "bi-info-circle",
+      tone: "pending",
+    };
+  }
+
+  const sectionSaveState = getSectionSaveState();
+
 
   if (sectionEntries.length === 0) {
     return (
@@ -123,7 +160,7 @@ function RegistrationWizard({
         <div className="ss-empty-state">
           <i className="bi bi-ui-checks" aria-hidden="true" />
           <h2>No questions are currently available</h2>
-          <p>The form loaded successfully, but no questions were returned by the backend.</p>
+          <p>The form is not available at the moment. Please try again later.</p>
         </div>
       </section>
     );
@@ -137,24 +174,51 @@ function RegistrationWizard({
 
       <div className="ss-wizard-topper ss-executive-wizard-topper">
         <div>
-          <span className="ss-small-label dark">Fast guided application</span>
+          <span className="ss-small-label dark">Registration form</span>
           <h2>{selectedPathway.title} Registration</h2>
           <p>
-            A short, accessible application. Complete the required fields, review once, and submit.
+            Complete one section at a time. Your progress is saved after Personal details and after each completed section.
           </p>
-          <div className="ss-quick-facts" aria-label="Application summary">
-            <span><i className="bi bi-clock" aria-hidden="true" /> About 5 minutes</span>
-            <span><i className="bi bi-shield-check" aria-hidden="true" /> One application per person</span>
-            <span><i className="bi bi-envelope-check" aria-hidden="true" /> Test link sent if eligible</span>
-          </div>
         </div>
 
-        <div className="ss-draft-status" aria-live="polite">
-          <i className="bi bi-cloud-check" aria-hidden="true" />
-          <span>Draft saved: {formatSavedTime(draftLastSavedAt)}</span>
-          <button type="button" className="btn btn-sm ss-link-button" onClick={onClearDraft}>
-            Clear
-          </button>
+        <div className="ss-draft-status-card simple" aria-live="polite">
+          <div className="ss-draft-status-header">
+            <div className="ss-draft-status-title-wrap">
+              <span className="ss-small-label dark">Save progress</span>
+              <strong>You can save and continue later.</strong>
+              <small>Complete Personal details first. After that, progress is saved when you finish each section.</small>
+            </div>
+            <span className={`ss-draft-status-pill ${sectionSaveState.tone}`}>
+              <i className={`bi ${sectionSaveState.icon}`} aria-hidden="true" />
+              {sectionSaveState.label}
+            </span>
+          </div>
+
+          {serverDraftMessage && (
+            <p className="ss-draft-status-message">{serverDraftMessage}</p>
+          )}
+
+          <div className="ss-draft-status-actions">
+            <button
+              type="button"
+              className="btn btn-sm ss-btn-outline"
+              onClick={onSaveDraftNow}
+              disabled={savingServerDraft}
+            >
+              {savingServerDraft ? (
+                <>
+                  <span className="spinner-border spinner-border-sm" aria-hidden="true" /> Saving...
+                </>
+              ) : (
+                <>
+                  <i className="bi bi-cloud-upload" aria-hidden="true" /> Save and continue later
+                </>
+              )}
+            </button>
+            <button type="button" className="btn btn-sm ss-link-button" onClick={onClearDraft}>
+              Start over
+            </button>
+          </div>
         </div>
       </div>
 
@@ -214,7 +278,15 @@ function RegistrationWizard({
             documentType={documentType}
             onToggle={() => goToStep(documentStepIndex)}
             onPrevious={() => goToStep(documentStepIndex - 1)}
-            onContinue={() => goToStep(reviewStepIndex)}
+            onContinue={async () => {
+              await onSectionComplete?.({
+                stepIndex: documentStepIndex,
+                stepTitle: "Supporting documents",
+                questions: [],
+                totalSteps,
+              });
+              goToStep(reviewStepIndex);
+            }}
             onDocumentsChange={onDocumentsChange}
             onDocumentTypeChange={onDocumentTypeChange}
           />

@@ -5,6 +5,7 @@ import { groupQuestionsBySection, isQuestionVisible } from "../utils/formUtils";
 import { calculateFormProgress, validateAnswers } from "../utils/validationUtils";
 import { useLocalDraft } from "./useLocalDraft";
 import { saveSubmittedApplication } from "../utils/applicationStatusStorage";
+import { pathways } from "../data/pathways";
 
 function createLocalReference(pathwayId) {
   const datePart = new Date().toISOString().slice(0, 10).replace(/-/g, "");
@@ -45,6 +46,31 @@ function normalizeSubmissionResult(apiResult, selectedPathway, contactNumber) {
   };
 }
 
+function getOrderedSectionEntries(groupedQuestions) {
+  return Object.entries(groupedQuestions || {});
+}
+
+function getPersonalDetailsQuestions(groupedQuestions) {
+  const sectionEntries = getOrderedSectionEntries(groupedQuestions);
+  const personalSection = sectionEntries.find(([sectionName]) =>
+    String(sectionName || "").toLowerCase().includes("personal")
+  );
+
+  return personalSection ? personalSection[1] : sectionEntries[0]?.[1] || [];
+}
+
+function hasCompletedSection(sectionQuestions, answers, isQuestionVisibleFn) {
+  if (!Array.isArray(sectionQuestions) || sectionQuestions.length === 0) return false;
+
+  const validationErrors = validateAnswers({
+    questions: sectionQuestions,
+    answers,
+    isQuestionVisible: isQuestionVisibleFn,
+  });
+
+  return Object.keys(validationErrors).length === 0;
+}
+
 export function useRegistrationForm() {
   const [selectedPathway, setSelectedPathway] = useState(null);
   const [questions, setQuestions] = useState([]);
@@ -57,6 +83,10 @@ export function useRegistrationForm() {
   const [errorMessage, setErrorMessage] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
   const [pathwayMessage, setPathwayMessage] = useState("");
+  const [serverDraftReference, setServerDraftReference] = useState("");
+  const [serverDraftLastSavedAt, setServerDraftLastSavedAt] = useState(null);
+  const [serverDraftMessage, setServerDraftMessage] = useState("");
+  const [savingServerDraft, setSavingServerDraft] = useState(false);
 
   const draftStorageKey = selectedPathway
     ? `sightsavers-registration-draft-${selectedPathway.id}`
@@ -118,6 +148,28 @@ export function useRegistrationForm() {
     [groupedQuestions, answers]
   );
 
+  const draftSaveGate = useMemo(() => {
+    const personalQuestions = getPersonalDetailsQuestions(groupedQuestions);
+
+    if (personalQuestions.length === 0) {
+      return {
+        canSave: false,
+        message: "The form is still loading. Please wait before saving.",
+      };
+    }
+
+    const personalDetailsComplete = hasCompletedSection(personalQuestions, answers, isQuestionVisible);
+
+    if (!personalDetailsComplete) {
+      return {
+        canSave: false,
+        message: "Please complete the Personal details section first before saving your progress.",
+      };
+    }
+
+    return { canSave: true, message: "" };
+  }, [groupedQuestions, answers]);
+
   function handlePathwaySelect(pathway) {
     setPathwayMessage("");
     setSubmitResult(null);
@@ -126,7 +178,7 @@ export function useRegistrationForm() {
 
     if (pathway.status !== "open") {
       setPathwayMessage(
-        `${pathway.title} is not yet open for registration. For now, please use the Physical Academy workflow.`
+        `${pathway.title} is not yet open for registration. For now, please use Physical Academy.`
       );
       return;
     }
@@ -142,6 +194,9 @@ export function useRegistrationForm() {
     setErrorMessage("");
     setFieldErrors({});
     setPathwayMessage("");
+    setServerDraftReference("");
+    setServerDraftLastSavedAt(null);
+    setServerDraftMessage("");
   }
 
   function handleAnswerChange(question, value) {
@@ -197,6 +252,70 @@ export function useRegistrationForm() {
       errorElement?.scrollIntoView({ behavior: "smooth", block: "center" });
     });
   }
+
+  const saveServerDraft = useCallback(async ({ showMessage = false, currentStep = 0, source = "manual" } = {}) => {
+    if (!selectedPathway) return null;
+
+    if (!draftSaveGate.canSave) {
+      if (showMessage) {
+        setServerDraftMessage(draftSaveGate.message);
+      }
+      return null;
+    }
+
+    const contactNumber = String(answers.CONTACT_NUMBER || "").replace(/\D/g, "");
+
+    if (!contactNumber || contactNumber.length < 7) {
+      if (showMessage) {
+        setServerDraftMessage("Enter a mobile number in Personal details first so the portal can save and find your incomplete application later.");
+      }
+      return null;
+    }
+
+    try {
+      setSavingServerDraft(true);
+      if (showMessage) {
+        setServerDraftMessage("");
+      }
+
+      const response = await axios.post(`${API_BASE_URL}/api/registrations/drafts`, {
+        draftReference: serverDraftReference || undefined,
+        pathway: selectedPathway.id,
+        documentType,
+        answers,
+        currentStep,
+        completionPercent: formProgress.percentage,
+      });
+
+      const draft = response.data?.data || {};
+      setServerDraftReference(draft.draftReference || serverDraftReference);
+      setServerDraftLastSavedAt(draft.lastSavedAt || new Date().toISOString());
+
+      if (showMessage) {
+        if (source === "section") {
+          setServerDraftMessage("Progress saved. You can leave now and continue later using your mobile number.");
+        } else {
+          setServerDraftMessage("Application saved. You can return later and continue using the same mobile number on Check Status.");
+        }
+      }
+
+      return draft;
+    } catch (error) {
+      console.error(error);
+
+      if (showMessage) {
+        setServerDraftMessage(
+          error.response?.data?.message ||
+            "Your progress could not be saved online right now. Please try again."
+        );
+      }
+
+      return null;
+    } finally {
+      setSavingServerDraft(false);
+    }
+  }, [answers, documentType, draftSaveGate, formProgress.percentage, selectedPathway, serverDraftReference]);
+
 
   function handleValidateQuestions(questionList) {
     const validationErrors = validateAnswers({
@@ -259,6 +378,9 @@ export function useRegistrationForm() {
       formData.append("pathway", selectedPathway.id);
       formData.append("registrationMode", selectedPathway.mode);
       formData.append("documentType", documentType);
+      if (serverDraftReference) {
+        formData.append("draftReference", serverDraftReference);
+      }
       formData.append("responses", JSON.stringify(buildResponsesPayload()));
 
       for (const file of documents) {
@@ -285,6 +407,9 @@ export function useRegistrationForm() {
       setAnswers({});
       setDocuments([]);
       setFieldErrors({});
+      setServerDraftReference("");
+      setServerDraftLastSavedAt(null);
+      setServerDraftMessage("");
       clearDraft();
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (error) {
@@ -304,6 +429,9 @@ export function useRegistrationForm() {
         setAnswers({});
         setDocuments([]);
         setFieldErrors({});
+        setServerDraftReference("");
+        setServerDraftLastSavedAt(null);
+        setServerDraftMessage("");
         clearDraft();
         window.scrollTo({ top: 0, behavior: "smooth" });
         return;
@@ -344,6 +472,57 @@ export function useRegistrationForm() {
     setDocumentType("DISABILITY_DOCUMENT");
     setFieldErrors({});
     setErrorMessage("");
+    setServerDraftReference("");
+    setServerDraftLastSavedAt(null);
+    setServerDraftMessage("");
+  }
+
+  async function handleSectionComplete({ stepIndex, stepTitle }) {
+    if (submitResult) return;
+
+    const draft = await saveServerDraft({
+      showMessage: true,
+      currentStep: stepIndex + 1,
+      source: "section",
+    });
+
+    if (draft && stepTitle) {
+      setServerDraftMessage(`Saved after ${stepTitle}. You can continue now or return later using your mobile number.`);
+    }
+  }
+
+  function handleResumeDraft(draft) {
+    if (!draft) return;
+
+    const pathway = pathways.find((item) => item.id === draft.pathway) || pathways[0];
+    const restoredAnswers = draft.answers || {};
+    const restoredDocumentType = draft.documentType || "DISABILITY_DOCUMENT";
+    const storageKey = `sightsavers-registration-draft-${pathway.id}`;
+
+    try {
+      window.localStorage.setItem(
+        storageKey,
+        JSON.stringify({
+          answers: restoredAnswers,
+          documentType: restoredDocumentType,
+          savedAt: draft.lastSavedAt || new Date().toISOString(),
+        })
+      );
+    } catch (error) {
+      console.warn("Unable to update local draft from server draft", error);
+    }
+
+    setPathwayMessage("");
+    setSubmitResult(null);
+    setErrorMessage("");
+    setFieldErrors({});
+    setDocuments([]);
+    setSelectedPathway(pathway);
+    setAnswers(restoredAnswers);
+    setDocumentType(restoredDocumentType);
+    setServerDraftReference(draft.draftReference || "");
+    setServerDraftLastSavedAt(draft.lastSavedAt || draft.savedAt || null);
+    setServerDraftMessage("Your saved application has been opened. Continue from where you stopped and submit when ready.");
   }
 
   return {
@@ -360,6 +539,10 @@ export function useRegistrationForm() {
     pathwayMessage,
     formProgress,
     draftLastSavedAt,
+    serverDraftReference,
+    serverDraftLastSavedAt,
+    serverDraftMessage,
+    savingServerDraft,
     handlePathwaySelect,
     handleBackToPathways,
     handleAnswerChange,
@@ -367,6 +550,9 @@ export function useRegistrationForm() {
     handleSubmit,
     handleValidateQuestions,
     handleClearDraft,
+    handleSaveDraftNow: () => saveServerDraft({ showMessage: true, source: "manual" }),
+    handleSectionComplete,
+    handleResumeDraft,
     setDocuments,
     setDocumentType,
   };
