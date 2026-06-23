@@ -25,6 +25,20 @@ export function isQuestionVisible(question, answers) {
     return normalizedAnswer === normalizedExpected;
   }
 
+  if (operator === "in") {
+    const expectedValues = Array.isArray(expectedValue) ? expectedValue : [expectedValue];
+
+    if (Array.isArray(normalizedAnswer)) {
+      return normalizedAnswer.some((item) => expectedValues.includes(normalizeBoolean(item)));
+    }
+
+    return expectedValues.map(normalizeBoolean).includes(normalizedAnswer);
+  }
+
+  if (operator === "notEquals") {
+    return normalizedAnswer !== normalizedExpected;
+  }
+
   if (operator === "contains") {
     if (Array.isArray(controllingAnswer)) {
       return controllingAnswer.includes(expectedValue);
@@ -35,6 +49,18 @@ export function isQuestionVisible(question, answers) {
     }
 
     return false;
+  }
+
+  if (operator === "notContains") {
+    if (Array.isArray(controllingAnswer)) {
+      return !controllingAnswer.includes(expectedValue);
+    }
+
+    if (typeof controllingAnswer === "string") {
+      return !controllingAnswer.includes(expectedValue);
+    }
+
+    return true;
   }
 
   return true;

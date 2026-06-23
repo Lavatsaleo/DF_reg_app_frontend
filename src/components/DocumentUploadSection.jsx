@@ -30,7 +30,7 @@ function DocumentUploadSection({
           </span>
           <span className="ss-wizard-step-copy">
             <span>Supporting documents</span>
-            <small>Optional files for review</small>
+            <small>ID, disability and education evidence</small>
           </span>
           <span className={`ss-wizard-status-badge ${status === "complete" ? "complete" : "not_started"}`}>
             <i className={`bi ${documents.length > 0 ? "bi-check2" : "bi-paperclip"}`} aria-hidden="true" />
@@ -66,7 +66,7 @@ function DocumentUploadSection({
               <option value="OTHER">Other</option>
             </select>
             <small id="document-type-help" className="ss-field-help">
-              Choose the main type of document you are uploading, if available.
+              Choose the main type of document you are uploading. You can upload more than one file.
             </small>
           </div>
 
@@ -77,7 +77,7 @@ function DocumentUploadSection({
                 Upload supporting files
               </label>
               <p id="supporting-documents-help">
-                Attach one or more documents if available. Accepted formats: PDF, PNG, JPG, JPEG, DOC, or DOCX.
+                Attach ID, disability documentation, academic certificate/transcript, or any other supporting document available. Accepted formats: PDF, PNG, JPG, JPEG, DOC, or DOCX.
               </p>
               <input
                 id="supporting-documents-upload"

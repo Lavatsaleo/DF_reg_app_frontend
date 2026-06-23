@@ -7,6 +7,9 @@ function isEmpty(value) {
   );
 }
 
+const MIN_ELIGIBLE_AGE = 18;
+const MAX_ELIGIBLE_AGE = 33;
+
 function normalizeQuestionText(question) {
   return question.questionText || question.label || question.questionCode || "This question";
 }
@@ -40,13 +43,56 @@ function isValidEmail(value) {
 }
 
 function isValidPhone(value) {
-  const normalized = String(value).replace(/[\s()-]/g, "");
-  return /^\+?[0-9]{7,15}$/.test(normalized);
+  return /^\d{7,15}$/.test(String(value || "").trim());
 }
 
 function isAffirmative(value) {
   if (value === true) return true;
-  return ["yes", "true", "1", "y"].includes(String(value || "").trim().toLowerCase());
+  const normalized = String(value || "").trim().toLowerCase();
+  return ["yes", "true", "1", "y"].includes(normalized) || normalized.startsWith("yes -");
+}
+
+function isWholeNumber(value) {
+  return /^\d+$/.test(String(value || "").trim());
+}
+
+function isValidYear(value) {
+  const year = Number(value);
+  const currentYear = new Date().getFullYear();
+  return Number.isInteger(year) && year >= 1900 && year <= currentYear;
+}
+
+function isValidYearOrNotSure(value) {
+  if (String(value || "").trim() === "Not sure") return true;
+  return isValidYear(value);
+}
+
+function getEstimatedAgeFromYear(value) {
+  const year = Number(value);
+
+  if (!Number.isInteger(year)) return null;
+
+  return new Date().getFullYear() - year;
+}
+
+function isEligibleAgeValue(value) {
+  const age = Number(value);
+  return Number.isInteger(age) && age >= MIN_ELIGIBLE_AGE && age <= MAX_ELIGIBLE_AGE;
+}
+
+function isEligibleYearOfBirth(value) {
+  const estimatedAge = getEstimatedAgeFromYear(value);
+  return estimatedAge !== null && estimatedAge >= MIN_ELIGIBLE_AGE && estimatedAge <= MAX_ELIGIBLE_AGE;
+}
+
+function isValidAge(value) {
+  const age = Number(value);
+  return Number.isInteger(age) && age >= 0 && age <= 120;
+}
+
+function isNonNegativeNumber(value) {
+  const numberValue = Number(value);
+  return Number.isFinite(numberValue) && numberValue >= 0;
 }
 
 function getAgeFromDate(value) {
@@ -96,8 +142,27 @@ export function validateAnswers({ questions, answers, isQuestionVisible }) {
     }
 
     if (isLikelyPhoneQuestion(question) && !isValidPhone(value)) {
-      errors[question.questionCode] = "Enter a valid phone number. Use digits only or include country code, for example +2547XXXXXXXX.";
+      errors[question.questionCode] = "Enter a valid phone number using numbers only, for example 712345678. The country code is added from the country selected above.";
       continue;
+    }
+
+    if (question.validationType === "YEAR_OR_NOT_SURE" && !isValidYearOrNotSure(value)) {
+      errors[question.questionCode] = "Select a valid year or choose Not sure.";
+      continue;
+    }
+
+    if (question.validationType === "ELIGIBLE_YEAR_OF_BIRTH" && !isEligibleYearOfBirth(value)) {
+      errors[question.questionCode] = `Select a year of birth for applicants aged ${MIN_ELIGIBLE_AGE} to ${MAX_ELIGIBLE_AGE}.`;
+      continue;
+    }
+
+    if (question.questionCode === "YEAR_OF_BIRTH" && String(value).trim() !== "Not sure") {
+      const estimatedAge = getEstimatedAgeFromYear(value);
+
+      if (estimatedAge !== null && (estimatedAge < MIN_ELIGIBLE_AGE || estimatedAge > MAX_ELIGIBLE_AGE)) {
+        errors[question.questionCode] = `Applicants must be ${MIN_ELIGIBLE_AGE} to ${MAX_ELIGIBLE_AGE} years old for this pathway.`;
+        continue;
+      }
     }
 
     if (question.responseType === "DATE") {
@@ -131,8 +196,28 @@ export function validateAnswers({ questions, answers, isQuestionVisible }) {
         continue;
       }
 
-      if (isLikelyAgeQuestion(question) && (numberValue < 0 || numberValue > 120)) {
+      if (question.validationType === "WHOLE_NUMBER" && !isWholeNumber(value)) {
+        errors[question.questionCode] = "Enter a whole number.";
+        continue;
+      }
+
+      if (question.validationType === "YEAR" && !isValidYear(value)) {
+        errors[question.questionCode] = "Enter a valid year in YYYY format.";
+        continue;
+      }
+
+      if ((question.validationType === "AGE" || isLikelyAgeQuestion(question)) && !isValidAge(value)) {
         errors[question.questionCode] = "Enter a realistic age.";
+        continue;
+      }
+
+      if (question.validationType === "ELIGIBLE_AGE" && !isEligibleAgeValue(value)) {
+        errors[question.questionCode] = `Applicants must be ${MIN_ELIGIBLE_AGE} to ${MAX_ELIGIBLE_AGE} years old for this pathway.`;
+        continue;
+      }
+
+      if (question.validationType === "NON_NEGATIVE_NUMBER" && !isNonNegativeNumber(value)) {
+        errors[question.questionCode] = "Enter zero or a positive number.";
         continue;
       }
     }

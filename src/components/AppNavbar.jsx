@@ -1,21 +1,6 @@
 import logo from "../assets/sightsavers-logo.png";
 
-function formatRole(role) {
-  return String(role || "")
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, (letter) => letter.toUpperCase());
-}
-
-function AppNavbar({
-  selectedPathway,
-  currentView,
-  onBackToPathways,
-  onCheckStatus,
-  onShowCommittee,
-  showStatusButton = true,
-  staffUser,
-  onStaffLogout,
-}) {
+function AppNavbar({ selectedPathway, currentView, onBackToPathways, onCheckStatus, onShowCommittee, showStatusButton = true }) {
   const isStatusPage = currentView === "status";
   const isCommitteePage = currentView === "committee";
 
@@ -33,7 +18,7 @@ function AppNavbar({
           <span className="ss-brand-text">Digital Futures</span>
         </button>
 
-        <div className="d-flex align-items-center gap-2 ms-auto flex-wrap justify-content-end">
+        <div className="d-flex align-items-center gap-2 ms-auto">
           <span className="ss-nav-chip d-none d-xl-inline-flex">
             <i className="bi bi-shield-check" aria-hidden="true" /> Registration Portal
           </span>
@@ -56,20 +41,7 @@ function AppNavbar({
               onClick={onShowCommittee}
               aria-current={isCommitteePage ? "page" : undefined}
             >
-              <i className="bi bi-person-badge" aria-hidden="true" /> Staff area
-            </button>
-          )}
-
-          {staffUser && (
-            <span className="ss-nav-staff-chip">
-              <i className="bi bi-person-check" aria-hidden="true" />
-              {staffUser.fullName} · {formatRole(staffUser.role)}
-            </span>
-          )}
-
-          {staffUser && onStaffLogout && (
-            <button type="button" className="btn ss-nav-status" onClick={onStaffLogout}>
-              <i className="bi bi-box-arrow-right" aria-hidden="true" /> Sign out
+              <i className="bi bi-person-badge" aria-hidden="true" /> Committee
             </button>
           )}
 

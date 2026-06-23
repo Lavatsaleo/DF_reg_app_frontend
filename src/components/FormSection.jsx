@@ -54,6 +54,7 @@ function FormSection({
                 <QuestionField
                   question={question}
                   value={answers[question.questionCode]}
+                  answers={answers}
                   error={error}
                   labelId={labelId}
                   helpId={helpId}

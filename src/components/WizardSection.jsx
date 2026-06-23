@@ -1,25 +1,50 @@
 import FormSection from "./FormSection";
 
 const SECTION_META = {
-  "Personal Details": {
-    icon: "bi-person-badge",
-    caption: "Your identity and contact details",
-    intro: "Start with the basic details we need to create one application record and contact you safely.",
-  },
   Location: {
     icon: "bi-geo-alt",
     caption: "Where you are applying from",
-    intro: "Tell us where you are based so the programme team can route your application correctly.",
+    intro: "Tell us where you are based first. This also sets the correct country code for your phone number.",
+  },
+  "Personal Details": {
+    icon: "bi-person-badge",
+    caption: "Your identity and contact details",
+    intro: "Provide the basic details we need to create one application record and contact you safely.",
+  },
+  "Training Commitment": {
+    icon: "bi-calendar-check",
+    caption: "Training availability",
+    intro: "Confirm that you are available for the expected training period before continuing.",
+  },
+  "Age and Demographics": {
+    icon: "bi-person-lines-fill",
+    caption: "Age and household profile",
+    intro: "Applicants must be 18 to 33 years old at the point of registration. If you know your birth year, only eligible years are shown; if you are not sure, enter your age at last birthday.",
+  },
+  "Education and Training": {
+    icon: "bi-mortarboard",
+    caption: "Education background",
+    intro: "Tell us about your education and any training you are currently undertaking.",
   },
   "Disability and Support": {
     icon: "bi-universal-access-circle",
     caption: "Eligibility and accessibility support",
-    intro: "These answers help the team understand your eligibility and any support you may need.",
+    intro: "These answers help the system run the first screening and help the team plan reasonable accommodation support.",
   },
-  "Education and Work": {
-    icon: "bi-mortarboard",
-    caption: "A quick profile of your background",
-    intro: "Select the options that best describe your education and current work situation. Short answers are enough.",
+  "Digital Access": {
+    icon: "bi-laptop",
+    caption: "Online learning readiness",
+    intro: "These questions appear only for the Virtual Academy pathway.",
+  },
+  Application: {
+    icon: "bi-ui-checks",
+    caption: "Motivation and project awareness",
+    intro: "Tell us how you heard about the project and why the training is important for your goals.",
+  },
+  "Employment Status and Career Goals": {
+    icon: "bi-briefcase",
+    caption: "Work status and aspirations",
+    intro: "Share your current employment situation and the type of work or business pathway you are aiming for.",
   },
   "Trusted Contact": {
     icon: "bi-telephone-forward",
@@ -34,7 +59,12 @@ const SECTION_META = {
   Consent: {
     icon: "bi-check2-square",
     caption: "Confirm consent",
-    intro: "Consent is required before you submit the application.",
+    intro: "Consent is required before submission. It is not used as an eligibility score.",
+  },
+  "Consent and Submission": {
+    icon: "bi-check2-square",
+    caption: "Final confirmation",
+    intro: "Confirm consent so that the project team can process and review your application.",
   },
 };
 

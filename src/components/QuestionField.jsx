@@ -1,9 +1,22 @@
 import AccessibleDateOfBirthPicker from "./AccessibleDateOfBirthPicker";
 import VoiceInputButton from "./VoiceInputButton";
 
+const COUNTRY_DIAL_CODES = {
+  Kenya: "+254",
+  Nigeria: "+234",
+  Ghana: "+233",
+  Zambia: "+260",
+  Senegal: "+221",
+  Zimbabwe: "+263",
+  Tanzania: "+255",
+};
+
+const MIN_ELIGIBLE_AGE = 18;
+const MAX_ELIGIBLE_AGE = 33;
+
 function getInputMode(question) {
   if (question.responseType === "NUMBER") return "numeric";
-  if (question.responseType === "PHONE") return "tel";
+  if (question.responseType === "PHONE") return "numeric";
   if (question.responseType === "EMAIL") return "email";
   return undefined;
 }
@@ -30,7 +43,15 @@ function isPersonNameQuestion(question) {
     ["FIRST_NAME", "LAST_NAME", "NEXT_OF_KIN_NAME"].includes(question.questionCode);
 }
 
+function sanitizePhoneValue(value) {
+  return String(value || "").replace(/\D/g, "");
+}
+
 function sanitizeAnswerValue(question, value) {
+  if (question.responseType === "PHONE" || question.validationType === "PHONE_DIGITS") {
+    return sanitizePhoneValue(value);
+  }
+
   if (!isPersonNameQuestion(question)) return value;
 
   // Keep letters from all languages and normal name punctuation, but remove numbers.
@@ -43,9 +64,38 @@ function getSafeValue(value) {
   return value ?? "";
 }
 
+function getCountryDialCode(answers) {
+  return COUNTRY_DIAL_CODES[answers?.COUNTRY] || "";
+}
+
+function getEstimatedAgeFromYear(value) {
+  const year = Number(value);
+
+  if (!Number.isInteger(year)) return null;
+
+  return new Date().getFullYear() - year;
+}
+
+function renderYearOfBirthNote(question, safeValue) {
+  if (question.questionCode !== "YEAR_OF_BIRTH") return null;
+
+  const age = getEstimatedAgeFromYear(safeValue);
+
+  if (age === null) return null;
+
+  const isOutsideEligibleRange = age < MIN_ELIGIBLE_AGE || age > MAX_ELIGIBLE_AGE;
+
+  return (
+    <p className={`ss-derived-age-note ${isOutsideEligibleRange ? "warning" : ""}`} aria-live="polite">
+      Estimated age: <strong>{age}</strong> years. {isOutsideEligibleRange ? `Applicants must be ${MIN_ELIGIBLE_AGE} to ${MAX_ELIGIBLE_AGE} years old for this pathway.` : ""}
+    </p>
+  );
+}
+
 function QuestionField({
   question,
   value,
+  answers,
   error,
   labelId,
   helpId,
@@ -156,18 +206,28 @@ function QuestionField({
   }
 
   if (question.responseType === "PHONE") {
+    const dialCode = getCountryDialCode(answers);
+
     return (
       <>
-        <input
-          {...commonInputProps}
-          className={`form-control ${invalidClass}`}
-          type="tel"
-          inputMode={getInputMode(question)}
-          value={safeValue}
-          onChange={(event) => onAnswerChange(question, event.target.value)}
-          placeholder="Example: +254712345678"
-          autoComplete={getAutocomplete(question)}
-        />
+        <div className="input-group ss-phone-input-group">
+          {dialCode && (
+            <span className="input-group-text ss-phone-prefix" aria-label={`Country code ${dialCode}`}>
+              {dialCode}
+            </span>
+          )}
+          <input
+            {...commonInputProps}
+            className={`form-control ${invalidClass}`}
+            type="tel"
+            inputMode={getInputMode(question)}
+            pattern="[0-9]*"
+            value={safeValue}
+            onChange={(event) => onAnswerChange(question, sanitizePhoneValue(event.target.value))}
+            placeholder={dialCode ? "712345678" : "Enter numbers only"}
+            autoComplete={getAutocomplete(question)}
+          />
+        </div>
         {voiceButton}
       </>
     );
@@ -210,19 +270,22 @@ function QuestionField({
 
   if (question.responseType === "SINGLE_SELECT") {
     return (
-      <select
-        {...commonInputProps}
-        className={`form-select ${invalidClass}`}
-        value={safeValue}
-        onChange={(event) => onAnswerChange(question, event.target.value)}
-      >
-        <option value="">Select one option</option>
-        {(question.options || []).map((option) => (
-          <option key={option} value={option}>
-            {option}
-          </option>
-        ))}
-      </select>
+      <>
+        <select
+          {...commonInputProps}
+          className={`form-select ${invalidClass}`}
+          value={safeValue}
+          onChange={(event) => onAnswerChange(question, event.target.value)}
+        >
+          <option value="">Select one option</option>
+          {(question.options || []).map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
+        {renderYearOfBirthNote(question, safeValue)}
+      </>
     );
   }
 
