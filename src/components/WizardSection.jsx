@@ -8,8 +8,8 @@ const SECTION_META = {
   },
   "Personal Details": {
     icon: "bi-person-badge",
-    caption: "Your identity and contact details",
-    intro: "Provide the basic details we need to create one application record and contact you safely.",
+    caption: "Identity, contact, age and household details",
+    intro: "Provide your identity, contact, age and demographic details. Applicants must be 18 to 33 years old at the point of registration.",
   },
   "Training Commitment": {
     icon: "bi-calendar-check",
@@ -23,8 +23,8 @@ const SECTION_META = {
   },
   "Education and Training": {
     icon: "bi-mortarboard",
-    caption: "Education background",
-    intro: "Tell us about your education and any training you are currently undertaking.",
+    caption: "Education background and training availability",
+    intro: "Confirm your availability for the expected training period, then tell us about your education and any training you are currently undertaking.",
   },
   "Disability and Support": {
     icon: "bi-universal-access-circle",

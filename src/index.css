@@ -3538,3 +3538,57 @@ html.ss-high-contrast .ss-feedback-panel-header i {
   border-radius: 14px;
   padding: 0.65rem 0.75rem;
 }
+
+/* Committee access is intentionally icon-only so it stays discreet on the public portal. */
+.ss-committee-corner {
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+  display: inline-grid;
+  place-items: center;
+  margin-left: 0.35rem;
+  border-radius: 999px;
+  border: 2px solid rgba(255, 191, 0, 0.65);
+  background: #050505;
+  color: #ffffff;
+  font-size: 1.35rem;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.18);
+  transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease, color 160ms ease;
+}
+
+.ss-committee-corner:hover,
+.ss-committee-corner:focus,
+.ss-committee-corner.active {
+  background: var(--ss-yellow);
+  color: #050505;
+  border-color: #050505;
+  transform: translateY(-1px);
+  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.22);
+}
+
+.ss-committee-corner i {
+  line-height: 1;
+}
+
+html.ss-high-contrast .ss-committee-corner {
+  border-color: #ffffff !important;
+  background: #000000 !important;
+  color: #ffffff !important;
+}
+
+html.ss-high-contrast .ss-committee-corner:hover,
+html.ss-high-contrast .ss-committee-corner:focus,
+html.ss-high-contrast .ss-committee-corner.active {
+  background: #ffffff !important;
+  color: #000000 !important;
+}
+
+@media (max-width: 640px) {
+  .ss-committee-corner {
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
+    margin-left: 0.15rem;
+    font-size: 1.15rem;
+  }
+}

@@ -34,17 +34,6 @@ function AppNavbar({ selectedPathway, currentView, onBackToPathways, onCheckStat
             </button>
           )}
 
-          {onShowCommittee && (
-            <button
-              type="button"
-              className={`btn ${isCommitteePage ? "ss-nav-back" : "ss-nav-status"}`}
-              onClick={onShowCommittee}
-              aria-current={isCommitteePage ? "page" : undefined}
-            >
-              <i className="bi bi-person-badge" aria-hidden="true" /> Committee
-            </button>
-          )}
-
           {(selectedPathway || isStatusPage || isCommitteePage) && (
             <button
               type="button"
@@ -52,6 +41,19 @@ function AppNavbar({ selectedPathway, currentView, onBackToPathways, onCheckStat
               onClick={onBackToPathways}
             >
               <i className="bi bi-house" aria-hidden="true" /> Home
+            </button>
+          )}
+
+          {onShowCommittee && (
+            <button
+              type="button"
+              className={`btn ss-committee-corner ${isCommitteePage ? "active" : ""}`}
+              onClick={onShowCommittee}
+              aria-label="Committee login"
+              title="Committee login"
+              aria-current={isCommitteePage ? "page" : undefined}
+            >
+              <i className="bi bi-person-circle" aria-hidden="true" />
             </button>
           )}
         </div>
