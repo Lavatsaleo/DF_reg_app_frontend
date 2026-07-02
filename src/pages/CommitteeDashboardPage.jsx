@@ -242,6 +242,18 @@ function AddMemberForm({ memberForm, onChange, onSubmit, submitting }) {
   );
 }
 
+function formatApplicantLocation(applicant) {
+  return [
+    applicant?.country,
+    applicant?.county,
+    applicant?.subCounty,
+    applicant?.state,
+    applicant?.region,
+    applicant?.district,
+    applicant?.town,
+  ].filter(Boolean).join(" · ") || "Not available";
+}
+
 function ApplicantMiniProfile({ applicant }) {
   if (!applicant) return null;
 
@@ -265,7 +277,7 @@ function ApplicantMiniProfile({ applicant }) {
       </div>
       <div>
         <span>Location</span>
-        <strong>{[applicant.country, applicant.county, applicant.town].filter(Boolean).join(" · ") || "Not available"}</strong>
+        <strong>{formatApplicantLocation(applicant)}</strong>
       </div>
       <div>
         <span>Age at application</span>

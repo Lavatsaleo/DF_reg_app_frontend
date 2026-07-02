@@ -4,7 +4,7 @@ const SECTION_META = {
   Location: {
     icon: "bi-geo-alt",
     caption: "Where you are applying from",
-    intro: "Tell us where you are based first. This also sets the correct country code for your phone number.",
+    intro: "",
   },
   "Personal Details": {
     icon: "bi-person-badge",
@@ -142,9 +142,11 @@ function WizardSection({
         className={`ss-wizard-section-panel ${isActive ? "show" : ""}`}
         hidden={!isActive}
       >
-        <div className="ss-wizard-section-intro">
-          <p>{sectionMeta.intro}</p>
-        </div>
+        {sectionMeta.intro && (
+          <div className="ss-wizard-section-intro">
+            <p>{sectionMeta.intro}</p>
+          </div>
+        )}
 
         <FormSection
           section={title}

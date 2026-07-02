@@ -1,4 +1,5 @@
 import QuestionField from "./QuestionField";
+import { resolveQuestionHelpText, resolveQuestionText } from "../utils/questionDisplay";
 
 function FormSection({
   section,
@@ -29,7 +30,9 @@ function FormSection({
         {questions.map((question) => {
           const error = errors?.[question.questionCode];
           const labelId = `${question.questionCode}-label`;
-          const helpId = question.helpText ? `${question.questionCode}-help` : undefined;
+          const questionText = resolveQuestionText(question, answers);
+          const helpText = resolveQuestionHelpText(question, answers);
+          const helpId = helpText ? `${question.questionCode}-help` : undefined;
           const errorId = `${question.questionCode}-error`;
           const isWideQuestion = question.questionCode === "DATE_OF_BIRTH";
 
@@ -37,7 +40,7 @@ function FormSection({
             <div key={question.questionCode} className={isWideQuestion ? "col-12" : "col-12 col-lg-6"}>
               <div className={`ss-question-card h-100 ${isWideQuestion ? "wide" : ""} ${error ? "has-error" : ""}`} id={`${question.questionCode}-card`}>
                 <label className="form-label" htmlFor={question.questionCode} id={labelId}>
-                  <span>{question.questionText}</span>
+                  <span>{questionText}</span>
                   {question.required ? (
                     <strong className="ss-required-chip" aria-label="Required field">Required</strong>
                   ) : (
@@ -45,9 +48,9 @@ function FormSection({
                   )}
                 </label>
 
-                {question.helpText && (
+                {helpText && (
                   <p id={helpId} className="ss-question-help">
-                    {question.helpText}
+                    {helpText}
                   </p>
                 )}
 

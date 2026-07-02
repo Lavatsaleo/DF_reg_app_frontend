@@ -314,7 +314,7 @@ function SkillsTestPage({ initialReference = "", initialToken = "", onBackHome, 
               <span className="ss-small-label light">Basic IT skills test</span>
               <h1 id="skills-page-title">Complete your basic IT skills test</h1>
               <p>
-                Eligible applicants access this test through the secure invitation link sent by email. The result is tied to the same applicant record used during registration.
+                Eligible applicants access this randomized test through the secure invitation link sent by email. The result is tied to the same applicant record used during registration.
               </p>
             </div>
             <div className="col-12 col-lg-4">
@@ -462,7 +462,7 @@ function SkillsTestPage({ initialReference = "", initialToken = "", onBackHome, 
               <div className="ss-help-card mt-4">
                 <span className="ss-small-label dark">Important</span>
                 <p className="mb-0">
-                  The test can only be submitted once for the applicant. Re-opening the link after submission will show the saved result instead of a new test.
+                  The test can only be submitted once for the applicant. Questions and answer choices are randomized, and re-opening the link after submission will show the saved result instead of a new test.
                 </p>
               </div>
             </div>

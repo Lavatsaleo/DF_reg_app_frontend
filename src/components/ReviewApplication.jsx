@@ -1,3 +1,4 @@
+import { resolveQuestionText } from "../utils/questionDisplay";
 function formatAnswer(value) {
   if (Array.isArray(value)) return value.length > 0 ? value.join(", ") : "Not answered";
   if (value === true) return "Yes";
@@ -76,7 +77,7 @@ function ReviewApplication({
               <dl className="ss-review-list">
                 {questions.map((question) => (
                   <div key={question.questionCode}>
-                    <dt>{question.questionText}</dt>
+                    <dt>{resolveQuestionText(question, answers)}</dt>
                     <dd>{formatAnswer(answers[question.questionCode])}</dd>
                   </div>
                 ))}

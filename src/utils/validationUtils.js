@@ -1,3 +1,4 @@
+import { resolveQuestionText } from "./questionDisplay";
 function isEmpty(value) {
   return (
     value === undefined ||
@@ -10,8 +11,8 @@ function isEmpty(value) {
 const MIN_ELIGIBLE_AGE = 18;
 const MAX_ELIGIBLE_AGE = 33;
 
-function normalizeQuestionText(question) {
-  return question.questionText || question.label || question.questionCode || "This question";
+function normalizeQuestionText(question, answers) {
+  return resolveQuestionText(question, answers);
 }
 
 function isLikelyEmailQuestion(question) {
@@ -117,7 +118,7 @@ export function validateAnswers({ questions, answers, isQuestionVisible }) {
     if (!isQuestionVisible(question, answers)) continue;
 
     const value = answers[question.questionCode];
-    const label = normalizeQuestionText(question);
+    const label = normalizeQuestionText(question, answers);
 
     if (question.required && isEmpty(value)) {
       errors[question.questionCode] = `${label} is required.`;

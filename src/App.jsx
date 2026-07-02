@@ -173,6 +173,10 @@ function App() {
           fieldErrors={registration.fieldErrors}
           formProgress={registration.formProgress}
           draftLastSavedAt={registration.draftLastSavedAt}
+          draftReference={registration.draftReference}
+          draftSaveStatus={registration.draftSaveStatus}
+          draftSaveMessage={registration.draftSaveMessage}
+          currentStep={registration.currentStep}
           onBackToPathways={handleShowHome}
           onCheckStatus={handleShowStatus}
           onTakeSkillsTest={handleShowSkillsTest}
@@ -183,6 +187,7 @@ function App() {
           onDocumentsChange={registration.setDocuments}
           onDocumentTypeChange={registration.setDocumentType}
           onClearDraft={registration.handleClearDraft}
+          onStepChange={registration.handleCurrentStepChange}
         />
       )}
     </>
