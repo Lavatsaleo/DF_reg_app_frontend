@@ -27,7 +27,11 @@ function isLikelyPhoneQuestion(question) {
 
 function isLikelyAgeQuestion(question) {
   const text = `${question.questionCode || ""} ${question.questionText || ""}`.toLowerCase();
-  return question.responseType === "NUMBER" && text.includes("age");
+  return question.responseType === "NUMBER" && /\bage\b/.test(text);
+}
+
+function isMonthlyIncomeQuestion(question) {
+  return question.questionCode === "MONTHLY_INCOME_LOCAL_CURRENCY";
 }
 
 function isPersonNameQuestion(question) {
@@ -190,6 +194,8 @@ export function validateAnswers({ questions, answers, isQuestionVisible }) {
     }
 
     if (question.responseType === "NUMBER") {
+      if (isMonthlyIncomeQuestion(question)) continue;
+
       const numberValue = Number(value);
 
       if (Number.isNaN(numberValue)) {
