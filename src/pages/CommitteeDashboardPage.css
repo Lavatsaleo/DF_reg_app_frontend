@@ -1319,3 +1319,131 @@
   transform: translateY(-1px);
   box-shadow: 0 18px 34px rgba(0, 0, 0, 0.2) !important;
 }
+
+.committee-privacy-notice,
+.committee-report-note {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 13px 15px;
+  border-radius: 18px;
+  background: #f8fafc;
+  border: 1px solid #dbe3ef;
+  color: #1f2937;
+  font-weight: 850;
+}
+
+.committee-privacy-notice {
+  margin-bottom: 14px;
+}
+
+.committee-privacy-notice i,
+.committee-report-note i {
+  color: var(--ss-black);
+  font-size: 1.1rem;
+}
+
+.committee-selected-report-card {
+  margin-bottom: 24px;
+  border-top: 6px solid var(--ss-black);
+}
+
+.committee-report-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.committee-report-actions > span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 42px;
+  padding: 9px 13px;
+  border-radius: 999px;
+  background: var(--ss-yellow);
+  color: var(--ss-black);
+  font-weight: 950;
+}
+
+.committee-report-note {
+  margin-bottom: 16px;
+  background: #fff8d6;
+  border-color: #f2d36b;
+  color: #5f4700;
+}
+
+.committee-report-table-wrap {
+  overflow-x: auto;
+  border-radius: 20px;
+  border: 1px solid var(--ss-border);
+}
+
+.committee-report-table {
+  width: 100%;
+  min-width: 1080px;
+  border-collapse: collapse;
+  background: #ffffff;
+}
+
+.committee-report-table th,
+.committee-report-table td {
+  padding: 13px 14px;
+  border-bottom: 1px solid var(--ss-border);
+  vertical-align: top;
+  text-align: left;
+}
+
+.committee-report-table th {
+  background: var(--ss-soft-2);
+  color: var(--ss-black);
+  font-size: 0.78rem;
+  font-weight: 950;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.committee-report-table td {
+  color: #374151;
+  font-weight: 750;
+}
+
+.committee-report-table td strong,
+.committee-report-table td small {
+  display: block;
+}
+
+.committee-report-table td strong {
+  color: var(--ss-black);
+  overflow-wrap: anywhere;
+}
+
+.committee-report-table td small {
+  margin-top: 4px;
+  color: var(--ss-muted);
+  font-size: 0.82rem;
+  overflow-wrap: anywhere;
+}
+
+.committee-report-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.committee-report-generated {
+  margin: 12px 0 0;
+  color: var(--ss-muted);
+  font-weight: 800;
+}
+
+.committee-empty-state.compact {
+  min-height: 140px;
+}
+
+@media (max-width: 760px) {
+  .committee-report-actions,
+  .committee-report-actions .committee-secondary-action {
+    width: 100%;
+  }
+}

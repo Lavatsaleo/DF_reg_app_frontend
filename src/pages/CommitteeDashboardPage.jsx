@@ -53,6 +53,84 @@ function formatDecision(value) {
   return found?.label || String(value || "Pending").replace(/_/g, " ");
 }
 
+function formatYesNo(value) {
+  if (value === true) return "Yes";
+  if (value === false) return "No";
+  return "Not available";
+}
+
+function getParticipantReportFileName(scope) {
+  const safeScope = String(scope || "selected-participants")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+  return `digital-futures-${safeScope || "selected-participants"}-verification-report.csv`;
+}
+
+function csvValue(value) {
+  const text = value === null || value === undefined ? "" : String(value);
+  return `"${text.replace(/"/g, '""')}"`;
+}
+
+function downloadSelectedParticipantsCsv(rows, scope) {
+  const headers = [
+    "Application reference",
+    "Participant code",
+    "Full name",
+    "Phone",
+    "Alternative phone",
+    "Email",
+    "Country",
+    "Admin level",
+    "District/LGA/Sub-county",
+    "Town",
+    "Pathway",
+    "Disability",
+    "Disability type",
+    "Support needs",
+    "Education level",
+    "Employment status",
+    "Skills test percentage",
+    "Selected by",
+    "Reviewed at",
+    "Verification status",
+  ];
+
+  const lines = rows.map((row) => [
+    row.applicationReference,
+    row.participantCode,
+    row.fullName,
+    row.contactNumber,
+    row.alternativeContactNumber,
+    row.email,
+    row.country,
+    row.firstAdminLevel,
+    row.districtLevel,
+    row.town,
+    formatPathwayLabel(row.pathway),
+    formatYesNo(row.hasDisability),
+    row.disabilityType || row.otherDisabilityType || "",
+    row.accessibilityNeeds || "",
+    row.educationLevel,
+    row.employmentStatus,
+    row.skillsTest?.percentage ?? "",
+    row.reviewedBy?.fullName || "",
+    row.reviewedAt ? formatDate(row.reviewedAt) : "",
+    row.verificationStatus || "Pending verification",
+  ]);
+
+  const csv = [headers, ...lines].map((line) => line.map(csvValue).join(",")).join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = getParticipantReportFileName(scope);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
 function getApplicantSubtitle(applicant) {
   return [
     applicant?.participantCode,
@@ -363,48 +441,57 @@ function ApplicantMiniProfile({ applicant }) {
   if (!applicant) return null;
 
   return (
-    <div className="committee-profile-grid">
-      <div>
-        <span>Applicant</span>
-        <strong>{applicant.fullName || "Unnamed applicant"}</strong>
+    <>
+      {applicant.isAnonymized && (
+        <div className="committee-privacy-notice">
+          <i className="bi bi-incognito" aria-hidden="true" />
+          <span>Identity hidden for blind review. Full names and contacts are only available in the selected participants verification report.</span>
+        </div>
+      )}
+
+      <div className="committee-profile-grid">
+        <div>
+          <span>{applicant.isAnonymized ? "Anonymous applicant" : "Applicant"}</span>
+          <strong>{applicant.fullName || "Applicant"}</strong>
+        </div>
+        <div>
+          <span>Participant ID</span>
+          <strong>{applicant.participantCode || "Not available"}</strong>
+        </div>
+        <div>
+          <span>Reference</span>
+          <strong>{applicant.applicationReference || "Not available"}</strong>
+        </div>
+        <div>
+          <span>Pathway</span>
+          <strong>{formatPathwayLabel(applicant.pathway)}</strong>
+        </div>
+        <div>
+          <span>{applicant.isAnonymized ? "Country" : "Location"}</span>
+          <strong>{applicant.isAnonymized ? applicant.country || "Not available" : formatApplicantLocation(applicant)}</strong>
+        </div>
+        <div>
+          <span>Age at application</span>
+          <strong>{applicant.ageAtApplication ?? "Not available"}</strong>
+        </div>
+        <div>
+          <span>Disability</span>
+          <strong>{applicant.hasDisability ? applicant.disabilityType || "Yes" : "No"}</strong>
+        </div>
+        <div>
+          <span>Education</span>
+          <strong>{applicant.educationLevel || "Not available"}</strong>
+        </div>
+        <div>
+          <span>Employment</span>
+          <strong>{applicant.employmentStatus || "Not available"}</strong>
+        </div>
+        <div>
+          <span>Status</span>
+          <strong>{formatStatusLabel(applicant.status)}</strong>
+        </div>
       </div>
-      <div>
-        <span>Participant ID</span>
-        <strong>{applicant.participantCode || "Not available"}</strong>
-      </div>
-      <div>
-        <span>Reference</span>
-        <strong>{applicant.applicationReference || "Not available"}</strong>
-      </div>
-      <div>
-        <span>Pathway</span>
-        <strong>{formatPathwayLabel(applicant.pathway)}</strong>
-      </div>
-      <div>
-        <span>Location</span>
-        <strong>{formatApplicantLocation(applicant)}</strong>
-      </div>
-      <div>
-        <span>Age at application</span>
-        <strong>{applicant.ageAtApplication ?? "Not available"}</strong>
-      </div>
-      <div>
-        <span>Disability</span>
-        <strong>{applicant.hasDisability ? applicant.disabilityType || "Yes" : "No"}</strong>
-      </div>
-      <div>
-        <span>Education</span>
-        <strong>{applicant.educationLevel || "Not available"}</strong>
-      </div>
-      <div>
-        <span>Employment</span>
-        <strong>{applicant.employmentStatus || "Not available"}</strong>
-      </div>
-      <div>
-        <span>Status</span>
-        <strong>{formatStatusLabel(applicant.status)}</strong>
-      </div>
-    </div>
+    </>
   );
 }
 
@@ -417,10 +504,14 @@ function UnassignedApplicantCard({ applicant, onAssign, assigning }) {
         <i className="bi bi-person-lines-fill" />
       </div>
       <div className="committee-waiting-main">
-        <h3>{applicant.fullName || "Unnamed applicant"}</h3>
+        <h3>{applicant.fullName || "Applicant"}</h3>
         <p>{getApplicantSubtitle(applicant)}</p>
         <div className="committee-waiting-meta">
-          <span><i className="bi bi-telephone" aria-hidden="true" /> {applicant.contactNumber || "No phone"}</span>
+          {applicant.isAnonymized ? (
+            <span><i className="bi bi-shield-lock" aria-hidden="true" /> Identity hidden</span>
+          ) : (
+            <span><i className="bi bi-telephone" aria-hidden="true" /> {applicant.contactNumber || "No phone"}</span>
+          )}
           {test && <span><i className="bi bi-journal-check" aria-hidden="true" /> Test {test.score}/{test.maxScore} ({test.percentage}%)</span>}
           <span><i className="bi bi-clock" aria-hidden="true" /> Ready {formatDate(applicant.updatedAt)}</span>
         </div>
@@ -524,6 +615,97 @@ function AssignmentCard({ assignment, members, canReassign, onSelect, onReassign
         </div>
       )}
     </article>
+  );
+}
+
+function SelectedParticipantsReport({ rows, scope, generatedAt }) {
+  return (
+    <section className="committee-section-card committee-selected-report-card">
+      <div className="committee-section-header with-filters">
+        <div>
+          <span className="ss-small-label dark">Verification report</span>
+          <h2>Selected participants for verification</h2>
+          <p>Full participant details are shown here only after selection so the chairperson can coordinate phone or physical verification before DHIS2 enrolment.</p>
+        </div>
+        <div className="committee-report-actions">
+          <span>{rows.length} selected</span>
+          <button
+            type="button"
+            className="btn committee-secondary-action"
+            onClick={() => downloadSelectedParticipantsCsv(rows, scope)}
+            disabled={!rows.length}
+          >
+            <i className="bi bi-download" aria-hidden="true" /> Export CSV
+          </button>
+        </div>
+      </div>
+
+      <div className="committee-report-note">
+        <i className="bi bi-shield-check" aria-hidden="true" />
+        <span>This report contains names and contacts for verification only. It should not be used during blind committee scoring.</span>
+      </div>
+
+      {!rows.length ? (
+        <div className="committee-empty-state compact">
+          <i className="bi bi-clipboard2-check" aria-hidden="true" />
+          <h3>No selected participants yet</h3>
+          <p>Applicants will appear here after the committee records a Selected decision.</p>
+        </div>
+      ) : (
+        <div className="committee-report-table-wrap">
+          <table className="committee-report-table">
+            <thead>
+              <tr>
+                <th>Reference</th>
+                <th>Name</th>
+                <th>Contact</th>
+                <th>Country</th>
+                <th>Location</th>
+                <th>Pathway</th>
+                <th>Disability</th>
+                <th>Test</th>
+                <th>Verification</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((row) => (
+                <tr key={row.id}>
+                  <td>
+                    <strong>{row.applicationReference || row.participantCode || "Not available"}</strong>
+                    {row.participantCode && <small>{row.participantCode}</small>}
+                  </td>
+                  <td>
+                    <strong>{row.fullName || "Not available"}</strong>
+                    <small>{row.email || "No email"}</small>
+                  </td>
+                  <td>
+                    <strong>{row.contactNumber || "No phone"}</strong>
+                    {row.alternativeContactNumber && <small>Alt: {row.alternativeContactNumber}</small>}
+                  </td>
+                  <td>{row.country || "Not available"}</td>
+                  <td>
+                    <strong>{[row.firstAdminLevel, row.districtLevel].filter(Boolean).join(" · ") || "Not available"}</strong>
+                    {row.town && <small>{row.town}</small>}
+                  </td>
+                  <td>{formatPathwayLabel(row.pathway)}</td>
+                  <td>
+                    <strong>{formatYesNo(row.hasDisability)}</strong>
+                    <small>{row.disabilityType || row.otherDisabilityType || "Not stated"}</small>
+                  </td>
+                  <td>{row.skillsTest ? `${row.skillsTest.percentage}%` : "Not available"}</td>
+                  <td>
+                    <strong>{row.verificationStatus || "Pending verification"}</strong>
+                    <small>{row.reviewedAt ? `Selected ${formatDate(row.reviewedAt)}` : "Selection date not available"}</small>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {generatedAt && <p className="committee-report-generated">Generated {formatDate(generatedAt)}</p>}
+    </section>
   );
 }
 
@@ -640,6 +822,7 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
   const [memberForm, setMemberForm] = useState(EMPTY_MEMBER_FORM);
   const [countryAdminForm, setCountryAdminForm] = useState(EMPTY_COUNTRY_ADMIN_FORM);
   const [countryAdmins, setCountryAdmins] = useState([]);
+  const [selectedReport, setSelectedReport] = useState({ rows: [], reportScope: "", generatedAt: null });
   const [filterMemberId, setFilterMemberId] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
   const [search, setSearch] = useState("");
@@ -660,6 +843,7 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
   const countries = overview?.countries || COUNTRY_OPTIONS;
   const canManageCommittee = ["ADMIN", "COUNTRY_ADMIN", "COMMITTEE_CHAIRPERSON"].includes(userRole);
   const canViewUnassignedApplicants = ["ADMIN", "COUNTRY_ADMIN", "COMMITTEE_CHAIRPERSON", "VIEWER"].includes(userRole);
+  const canViewSelectedReport = ["ADMIN", "COMMITTEE_CHAIRPERSON"].includes(userRole);
   const canReassignApplicants = canManageCommittee;
 
   const selectedAssignmentFromList = useMemo(() => {
@@ -699,10 +883,15 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
 
       const [overviewResponse, assignmentsResponse, unassignedResponse] = await Promise.all(requests);
       let staffUsers = [];
+      let selectedReportResponse = null;
 
       if (isSuperAdmin) {
         const staffUsersResponse = await axios.get(`${API_BASE_URL}/api/auth/users`);
         staffUsers = staffUsersResponse.data?.users || [];
+      }
+
+      if (canViewSelectedReport) {
+        selectedReportResponse = await axios.get(`${API_BASE_URL}/api/committee/selected-report`);
       }
 
       setOverview({
@@ -714,6 +903,11 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
       setAssignments(assignmentsResponse.data?.assignments || []);
       setUnassignedApplicants(canViewUnassignedApplicants ? (unassignedResponse?.data?.applicants || []) : []);
       setCountryAdmins(staffUsers.filter((user) => user.role === "COUNTRY_ADMIN"));
+      setSelectedReport(canViewSelectedReport ? {
+        rows: selectedReportResponse?.data?.rows || [],
+        reportScope: selectedReportResponse?.data?.reportScope || currentUserCountry || "",
+        generatedAt: selectedReportResponse?.data?.generatedAt || null,
+      } : { rows: [], reportScope: "", generatedAt: null });
     } catch (loadError) {
       handleApiError(loadError, "Failed to load committee dashboard data.");
     } finally {
@@ -960,6 +1154,14 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
           assigningAll={assigning}
         />
 
+        {canViewSelectedReport && (
+          <SelectedParticipantsReport
+            rows={selectedReport.rows}
+            scope={selectedReport.reportScope}
+            generatedAt={selectedReport.generatedAt}
+          />
+        )}
+
         <div className="committee-layout">
           <div className="committee-management-grid">
             {isSuperAdmin && (
@@ -1024,7 +1226,7 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
                   type="search"
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
-                  placeholder="Search name, ID, phone, or reference"
+                  placeholder={isSuperAdmin ? "Search name, ID, phone, or reference" : "Search anonymous ID, reference, pathway, or status"}
                 />
                 {userRole !== "COMMITTEE_MEMBER" && (
                   <select value={filterMemberId} onChange={(event) => setFilterMemberId(event.target.value)}>
