@@ -42,10 +42,11 @@ function VoiceInputButton({ question, onTranscript }) {
       setMessage("Listening...");
     };
 
-    recognition.onerror = () => {
-      setListening(false);
-      setMessage("Voice typing stopped. Please try again or type your answer.");
-    };
+   recognition.onerror = (event) => {
+  console.error("Speech recognition error:", event.error, event);
+  setListening(false);
+  setMessage(`Voice error: ${event.error}`);
+};
 
     recognition.onend = () => {
       setListening(false);
