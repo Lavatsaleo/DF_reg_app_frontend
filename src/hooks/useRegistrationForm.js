@@ -40,7 +40,7 @@ function normalizeSubmissionResult(apiResult, selectedPathway, contactNumber) {
     pathway: result.pathway || selectedPathway?.id,
     registrationMode: result.registrationMode || selectedPathway?.mode,
     status: result.status || "Submitted",
-    message: result.message || "Your application has been submitted successfully.",
+    message: result.message || "Your Application has been submitted successfully.",
     contactNumber: result.contactNumber || contactNumber || null,
     submittedAt: result.submittedAt || new Date().toISOString(),
   };
@@ -48,6 +48,7 @@ function normalizeSubmissionResult(apiResult, selectedPathway, contactNumber) {
 
 function shouldIncludeQuestionInApplicantView(question, answers) {
   if (question.hiddenFromApplicant) return false;
+  if (question.section === "Jurat / Interpreter") return false;
   return isQuestionVisible(question, answers);
 }
 
@@ -74,6 +75,15 @@ const LOCATION_DEPENDENT_QUESTIONS = {
   STATE: ["DISTRICT"],
   REGION: ["DISTRICT"],
 };
+
+const SUPPLEMENTAL_CONSENT_RESPONSES = [
+  { questionCode: "CONSENT_VERSION", questionText: "Consent version", section: "Consent", responseType: "TEXT" },
+  { questionCode: "CONSENT_NAME_ID_CODE", questionText: "Name / ID code", section: "Consent", responseType: "TEXT" },
+  { questionCode: "CONSENT_SIGNED_DATE", questionText: "Consent date", section: "Consent", responseType: "DATE" },
+  { questionCode: "CONSENT_SIGNATURE_METHOD", questionText: "Electronic signature method", section: "Consent", responseType: "TEXT" },
+  { questionCode: "CONSENT_SIGNATURE_DATA", questionText: "Electronic signature", section: "Consent", responseType: "LONG_TEXT" },
+  { questionCode: "JURAT_SIGNATURE_METHOD", questionText: "Interpreter electronic signature method", section: "Jurat / Interpreter", responseType: "TEXT" },
+];
 
 function clearDependentLocationAnswers(questionCode, nextAnswers) {
   const dependentQuestionCodes = LOCATION_DEPENDENT_QUESTIONS[questionCode] || [];
@@ -117,9 +127,7 @@ export function useRegistrationForm() {
       });
     }
 
-    if (draft.documentType) {
-      setDocumentType(draft.documentType);
-    }
+    if (draft.documentType) setDocumentType(draft.documentType);
 
     if (draft.draftReference) {
       setServerDraftReference(draft.draftReference);
@@ -189,12 +197,9 @@ export function useRegistrationForm() {
         setDraftSaveMessage("Draft saved to the portal.");
       } catch (error) {
         if (!isCurrentSave) return;
-
         const apiMessage = error.response?.data?.message;
         setDraftSaveStatus("error");
-        setDraftSaveMessage(
-          apiMessage || "Draft is still saved on this device, but it could not be saved to the portal."
-        );
+        setDraftSaveMessage(apiMessage || "Draft is still saved on this device, but it could not be saved to the portal.");
       }
     }, 1200);
 
@@ -214,14 +219,11 @@ export function useRegistrationForm() {
         setErrorMessage("");
         setFieldErrors({});
 
-        const response = await axios.get(
-          `${API_BASE_URL}/api/registrations/form/questions`
-        );
-
+        const response = await axios.get(`${API_BASE_URL}/api/registrations/form/questions`);
         setQuestions(response.data.questions || []);
       } catch (error) {
         console.error(error);
-        setErrorMessage("Unable to load the registration form. Please try again.");
+        setErrorMessage("Unable to load the Application form. Please try again.");
       } finally {
         setLoadingQuestions(false);
       }
@@ -231,10 +233,7 @@ export function useRegistrationForm() {
   }, [selectedPathway]);
 
   const groupedQuestions = useMemo(() => {
-    const visibleQuestions = questions.filter((question) =>
-      shouldIncludeQuestionInApplicantView(question, answers)
-    );
-
+    const visibleQuestions = questions.filter((question) => shouldIncludeQuestionInApplicantView(question, answers));
     return groupQuestionsBySection(visibleQuestions);
   }, [questions, answers]);
 
@@ -255,9 +254,7 @@ export function useRegistrationForm() {
     setCurrentStep(0);
 
     if (pathway.status !== "open") {
-      setPathwayMessage(
-        `${pathway.title} is not yet open for registration. For now, please use the Physical Academy workflow.`
-      );
+      setPathwayMessage(`${pathway.title} is not yet open for applications. For now, please use the Physical Academy workflow.`);
       return;
     }
 
@@ -303,16 +300,11 @@ export function useRegistrationForm() {
       return updatedErrors;
     });
 
-    if (errorMessage) {
-      setErrorMessage("");
-    }
+    if (errorMessage) setErrorMessage("");
   }
 
   function handleMultiSelectChange(question, option) {
-    const currentValues = Array.isArray(answers[question.questionCode])
-      ? answers[question.questionCode]
-      : [];
-
+    const currentValues = Array.isArray(answers[question.questionCode]) ? answers[question.questionCode] : [];
     const updatedValues = currentValues.includes(option)
       ? currentValues.filter((item) => item !== option)
       : [...currentValues, option];
@@ -321,7 +313,7 @@ export function useRegistrationForm() {
   }
 
   function buildResponsesPayload() {
-    return questions
+    const formResponses = questions
       .filter((question) => shouldIncludeQuestionInSubmission(question, answers))
       .map((question) => ({
         questionCode: question.questionCode,
@@ -329,11 +321,18 @@ export function useRegistrationForm() {
         questionText: resolveQuestionText(question, answers),
         section: question.section,
         responseType: question.responseType,
-        answer:
-          answers[question.questionCode] === undefined
-            ? null
-            : answers[question.questionCode],
+        answer: answers[question.questionCode] === undefined ? null : answers[question.questionCode],
       }));
+
+    const supplementalConsentResponses = SUPPLEMENTAL_CONSENT_RESPONSES
+      .filter((question) => answers[question.questionCode] !== undefined && answers[question.questionCode] !== null && answers[question.questionCode] !== "")
+      .map((question) => ({
+        ...question,
+        questionNumber: null,
+        answer: answers[question.questionCode],
+      }));
+
+    return [...formResponses, ...supplementalConsentResponses];
   }
 
   function scrollToFormErrors() {
@@ -344,27 +343,15 @@ export function useRegistrationForm() {
   }
 
   function handleValidateQuestions(questionList) {
-    const validationErrors = validateAnswers({
-      questions: questionList,
-      answers,
-      isQuestionVisible,
-    });
+    const validationErrors = validateAnswers({ questions: questionList, answers, isQuestionVisible });
 
     setFieldErrors((previousErrors) => {
       const updatedErrors = { ...previousErrors };
-
-      questionList.forEach((question) => {
-        delete updatedErrors[question.questionCode];
-      });
-
-      return {
-        ...updatedErrors,
-        ...validationErrors,
-      };
+      questionList.forEach((question) => delete updatedErrors[question.questionCode]);
+      return { ...updatedErrors, ...validationErrors };
     });
 
     const hasErrors = Object.keys(validationErrors).length > 0;
-
     if (hasErrors) {
       setErrorMessage("Please complete the highlighted questions before continuing.");
       scrollToFormErrors();
@@ -377,7 +364,6 @@ export function useRegistrationForm() {
 
   async function handleSubmit(event) {
     event.preventDefault();
-
     setSubmitResult(null);
     setErrorMessage("");
 
@@ -398,36 +384,21 @@ export function useRegistrationForm() {
 
     try {
       setSubmitting(true);
-
       const formData = new FormData();
 
       formData.append("pathway", selectedPathway.id);
       formData.append("registrationMode", selectedPathway.mode);
       formData.append("documentType", documentType);
-      if (serverDraftReference) {
-        formData.append("draftReference", serverDraftReference);
-      }
+      if (serverDraftReference) formData.append("draftReference", serverDraftReference);
       formData.append("responses", JSON.stringify(buildResponsesPayload()));
 
-      for (const file of documents) {
-        formData.append("documents", file);
-      }
+      for (const file of documents) formData.append("documents", file);
 
-      const response = await axios.post(
-        `${API_BASE_URL}/api/registrations`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+      const response = await axios.post(`${API_BASE_URL}/api/registrations`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
 
-      const normalizedResult = normalizeSubmissionResult(
-        response.data,
-        selectedPathway,
-        answers.CONTACT_NUMBER
-      );
+      const normalizedResult = normalizeSubmissionResult(response.data, selectedPathway, answers.CONTACT_NUMBER);
       saveSubmittedApplication(normalizedResult, selectedPathway);
       setSubmitResult(normalizedResult);
       setAnswers({});
@@ -442,16 +413,10 @@ export function useRegistrationForm() {
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (error) {
       console.error(error);
-
       const responseData = error.response?.data || {};
 
       if (error.response?.status === 409 && responseData.duplicate) {
-        const duplicateResult = normalizeSubmissionResult(
-          { ...responseData, duplicate: true },
-          selectedPathway,
-          answers.CONTACT_NUMBER
-        );
-
+        const duplicateResult = normalizeSubmissionResult({ ...responseData, duplicate: true }, selectedPathway, answers.CONTACT_NUMBER);
         saveSubmittedApplication(duplicateResult, selectedPathway);
         setSubmitResult(duplicateResult);
         setAnswers({});
@@ -485,11 +450,7 @@ export function useRegistrationForm() {
         setFieldErrors(formatErrors);
       }
 
-      const apiMessage =
-        responseData.message ||
-        responseData.error ||
-        "Failed to submit registration. Please try again.";
-
+      const apiMessage = responseData.message || responseData.error || "Failed to submit Application. Please try again.";
       setErrorMessage(apiMessage);
       scrollToFormErrors();
     } finally {
