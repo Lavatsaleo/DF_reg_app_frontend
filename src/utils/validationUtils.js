@@ -1,4 +1,5 @@
 import { resolveQuestionText } from "./questionDisplay";
+
 function isEmpty(value) {
   return (
     value === undefined ||
@@ -25,18 +26,9 @@ function isLikelyPhoneQuestion(question) {
   return question.responseType === "PHONE" || text.includes("phone") || text.includes("mobile") || text.includes("telephone");
 }
 
-function isLikelyAgeQuestion(question) {
-  const text = `${question.questionCode || ""} ${question.questionText || ""}`.toLowerCase();
-  return question.responseType === "NUMBER" && /\bage\b/.test(text);
-}
-
-function isMonthlyIncomeQuestion(question) {
-  return question.questionCode === "MONTHLY_INCOME_LOCAL_CURRENCY";
-}
-
 function isPersonNameQuestion(question) {
   return question.validationType === "PERSON_NAME" ||
-    ["FIRST_NAME", "LAST_NAME", "NEXT_OF_KIN_NAME"].includes(question.questionCode);
+    ["FIRST_NAME", "MIDDLE_NAME", "LAST_NAME", "NEXT_OF_KIN_NAME", "JURAT_INTERPRETER_NAME", "JURAT_INTERPRETER_SIGNATURE"].includes(question.questionCode);
 }
 
 function isValidPersonName(value) {
@@ -57,47 +49,9 @@ function isAffirmative(value) {
   return ["yes", "true", "1", "y"].includes(normalized) || normalized.startsWith("yes -");
 }
 
-function isWholeNumber(value) {
-  return /^\d+$/.test(String(value || "").trim());
-}
-
-function isValidYear(value) {
-  const year = Number(value);
-  const currentYear = new Date().getFullYear();
-  return Number.isInteger(year) && year >= 1900 && year <= currentYear;
-}
-
-function isValidYearOrNotSure(value) {
-  if (String(value || "").trim() === "Not sure") return true;
-  return isValidYear(value);
-}
-
-function getEstimatedAgeFromYear(value) {
-  const year = Number(value);
-
-  if (!Number.isInteger(year)) return null;
-
-  return new Date().getFullYear() - year;
-}
-
-function isEligibleAgeValue(value) {
-  const age = Number(value);
-  return Number.isInteger(age) && age >= MIN_ELIGIBLE_AGE && age <= MAX_ELIGIBLE_AGE;
-}
-
-function isEligibleYearOfBirth(value) {
-  const estimatedAge = getEstimatedAgeFromYear(value);
-  return estimatedAge !== null && estimatedAge >= MIN_ELIGIBLE_AGE && estimatedAge <= MAX_ELIGIBLE_AGE;
-}
-
-function isValidAge(value) {
-  const age = Number(value);
-  return Number.isInteger(age) && age >= 0 && age <= 120;
-}
-
-function isNonNegativeNumber(value) {
-  const numberValue = Number(value);
-  return Number.isFinite(numberValue) && numberValue >= 0;
+function isValidIdNumber(value) {
+  const clean = String(value || "").trim();
+  return clean.length >= 3 && /^[0-9\s/_.()+#&-]+$/.test(clean);
 }
 
 function getAgeFromDate(value) {
@@ -115,12 +69,41 @@ function getAgeFromDate(value) {
   return age;
 }
 
+function validateRankGroups(questions, answers, errors) {
+  const groups = new Map();
+
+  questions.forEach((question) => {
+    const groupName = question.metadata?.rankGroup;
+    if (!groupName) return;
+
+    const group = groups.get(groupName) || [];
+    group.push(question);
+    groups.set(groupName, group);
+  });
+
+  groups.forEach((groupQuestions) => {
+    const answered = groupQuestions
+      .map((question) => ({ question, value: answers[question.questionCode] }))
+      .filter(({ value }) => !isEmpty(value));
+
+    const valueCounts = answered.reduce((map, item) => {
+      map.set(item.value, (map.get(item.value) || 0) + 1);
+      return map;
+    }, new Map());
+
+    answered.forEach(({ question, value }) => {
+      if ((valueCounts.get(value) || 0) > 1) {
+        errors[question.questionCode] = "Each course must have a different rank. Use each rank from 1 to 4 only once.";
+      }
+    });
+  });
+}
+
 export function validateAnswers({ questions, answers, isQuestionVisible }) {
   const errors = {};
+  const visibleQuestions = questions.filter((question) => isQuestionVisible(question, answers));
 
-  for (const question of questions) {
-    if (!isQuestionVisible(question, answers)) continue;
-
+  for (const question of visibleQuestions) {
     const value = answers[question.questionCode];
     const label = normalizeQuestionText(question, answers);
 
@@ -131,13 +114,18 @@ export function validateAnswers({ questions, answers, isQuestionVisible }) {
 
     if (isEmpty(value)) continue;
 
-    if (question.questionCode === "REGISTRATION_CONSENT" && !isAffirmative(value)) {
-      errors[question.questionCode] = "You must provide consent before submitting the application.";
+    if (["REGISTRATION_CONSENT", "CONSENT_INFORMATION_READ"].includes(question.questionCode) && !isAffirmative(value)) {
+      errors[question.questionCode] = "You must answer Yes to continue with the application.";
       continue;
     }
 
     if (isPersonNameQuestion(question) && !isValidPersonName(value)) {
       errors[question.questionCode] = "Use letters only. Numbers are not allowed in a name.";
+      continue;
+    }
+
+    if (question.validationType === "ID_NUMBER" && !isValidIdNumber(value)) {
+      errors[question.questionCode] = "Use numbers and special characters only. Letters are not allowed.";
       continue;
     }
 
@@ -149,25 +137,6 @@ export function validateAnswers({ questions, answers, isQuestionVisible }) {
     if (isLikelyPhoneQuestion(question) && !isValidPhone(value)) {
       errors[question.questionCode] = "Enter a valid phone number using numbers only, for example 712345678. The country code is added from the country selected above.";
       continue;
-    }
-
-    if (question.validationType === "YEAR_OR_NOT_SURE" && !isValidYearOrNotSure(value)) {
-      errors[question.questionCode] = "Select a valid year or choose Not sure.";
-      continue;
-    }
-
-    if (question.validationType === "ELIGIBLE_YEAR_OF_BIRTH" && !isEligibleYearOfBirth(value)) {
-      errors[question.questionCode] = `Select a year of birth for applicants aged ${MIN_ELIGIBLE_AGE} to ${MAX_ELIGIBLE_AGE}.`;
-      continue;
-    }
-
-    if (question.questionCode === "YEAR_OF_BIRTH" && String(value).trim() !== "Not sure") {
-      const estimatedAge = getEstimatedAgeFromYear(value);
-
-      if (estimatedAge !== null && (estimatedAge < MIN_ELIGIBLE_AGE || estimatedAge > MAX_ELIGIBLE_AGE)) {
-        errors[question.questionCode] = `Applicants must be ${MIN_ELIGIBLE_AGE} to ${MAX_ELIGIBLE_AGE} years old for this pathway.`;
-        continue;
-      }
     }
 
     if (question.responseType === "DATE") {
@@ -186,50 +155,15 @@ export function validateAnswers({ questions, answers, isQuestionVisible }) {
           continue;
         }
 
-        if (age > 120) {
-          errors[question.questionCode] = "Enter a realistic date of birth.";
+        if (age < MIN_ELIGIBLE_AGE || age > MAX_ELIGIBLE_AGE) {
+          errors[question.questionCode] = `Physical Academy applicants must be ${MIN_ELIGIBLE_AGE} to ${MAX_ELIGIBLE_AGE} years old.`;
           continue;
         }
       }
     }
-
-    if (question.responseType === "NUMBER") {
-      if (isMonthlyIncomeQuestion(question)) continue;
-
-      const numberValue = Number(value);
-
-      if (Number.isNaN(numberValue)) {
-        errors[question.questionCode] = "Enter a valid number.";
-        continue;
-      }
-
-      if (question.validationType === "WHOLE_NUMBER" && !isWholeNumber(value)) {
-        errors[question.questionCode] = "Enter a whole number.";
-        continue;
-      }
-
-      if (question.validationType === "YEAR" && !isValidYear(value)) {
-        errors[question.questionCode] = "Enter a valid year in YYYY format.";
-        continue;
-      }
-
-      if ((question.validationType === "AGE" || isLikelyAgeQuestion(question)) && !isValidAge(value)) {
-        errors[question.questionCode] = "Enter a realistic age.";
-        continue;
-      }
-
-      if (question.validationType === "ELIGIBLE_AGE" && !isEligibleAgeValue(value)) {
-        errors[question.questionCode] = `Applicants must be ${MIN_ELIGIBLE_AGE} to ${MAX_ELIGIBLE_AGE} years old for this pathway.`;
-        continue;
-      }
-
-      if (question.validationType === "NON_NEGATIVE_NUMBER" && !isNonNegativeNumber(value)) {
-        errors[question.questionCode] = "Enter zero or a positive number.";
-        continue;
-      }
-    }
   }
 
+  validateRankGroups(visibleQuestions, answers, errors);
   return errors;
 }
 
