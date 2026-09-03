@@ -1,4 +1,5 @@
 import { resolveQuestionText } from "../utils/questionDisplay";
+
 function formatAnswer(value) {
   if (Array.isArray(value)) return value.length > 0 ? value.join(", ") : "Not answered";
   if (value === true) return "Yes";
@@ -13,8 +14,6 @@ function ReviewApplication({
   isActive,
   sectionEntries,
   answers,
-  documents,
-  documentType,
   submitting,
   onToggle,
   onPrevious,
@@ -34,9 +33,7 @@ function ReviewApplication({
           aria-controls={panelId}
           onClick={onToggle}
         >
-          <span className="ss-wizard-step-number" aria-hidden="true">
-            {stepNumber}
-          </span>
+          <span className="ss-wizard-step-number" aria-hidden="true">{stepNumber}</span>
           <span className="ss-wizard-step-copy">
             <span>Review and submit</span>
             <small>Check your answers before sending</small>
@@ -58,9 +55,7 @@ function ReviewApplication({
           <i className="bi bi-shield-check" aria-hidden="true" />
           <div>
             <h3>Almost done</h3>
-            <p>
-              Review your application. Use the edit buttons to go back to a section, or submit when everything looks correct.
-            </p>
+            <p>Review your Application. Use the edit buttons to go back to a section, or submit when everything looks correct.</p>
           </div>
         </div>
 
@@ -84,32 +79,11 @@ function ReviewApplication({
               </dl>
             </article>
           ))}
-
-          <article className="ss-review-card">
-            <div className="ss-review-card-header">
-              <h3>Supporting documents</h3>
-              <button type="button" className="btn btn-sm ss-mini-edit-btn" onClick={() => onEditSection(sectionEntries.length)}>
-                <i className="bi bi-pencil" aria-hidden="true" /> Edit
-              </button>
-            </div>
-            <dl className="ss-review-list">
-              <div>
-                <dt>Document type</dt>
-                <dd>{documentType}</dd>
-              </div>
-              <div>
-                <dt>Files selected</dt>
-                <dd>{documents.length > 0 ? documents.map((file) => file.name).join(", ") : "No files selected"}</dd>
-              </div>
-            </dl>
-          </article>
         </div>
 
         <div className="ss-submit-once-note" role="note">
           <i className="bi bi-shield-check" aria-hidden="true" />
-          <p>
-            Submit this application only once. If the same application is submitted again, the system will open the existing application summary instead of creating a duplicate record.
-          </p>
+          <p>Submit this Application only once. If the same Application is submitted again, the system will open the existing application summary instead of creating a duplicate record.</p>
         </div>
 
         <div className="ss-wizard-actions final">
@@ -124,7 +98,7 @@ function ReviewApplication({
               </>
             ) : (
               <>
-                Submit registration <i className="bi bi-send" aria-hidden="true" />
+                Submit Application <i className="bi bi-send" aria-hidden="true" />
               </>
             )}
           </button>
