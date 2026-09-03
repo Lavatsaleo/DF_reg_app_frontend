@@ -182,14 +182,14 @@ function RegistrationPage({
     answers.CONSENT_SIGNED_DATE &&
     applicantSignatureComplete
   );
-  const juratComplete = !juratRequired || Boolean(
+  const juratCoreComplete = Boolean(
     answers.JURAT_INTERPRETER_NAME &&
     answers.JURAT_INTERPRETER_ADDRESS &&
     answers.JURAT_LANGUAGE &&
     answers.JURAT_SIGNATURE_METHOD &&
-    answers.JURAT_INTERPRETER_SIGNATURE &&
-    answers.JURAT_DATE
+    answers.JURAT_INTERPRETER_SIGNATURE
   );
+  const juratComplete = !juratRequired || Boolean(juratCoreComplete && answers.JURAT_DATE);
   const consentComplete = consentRead === "Yes" &&
     consentParticipate === "Yes" &&
     answers.JURAT_REQUIRED &&
@@ -220,7 +220,7 @@ function RegistrationPage({
       return;
     }
 
-    if (juratRequired && !juratComplete) {
+    if (juratRequired && !juratCoreComplete) {
       setConsentError("Please complete all Jurat interpreter details and the interpreter electronic signature.");
       return;
     }
