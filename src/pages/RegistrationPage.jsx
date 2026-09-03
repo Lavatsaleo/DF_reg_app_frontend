@@ -1,11 +1,14 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import axios from "axios";
 import ApplicationConfirmation from "../components/ApplicationConfirmation";
+import ElectronicSignature from "../components/ElectronicSignature";
 import FormProgress from "../components/FormProgress";
 import RegistrationWizard from "../components/RegistrationWizard";
+import { API_BASE_URL } from "../config/api";
 
 const CONSENT_INFORMATION_QUESTION = {
   questionCode: "CONSENT_INFORMATION_READ",
-  questionText: "I have read and understood this information.",
+  questionText: "I have read and understood this information",
   responseType: "BOOLEAN",
   required: true,
   options: ["Yes", "No"],
@@ -13,11 +16,19 @@ const CONSENT_INFORMATION_QUESTION = {
 
 const CONSENT_PARTICIPATION_QUESTION = {
   questionCode: "REGISTRATION_CONSENT",
-  questionText: "I agree to take part in this questionnaire.",
+  questionText: "I agree to take part in this questionnaire",
   responseType: "BOOLEAN",
   required: true,
   options: ["Yes", "No"],
 };
+
+function localDateString() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
 
 function calculateAge(dateValue) {
   if (!dateValue) return null;
@@ -37,6 +48,7 @@ function getPhysicalEligibilityBlock(answers) {
       title: "The Physical Academy may not be the right pathway for you",
       message: "The Physical Academy requires full availability for the entire 9-month training period.",
       recommendation: "Please return to the pathway options and explore another Digital Futures pathway that may better match your availability.",
+      editQuestionCode: "TRAINING_AVAILABILITY",
     };
   }
 
@@ -46,6 +58,7 @@ function getPhysicalEligibilityBlock(answers) {
       title: "You do not meet the Physical Academy age requirement",
       message: "Physical Academy applicants must be between 18 and 33 years old at the time of application.",
       recommendation: "You can return to the pathway options to review other opportunities that may be available.",
+      editQuestionCode: "DATE_OF_BIRTH",
     };
   }
 
@@ -58,6 +71,7 @@ function getPhysicalEligibilityBlock(answers) {
       title: "You do not meet the Physical Academy education requirement",
       message: "The Physical Academy requires a completed Bachelor’s degree or Postgraduate qualification.",
       recommendation,
+      editQuestionCode: "EDUCATION_LEVEL",
     };
   }
 
@@ -66,6 +80,7 @@ function getPhysicalEligibilityBlock(answers) {
       title: "You do not meet the Physical Academy eligibility requirement",
       message: "The Physical Academy is currently designed for applicants who identify as persons with disabilities.",
       recommendation: "Please return to the pathway options to review other Digital Futures opportunities.",
+      editQuestionCode: "HAS_DISABILITY",
     };
   }
 
@@ -124,23 +139,97 @@ function RegistrationPage({
   onStepChange,
 }) {
   const [editingConsent, setEditingConsent] = useState(false);
-  const [editingEligibility, setEditingEligibility] = useState(false);
+  const [consentDocument, setConsentDocument] = useState(null);
+  const [consentLoading, setConsentLoading] = useState(true);
+  const [consentLoadError, setConsentLoadError] = useState("");
+  const [consentError, setConsentError] = useState("");
   const sectionEntries = Object.entries(groupedQuestions);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadConsent() {
+      try {
+        setConsentLoading(true);
+        setConsentLoadError("");
+        const response = await axios.get(`${API_BASE_URL}/api/consents/current`);
+        if (active) setConsentDocument(response.data?.consent || null);
+      } catch (error) {
+        console.error("Failed to load consent form", error);
+        if (active) setConsentLoadError("Unable to load the consent form. Please try again.");
+      } finally {
+        if (active) setConsentLoading(false);
+      }
+    }
+
+    loadConsent();
+    return () => { active = false; };
+  }, []);
+
+  function setHiddenAnswer(questionCode, value) {
+    onAnswerChange({ questionCode }, value);
+    setConsentError("");
+  }
+
   const consentRead = answers.CONSENT_INFORMATION_READ;
   const consentParticipate = answers.REGISTRATION_CONSENT;
   const consentDenied = consentRead === "No" || consentParticipate === "No";
-  const consentComplete = consentRead === "Yes" && consentParticipate === "Yes";
+  const juratRequired = answers.JURAT_REQUIRED === "Yes";
+  const consentVersionMatches = Boolean(consentDocument?.version) && answers.CONSENT_VERSION === consentDocument.version;
+  const applicantSignatureComplete = Boolean(answers.CONSENT_SIGNATURE_METHOD && answers.CONSENT_SIGNATURE_DATA);
+  const applicantConsentFieldsComplete = Boolean(
+    answers.CONSENT_NAME_ID_CODE &&
+    answers.CONSENT_SIGNED_DATE &&
+    applicantSignatureComplete
+  );
+  const juratComplete = !juratRequired || Boolean(
+    answers.JURAT_INTERPRETER_NAME &&
+    answers.JURAT_INTERPRETER_ADDRESS &&
+    answers.JURAT_LANGUAGE &&
+    answers.JURAT_SIGNATURE_METHOD &&
+    answers.JURAT_INTERPRETER_SIGNATURE &&
+    answers.JURAT_DATE
+  );
+  const consentComplete = consentRead === "Yes" &&
+    consentParticipate === "Yes" &&
+    answers.JURAT_REQUIRED &&
+    applicantConsentFieldsComplete &&
+    juratComplete &&
+    consentVersionMatches;
   const showConsent = !consentComplete || editingConsent;
   const eligibilityBlock = consentComplete ? getPhysicalEligibilityBlock(answers) : null;
 
-  function handleApplicationAnswerChange(question, value) {
-    setEditingEligibility(false);
-    onAnswerChange(question, value);
-  }
+  function continueFromConsent() {
+    if (consentRead !== "Yes" || consentParticipate !== "Yes") {
+      setConsentError("Consent is required before you can continue to the Application.");
+      return;
+    }
 
-  function handleApplicationMultiSelectChange(question, option) {
-    setEditingEligibility(false);
-    onMultiSelectChange(question, option);
+    if (!answers.JURAT_REQUIRED) {
+      setConsentError("Please indicate whether someone translated or explained this Application to you.");
+      return;
+    }
+
+    if (!answers.CONSENT_NAME_ID_CODE) {
+      setConsentError("Please enter your Name / ID code.");
+      return;
+    }
+
+    if (!applicantSignatureComplete) {
+      setConsentError("Please provide your electronic signature.");
+      return;
+    }
+
+    if (juratRequired && !juratComplete) {
+      setConsentError("Please complete all Jurat interpreter details and the interpreter electronic signature.");
+      return;
+    }
+
+    setHiddenAnswer("CONSENT_VERSION", consentDocument.version);
+    if (!answers.CONSENT_SIGNED_DATE) setHiddenAnswer("CONSENT_SIGNED_DATE", localDateString());
+    if (juratRequired && !answers.JURAT_DATE) setHiddenAnswer("JURAT_DATE", localDateString());
+    setEditingConsent(false);
+    setConsentError("");
   }
 
   if (submitResult) {
@@ -155,13 +244,25 @@ function RegistrationPage({
     );
   }
 
-  if (loadingQuestions) {
+  if (loadingQuestions || consentLoading) {
     return (
       <main id="main-content" tabIndex="-1" className="container py-5">
         <section className="ss-loading-card text-center" aria-live="polite">
           <div className="spinner-border" role="status" aria-hidden="true" />
           <h1>Loading {selectedPathway.title} Application...</h1>
-          <p>Please wait while we prepare the application.</p>
+          <p>Please wait while we prepare the Application and consent form.</p>
+        </section>
+      </main>
+    );
+  }
+
+  if (consentLoadError || !consentDocument) {
+    return (
+      <main id="main-content" tabIndex="-1" className="container py-5">
+        <section className="ss-section-card mx-auto" style={{ maxWidth: "800px" }}>
+          <h1>Consent form unavailable</h1>
+          <p>{consentLoadError || "The consent form could not be loaded."}</p>
+          <button type="button" className="btn ss-btn-primary" onClick={() => window.location.reload()}>Try again</button>
         </section>
       </main>
     );
@@ -177,38 +278,89 @@ function RegistrationPage({
             </button>
             <span className="ss-small-label light">Digital Futures Programme</span>
             <h1 id="consent-title">Physical Academy Application</h1>
-            <p>Please read the participant information and provide consent before starting the Application.</p>
+            <p>Please read the consent form carefully before signing and continuing to the Application.</p>
           </div>
         </section>
 
         <section className="container py-5">
           <div className="row justify-content-center">
-            <div className="col-12 col-lg-9">
+            <div className="col-12 col-xl-9">
               <article className="ss-section-card">
-                <span className="ss-small-label dark">Introduction and consent</span>
-                <h2>About this Application</h2>
+                <h2>{consentDocument.introductionTitle}</h2>
+                {consentDocument.introduction.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
+
+                <h2 className="h4 mt-4">{consentDocument.purposeTitle}</h2>
+                {consentDocument.purpose.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
+                {consentDocument.informationLinks.map((item) => (
+                  <p key={item.url}>
+                    {item.before}
+                    <a href={item.url} target="_blank" rel="noreferrer">{item.label}</a>
+                    {item.between}
+                    <a href={item.secondUrl} target="_blank" rel="noreferrer">{item.secondLabel}</a>
+                  </p>
+                ))}
+
+                <h2 className="h4 mt-4">{consentDocument.rightsTitle}</h2>
                 <p>
-                  The Digital Futures programme collects and analyses participants’ information to improve programme activities and ensure they have a positive impact. Sightsavers values your privacy and is committed to protecting your personal data.
-                </p>
-                <p>
-                  We will collect your data for eligibility assessment, selection into the programme and feedback for programme improvement. This may include your name, location, age, sex, contact details and other relevant information. There is no payment or application fee. Your information will be kept private, secure and shared only with approved project partners and data processors.
-                </p>
-                <p>
-                  Taking part is voluntary. You may ask us to delete your information at any time. You have the right to access, correct, delete, restrict or object to the use of your personal data, or request its transfer.
-                </p>
-                <p>
-                  If you have safeguarding concerns, please contact the relevant Country Safeguarding Lead or use the Sightsavers Speak Up platform. For questions about the Application, contact the relevant MEL or Programme Manager.
+                  {consentDocument.rights[0]}
+                  <a href={consentDocument.speakUpUrl} target="_blank" rel="noreferrer">{consentDocument.speakUpUrl}</a>
                 </p>
 
-                <div className="alert alert-light border mt-4">
-                  <strong>By proceeding, you confirm that:</strong>
-                  <ul className="mb-0 mt-2">
-                    <li>you have read and understood this information, or had it explained to you;</li>
-                    <li>you have had the opportunity to ask questions;</li>
-                    <li>you understand that taking part is voluntary and you may stop at any time; and</li>
-                    <li>you agree to take part in the Application.</li>
-                  </ul>
-                </div>
+                <h2 className="h4 mt-4">{consentDocument.questionsTitle}</h2>
+                {consentDocument.questions.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
+
+                <hr className="my-4" />
+
+                <h2 className="h4">{consentDocument.juratTitle}</h2>
+                <p>{consentDocument.juratWhen}</p>
+                <ConsentOption
+                  question={{ questionCode: "JURAT_REQUIRED", questionText: "Did you require someone to translate or explain this Application to you?", options: ["Yes", "No"] }}
+                  value={answers.JURAT_REQUIRED}
+                  onChange={onAnswerChange}
+                />
+
+                {juratRequired && (
+                  <div className="border rounded-4 p-4 mb-4 bg-light">
+                    <p className="fw-semibold">{consentDocument.juratClause}</p>
+                    <div className="row g-3">
+                      <div className="col-12 col-md-6">
+                        <label className="form-label fw-semibold">Interpreter name *</label>
+                        <input className="form-control" type="text" value={answers.JURAT_INTERPRETER_NAME || ""} onChange={(event) => setHiddenAnswer("JURAT_INTERPRETER_NAME", event.target.value)} />
+                      </div>
+                      <div className="col-12 col-md-6">
+                        <label className="form-label fw-semibold">Interpreter address *</label>
+                        <input className="form-control" type="text" value={answers.JURAT_INTERPRETER_ADDRESS || ""} onChange={(event) => setHiddenAnswer("JURAT_INTERPRETER_ADDRESS", event.target.value)} />
+                      </div>
+                      <div className="col-12">
+                        <label className="form-label fw-semibold">Name of language / dialect *</label>
+                        <input className="form-control" type="text" value={answers.JURAT_LANGUAGE || ""} onChange={(event) => setHiddenAnswer("JURAT_LANGUAGE", event.target.value)} />
+                      </div>
+                      <div className="col-12">
+                        <ElectronicSignature
+                          label="Signature of Interpreter"
+                          method={answers.JURAT_SIGNATURE_METHOD || "DRAWN"}
+                          value={answers.JURAT_INTERPRETER_SIGNATURE || ""}
+                          onChange={(method, value) => {
+                            setHiddenAnswer("JURAT_SIGNATURE_METHOD", method);
+                            setHiddenAnswer("JURAT_INTERPRETER_SIGNATURE", value);
+                          }}
+                        />
+                      </div>
+                      <div className="col-12 col-md-6">
+                        <label className="form-label fw-semibold">Date *</label>
+                        <input className="form-control" type="date" value={answers.JURAT_DATE || localDateString()} onChange={(event) => setHiddenAnswer("JURAT_DATE", event.target.value)} />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <hr className="my-4" />
+
+                <h2>{consentDocument.consentTitle}</h2>
+                <p>{consentDocument.consentIntro}</p>
+                <ul>
+                  {consentDocument.consentBullets.map((item) => <li key={item}>{item}</li>)}
+                </ul>
 
                 <ConsentOption question={CONSENT_INFORMATION_QUESTION} value={consentRead} onChange={onAnswerChange} />
                 <ConsentOption question={CONSENT_PARTICIPATION_QUESTION} value={consentParticipate} onChange={onAnswerChange} />
@@ -216,15 +368,49 @@ function RegistrationPage({
                 {consentDenied ? (
                   <div className="alert ss-alert-error" role="alert">
                     <h3 className="h5">Consent is required to continue</h3>
-                    <p className="mb-3">We cannot continue with your Application unless you provide consent.</p>
-                    <button type="button" className="btn ss-btn-primary" onClick={() => setEditingConsent(true)}>
-                      Edit consent
+                    <p>We cannot continue with your Application unless you provide consent.</p>
+                    <button type="button" className="btn ss-btn-primary" onClick={() => setEditingConsent(true)}>Edit consent</button>
+                  </div>
+                ) : consentRead === "Yes" && consentParticipate === "Yes" ? (
+                  <div className="border-top pt-4 mt-4">
+                    <div className="row g-3 mb-3">
+                      <div className="col-12 col-md-8">
+                        <label className="form-label fw-semibold">Name / ID code *</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={answers.CONSENT_NAME_ID_CODE || ""}
+                          onChange={(event) => setHiddenAnswer("CONSENT_NAME_ID_CODE", event.target.value)}
+                          placeholder="Enter your name or ID code"
+                        />
+                      </div>
+                      <div className="col-12 col-md-4">
+                        <label className="form-label fw-semibold">Date *</label>
+                        <input
+                          type="date"
+                          className="form-control"
+                          value={answers.CONSENT_SIGNED_DATE || localDateString()}
+                          onChange={(event) => setHiddenAnswer("CONSENT_SIGNED_DATE", event.target.value)}
+                        />
+                      </div>
+                    </div>
+
+                    <ElectronicSignature
+                      label="Signature (if applicable)"
+                      method={answers.CONSENT_SIGNATURE_METHOD || "DRAWN"}
+                      value={answers.CONSENT_SIGNATURE_DATA || ""}
+                      onChange={(method, value) => {
+                        setHiddenAnswer("CONSENT_SIGNATURE_METHOD", method);
+                        setHiddenAnswer("CONSENT_SIGNATURE_DATA", value);
+                      }}
+                    />
+
+                    {consentError && <div className="alert ss-alert-error mt-3" role="alert">{consentError}</div>}
+
+                    <button type="button" className="btn ss-btn-primary mt-4" onClick={continueFromConsent}>
+                      Continue to Application <i className="bi bi-arrow-right" aria-hidden="true" />
                     </button>
                   </div>
-                ) : consentComplete ? (
-                  <button type="button" className="btn ss-btn-primary" onClick={() => setEditingConsent(false)}>
-                    Continue to Application <i className="bi bi-arrow-right" aria-hidden="true" />
-                  </button>
                 ) : (
                   <p className="text-muted mb-0">Please answer both consent questions to continue.</p>
                 )}
@@ -236,7 +422,7 @@ function RegistrationPage({
     );
   }
 
-  if (eligibilityBlock && !editingEligibility) {
+  if (eligibilityBlock) {
     return (
       <main id="main-content" tabIndex="-1" className="container py-5">
         <section className="ss-section-card mx-auto" style={{ maxWidth: "760px" }}>
@@ -245,10 +431,15 @@ function RegistrationPage({
           <p>{eligibilityBlock.message}</p>
           <div className="alert alert-info">{eligibilityBlock.recommendation}</div>
           <div className="d-flex flex-wrap gap-3">
-            <button type="button" className="btn ss-btn-primary" onClick={onBackToPathways}>
-              Choose another pathway
-            </button>
-            <button type="button" className="btn ss-btn-outline" onClick={() => setEditingEligibility(true)}>
+            <button type="button" className="btn ss-btn-primary" onClick={onBackToPathways}>Choose another pathway</button>
+            <button
+              type="button"
+              className="btn ss-btn-outline"
+              onClick={() => {
+                setHiddenAnswer(eligibilityBlock.editQuestionCode, "");
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+            >
               Edit my answer
             </button>
           </div>
@@ -269,6 +460,9 @@ function RegistrationPage({
               <span className="ss-small-label light">Digital Futures Participant Application</span>
               <h1 id="application-title">{selectedPathway.title} Application</h1>
               <p>Complete the required fields carefully. Eligibility is checked as you progress through the Application.</p>
+              <button type="button" className="btn btn-sm ss-btn-outline" onClick={() => setEditingConsent(true)}>
+                <i className="bi bi-pencil" aria-hidden="true" /> Review or edit consent
+              </button>
             </div>
 
             <div className="col-12 col-lg-4">
@@ -301,8 +495,8 @@ function RegistrationPage({
               draftSaveStatus={draftSaveStatus}
               draftSaveMessage={draftSaveMessage}
               currentStep={currentStep}
-              onAnswerChange={handleApplicationAnswerChange}
-              onMultiSelectChange={handleApplicationMultiSelectChange}
+              onAnswerChange={onAnswerChange}
+              onMultiSelectChange={onMultiSelectChange}
               onSubmit={onSubmit}
               onValidateQuestions={onValidateQuestions}
               onDocumentsChange={onDocumentsChange}
