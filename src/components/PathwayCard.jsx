@@ -30,7 +30,7 @@ function PathwayCard({ pathway, onSelect }) {
         className={`btn w-100 mt-auto ${isOpen ? "ss-btn-primary" : "ss-btn-muted"}`}
         onClick={() => onSelect(pathway)}
       >
-        {isOpen ? `Start ${pathway.title} registration` : "Not yet available"}
+        {isOpen ? `Start ${pathway.title} application` : "Not yet available"}
       </button>
     </article>
   );
