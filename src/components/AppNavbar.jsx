@@ -1,8 +1,18 @@
 import logo from "../assets/sightsavers-logo.png";
 
-function AppNavbar({ selectedPathway, currentView, onBackToPathways, onCheckStatus, onShowCommittee, showStatusButton = true }) {
+function AppNavbar({
+  selectedPathway,
+  currentView,
+  onBackToPathways,
+  onCheckStatus,
+  onShowCommittee,
+  onShowConsents,
+  showConsentsButton = false,
+  showStatusButton = true,
+}) {
   const isStatusPage = currentView === "status";
   const isCommitteePage = currentView === "committee";
+  const isConsentsPage = currentView === "consents";
 
   return (
     <nav className="navbar navbar-expand-lg ss-navbar sticky-top" aria-label="Main navigation">
@@ -20,7 +30,7 @@ function AppNavbar({ selectedPathway, currentView, onBackToPathways, onCheckStat
 
         <div className="d-flex align-items-center gap-2 ms-auto">
           <span className="ss-nav-chip d-none d-xl-inline-flex">
-            <i className="bi bi-shield-check" aria-hidden="true" /> Registration Portal
+            <i className="bi bi-shield-check" aria-hidden="true" /> Application Portal
           </span>
 
           {showStatusButton && (
@@ -34,12 +44,19 @@ function AppNavbar({ selectedPathway, currentView, onBackToPathways, onCheckStat
             </button>
           )}
 
-          {(selectedPathway || isStatusPage || isCommitteePage) && (
+          {showConsentsButton && onShowConsents && (
             <button
               type="button"
-              className="btn ss-nav-back"
-              onClick={onBackToPathways}
+              className={`btn ${isConsentsPage ? "ss-nav-back" : "ss-nav-status"}`}
+              onClick={onShowConsents}
+              aria-current={isConsentsPage ? "page" : undefined}
             >
+              <i className="bi bi-file-earmark-check" aria-hidden="true" /> Consents
+            </button>
+          )}
+
+          {(selectedPathway || isStatusPage || isCommitteePage || isConsentsPage) && (
+            <button type="button" className="btn ss-nav-back" onClick={onBackToPathways}>
               <i className="bi bi-house" aria-hidden="true" /> Home
             </button>
           )}
@@ -49,8 +66,8 @@ function AppNavbar({ selectedPathway, currentView, onBackToPathways, onCheckStat
               type="button"
               className={`btn ss-committee-corner ${isCommitteePage ? "active" : ""}`}
               onClick={onShowCommittee}
-              aria-label="Committee login"
-              title="Committee login"
+              aria-label="Staff workspace"
+              title="Staff workspace"
               aria-current={isCommitteePage ? "page" : undefined}
             >
               <i className="bi bi-person-circle" aria-hidden="true" />
