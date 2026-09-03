@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import DocumentUploadSection from "./DocumentUploadSection";
 import FormErrorSummary from "./FormErrorSummary";
 import ResultAlert from "./ResultAlert";
 import ReviewApplication from "./ReviewApplication";
@@ -41,7 +40,6 @@ function formatSavedTime(timestamp) {
   }
 }
 
-
 function getDraftStatusIcon(status) {
   if (status === "saving") return "bi-cloud-arrow-up";
   if (status === "saved") return "bi-cloud-check";
@@ -50,8 +48,8 @@ function getDraftStatusIcon(status) {
 }
 
 function getDraftStatusText({ status, message, lastSavedAt }) {
-  if (status === "saving") return message || "Saving draft to the portal...";
-  if (status === "saved") return `Draft saved to portal: ${formatSavedTime(lastSavedAt)}`;
+  if (status === "saving") return message || "Saving application draft to the portal...";
+  if (status === "saved") return `Application draft saved: ${formatSavedTime(lastSavedAt)}`;
   if (status === "error") return message || "Draft saved on this device only.";
   if (message) return message;
   return `Draft saved: ${formatSavedTime(lastSavedAt)}`;
@@ -62,7 +60,6 @@ function RegistrationWizard({
   groupedQuestions,
   answers,
   documents,
-  documentType,
   submitting,
   submitResult,
   errorMessage,
@@ -77,31 +74,24 @@ function RegistrationWizard({
   onMultiSelectChange,
   onSubmit,
   onValidateQuestions,
-  onDocumentsChange,
-  onDocumentTypeChange,
   onClearDraft,
   onStepChange,
 }) {
   const sectionEntries = useMemo(() => Object.entries(groupedQuestions), [groupedQuestions]);
-  const documentStepIndex = sectionEntries.length;
-  const reviewStepIndex = sectionEntries.length + 1;
-  const totalSteps = sectionEntries.length + 2;
+  const reviewStepIndex = sectionEntries.length;
+  const totalSteps = sectionEntries.length + 1;
   const [activeStep, setActiveStep] = useState(() => Math.max(0, Number(currentStep) || 0));
-  const [announcement, setAnnouncement] = useState("Start with the first section of the registration form.");
+  const [announcement, setAnnouncement] = useState("Start with the first section of the application form.");
   const hasAppliedRestoredStep = useRef(false);
 
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
-    if (activeStep > reviewStepIndex) {
-      setActiveStep(0);
-    }
+    if (activeStep > reviewStepIndex) setActiveStep(0);
   }, [activeStep, reviewStepIndex]);
 
   useEffect(() => {
     if (hasAppliedRestoredStep.current) return;
-
     const restoredStep = Math.max(0, Math.min(Number(currentStep) || 0, reviewStepIndex));
-
     if (restoredStep > 0) {
       hasAppliedRestoredStep.current = true;
       setActiveStep(restoredStep);
@@ -139,7 +129,6 @@ function RegistrationWizard({
 
   function continueFromSection(index, questions) {
     const isValid = onValidateQuestions(questions);
-
     if (!isValid) {
       setAnnouncement("Please complete the highlighted questions before continuing.");
       return;
@@ -150,39 +139,33 @@ function RegistrationWizard({
     goToStep(nextStep);
   }
 
-  function handleSubmit(event) {
-    onSubmit(event);
-  }
-
   if (sectionEntries.length === 0) {
     return (
       <section className="ss-section-card">
         <div className="ss-empty-state">
           <i className="bi bi-ui-checks" aria-hidden="true" />
           <h2>No questions are currently available</h2>
-          <p>The form loaded successfully, but no questions were returned by the backend.</p>
+          <p>The application loaded successfully, but no questions were returned by the backend.</p>
         </div>
       </section>
     );
   }
 
   return (
-    <form className="ss-form-shell ss-registration-wizard" onSubmit={handleSubmit} noValidate aria-describedby="registration-form-guidance">
+    <form className="ss-form-shell ss-registration-wizard" onSubmit={onSubmit} noValidate aria-describedby="registration-form-guidance">
       <p id="registration-form-guidance" className="visually-hidden">
-        This is a guided step-by-step form. Fields marked with an asterisk are required. Use the Save and continue button to move through each section.
+        This is a guided step-by-step application. Fields marked with an asterisk are required. Use Save and continue to move through each section.
       </p>
 
       <div className="ss-wizard-topper ss-executive-wizard-topper">
         <div>
-          <span className="ss-small-label dark">Fast guided application</span>
-          <h2>{selectedPathway.title} Registration</h2>
-          <p>
-            A guided accessible application. Complete the required fields, review once, and submit.
-          </p>
+          <span className="ss-small-label dark">Digital Futures Participant Application</span>
+          <h2>{selectedPathway.title} Application</h2>
+          <p>Complete one section at a time, review your answers, and submit once.</p>
           <div className="ss-quick-facts" aria-label="Application summary">
-            <span><i className="bi bi-clock" aria-hidden="true" /> About 10–15 minutes</span>
-            <span><i className="bi bi-shield-check" aria-hidden="true" /> One application per person</span>
-            <span><i className="bi bi-envelope-check" aria-hidden="true" /> Test link sent if eligible</span>
+            <span><i className="bi bi-clock" aria-hidden="true" /> About 5–7 minutes</span>
+            <span><i className="bi bi-shield-check" aria-hidden="true" /> Your information is protected</span>
+            <span><i className="bi bi-envelope-check" aria-hidden="true" /> Eligible applicants receive the next-step link</span>
           </div>
         </div>
 
@@ -190,9 +173,7 @@ function RegistrationWizard({
           <i className={`bi ${getDraftStatusIcon(draftSaveStatus)}`} aria-hidden="true" />
           <span>{getDraftStatusText({ status: draftSaveStatus, message: draftSaveMessage, lastSavedAt: draftLastSavedAt })}</span>
           {draftReference && <small>Draft ref: {draftReference}</small>}
-          <button type="button" className="btn btn-sm ss-link-button" onClick={onClearDraft}>
-            Clear
-          </button>
+          <button type="button" className="btn btn-sm ss-link-button" onClick={onClearDraft}>Clear</button>
         </div>
       </div>
 
@@ -207,7 +188,6 @@ function RegistrationWizard({
       </div>
 
       <div className="visually-hidden" aria-live="polite">{announcement}</div>
-
       <FormErrorSummary errors={fieldErrors} />
 
       {errorMessage && (
@@ -243,21 +223,6 @@ function RegistrationWizard({
           );
         })}
 
-        <div id={`wizard-step-${documentStepIndex}`}>
-          <DocumentUploadSection
-            stepNumber={documentStepIndex + 1}
-            totalSteps={totalSteps}
-            isActive={activeStep === documentStepIndex}
-            documents={documents}
-            documentType={documentType}
-            onToggle={() => goToStep(documentStepIndex)}
-            onPrevious={() => goToStep(documentStepIndex - 1)}
-            onContinue={() => goToStep(reviewStepIndex)}
-            onDocumentsChange={onDocumentsChange}
-            onDocumentTypeChange={onDocumentTypeChange}
-          />
-        </div>
-
         <div id={`wizard-step-${reviewStepIndex}`}>
           <ReviewApplication
             stepNumber={reviewStepIndex + 1}
@@ -265,8 +230,8 @@ function RegistrationWizard({
             isActive={activeStep === reviewStepIndex}
             sectionEntries={sectionEntries}
             answers={answers}
-            documents={documents}
-            documentType={documentType}
+            documents={documents || []}
+            documentType="OTHER"
             submitting={submitting}
             onToggle={() => goToStep(reviewStepIndex)}
             onPrevious={() => goToStep(reviewStepIndex - 1)}
