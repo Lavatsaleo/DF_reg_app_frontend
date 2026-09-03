@@ -15,7 +15,7 @@ function LandingPage({ pathwayMessage, onPathwaySelect, onCheckStatus }) {
                 Digital skills. <span>Inclusive futures.</span>
               </h1>
               <p className="ss-subtitle mt-4">
-                A streamlined registration portal for the Digital Futures Project, designed for fast application, accessible participation, and end-to-end participant tracking.
+                An accessible application portal for the Digital Futures Project, designed for fast application, inclusive participation, and end-to-end participant tracking.
               </p>
               <div className="d-flex flex-column flex-sm-row gap-3 mt-4">
                 <a href="#pathways" className="btn ss-btn-primary">
@@ -35,7 +35,7 @@ function LandingPage({ pathwayMessage, onPathwaySelect, onCheckStatus }) {
                   <span />
                 </div>
                 <div className="ss-panel-content">
-                  <span>Registration</span>
+                  <span>Applications</span>
                   <strong>Open</strong>
                   <p>Physical Academy intake</p>
                 </div>
@@ -49,7 +49,7 @@ function LandingPage({ pathwayMessage, onPathwaySelect, onCheckStatus }) {
                     <span>Open now</span>
                   </div>
                   <div>
-                    <strong>~5m</strong>
+                    <strong>~5–7m</strong>
                     <span>To apply</span>
                   </div>
                 </div>
@@ -66,13 +66,13 @@ function LandingPage({ pathwayMessage, onPathwaySelect, onCheckStatus }) {
               <span className="ss-small-label dark">Before you apply</span>
               <h2 id="before-apply-title">Simple, accessible, and trackable</h2>
               <p>
-                Applicants complete one short application. The system checks first-level eligibility in the background, prevents duplicates, and keeps the same participant identifier across testing and review.
+                Select a pathway, review the consent information, and complete the Application. The system checks first-level eligibility, prevents duplicates, and keeps the same participant identifier across testing and review.
               </p>
             </div>
             <div className="ss-before-apply-steps" role="list">
-              <div role="listitem"><span>1</span><strong>Apply in minutes</strong><small>Only essential questions are required.</small></div>
-              <div role="listitem"><span>2</span><strong>Background screening</strong><small>Eligibility runs quietly after submission.</small></div>
-              <div role="listitem"><span>3</span><strong>Secure test link</strong><small>Eligible applicants receive the Basic IT skills test by email.</small></div>
+              <div role="listitem"><span>1</span><strong>Select a pathway</strong><small>Start with the pathway that best matches your goals.</small></div>
+              <div role="listitem"><span>2</span><strong>Consent and apply</strong><small>Read the consent information before completing the Application.</small></div>
+              <div role="listitem"><span>3</span><strong>Secure next step</strong><small>Eligible applicants receive the Basic IT skills test by email.</small></div>
             </div>
           </div>
         </div>
