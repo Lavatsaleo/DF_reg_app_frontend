@@ -128,10 +128,11 @@ function IneligibleConfirmation({ result, selectedPathway, onStartNewApplication
               </div>
             </div>
           </div>
-        </section>
-      </main>
-    );
-  }
+        </div>
+      </section>
+    </main>
+  );
+}
 
 function ApplicationConfirmation({ result, selectedPathway, onStartNewApplication, onCheckStatus }) {
   const screeningStatus = getScreeningStatus(result);
