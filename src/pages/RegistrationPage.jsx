@@ -124,6 +124,7 @@ function RegistrationPage({
   onStepChange,
 }) {
   const [editingConsent, setEditingConsent] = useState(false);
+  const [editingEligibility, setEditingEligibility] = useState(false);
   const sectionEntries = Object.entries(groupedQuestions);
   const consentRead = answers.CONSENT_INFORMATION_READ;
   const consentParticipate = answers.REGISTRATION_CONSENT;
@@ -131,6 +132,16 @@ function RegistrationPage({
   const consentComplete = consentRead === "Yes" && consentParticipate === "Yes";
   const showConsent = !consentComplete || editingConsent;
   const eligibilityBlock = consentComplete ? getPhysicalEligibilityBlock(answers) : null;
+
+  function handleApplicationAnswerChange(question, value) {
+    setEditingEligibility(false);
+    onAnswerChange(question, value);
+  }
+
+  function handleApplicationMultiSelectChange(question, option) {
+    setEditingEligibility(false);
+    onMultiSelectChange(question, option);
+  }
 
   if (submitResult) {
     return (
@@ -225,7 +236,7 @@ function RegistrationPage({
     );
   }
 
-  if (eligibilityBlock) {
+  if (eligibilityBlock && !editingEligibility) {
     return (
       <main id="main-content" tabIndex="-1" className="container py-5">
         <section className="ss-section-card mx-auto" style={{ maxWidth: "760px" }}>
@@ -237,7 +248,7 @@ function RegistrationPage({
             <button type="button" className="btn ss-btn-primary" onClick={onBackToPathways}>
               Choose another pathway
             </button>
-            <button type="button" className="btn ss-btn-outline" onClick={() => window.history.back()}>
+            <button type="button" className="btn ss-btn-outline" onClick={() => setEditingEligibility(true)}>
               Edit my answer
             </button>
           </div>
@@ -290,8 +301,8 @@ function RegistrationPage({
               draftSaveStatus={draftSaveStatus}
               draftSaveMessage={draftSaveMessage}
               currentStep={currentStep}
-              onAnswerChange={onAnswerChange}
-              onMultiSelectChange={onMultiSelectChange}
+              onAnswerChange={handleApplicationAnswerChange}
+              onMultiSelectChange={handleApplicationMultiSelectChange}
               onSubmit={onSubmit}
               onValidateQuestions={onValidateQuestions}
               onDocumentsChange={onDocumentsChange}
