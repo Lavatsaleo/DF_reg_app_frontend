@@ -7,6 +7,7 @@ import RegistrationPage from "./pages/RegistrationPage";
 import StatusCheckPage from "./pages/StatusCheckPage";
 import SkillsTestPage from "./pages/SkillsTestPage";
 import CommitteeDashboardPage from "./pages/CommitteeDashboardPage";
+import ConsentRecordsPage from "./pages/ConsentRecordsPage";
 import StaffLoginPage from "./pages/StaffLoginPage";
 import { useAccessibilityPreferences } from "./hooks/useAccessibilityPreferences";
 import { useRegistrationForm } from "./hooks/useRegistrationForm";
@@ -18,11 +19,8 @@ function getInitialSkillsTestToken() {
 }
 
 function configureAxiosAuth(token) {
-  if (token) {
-    axios.defaults.headers.common.Authorization = `Bearer ${token}`;
-  } else {
-    delete axios.defaults.headers.common.Authorization;
-  }
+  if (token) axios.defaults.headers.common.Authorization = `Bearer ${token}`;
+  else delete axios.defaults.headers.common.Authorization;
 }
 
 function App() {
@@ -39,9 +37,7 @@ function App() {
   }, [staffSession?.token]);
 
   function resetBrowserPath() {
-    if (window.location.pathname !== "/") {
-      window.history.replaceState({}, "", "/");
-    }
+    if (window.location.pathname !== "/") window.history.replaceState({}, "", "/");
   }
 
   function handleShowHome() {
@@ -60,12 +56,25 @@ function App() {
     registration.handleBackToPathways();
   }
 
-
   function handleShowCommittee() {
     resetBrowserPath();
     setCurrentView(staffSession?.token ? "committee" : "staff-login");
     setSkillsTestReference("");
     setSkillsTestToken("");
+    registration.handleBackToPathways();
+  }
+
+  function handleShowConsents() {
+    resetBrowserPath();
+    if (!staffSession?.token) {
+      setCurrentView("staff-login");
+      return;
+    }
+    if (staffSession?.user?.role !== "ADMIN") {
+      setCurrentView("committee");
+      return;
+    }
+    setCurrentView("consents");
     registration.handleBackToPathways();
   }
 
@@ -109,12 +118,11 @@ function App() {
     registration.submitResult?.status === "INELIGIBLE" ||
     registration.submitResult?.screeningStatus === "NOT_ELIGIBLE"
   );
+  const canViewConsentArchive = staffSession?.user?.role === "ADMIN";
 
   return (
     <>
-      <a className="ss-skip-link" href="#main-content">
-        Skip to main content
-      </a>
+      <a className="ss-skip-link" href="#main-content">Skip to main content</a>
 
       <AppNavbar
         selectedPathway={registration.selectedPathway}
@@ -123,6 +131,8 @@ function App() {
         onCheckStatus={handleShowStatus}
         showStatusButton={showStatusButton}
         onShowCommittee={handleShowCommittee}
+        onShowConsents={handleShowConsents}
+        showConsentsButton={canViewConsentArchive}
       />
 
       <AccessibilityToolbar
@@ -138,6 +148,11 @@ function App() {
           staffUser={staffSession?.user}
           onBackHome={handleShowHome}
           onStaffLogout={handleStaffLogout}
+          onSessionExpired={handleSessionExpired}
+        />
+      ) : currentView === "consents" ? (
+        <ConsentRecordsPage
+          onBack={handleShowCommittee}
           onSessionExpired={handleSessionExpired}
         />
       ) : currentView === "status" ? (
