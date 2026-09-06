@@ -111,7 +111,7 @@ function ConsentRecord({ record, printOnlyId, onPrint }) {
           <p>☑ {record.informationRead ? "Yes" : "No"} — I have read and understood this information</p>
           <p>☑ {record.agreedToParticipate ? "Yes" : "No"} — I agree to take part in this questionnaire</p>
           <dl className="row">
-            <dt className="col-sm-4">Name / ID code</dt><dd className="col-sm-8">{record.nameOrIdCode || "Not available"}</dd>
+            <dt className="col-sm-4">Name</dt><dd className="col-sm-8">{record.nameOrIdCode || "Not available"}</dd>
             <dt className="col-sm-4">Date</dt><dd className="col-sm-8">{formatDate(record.signedDate)}</dd>
           </dl>
           <SignatureDisplay method={record.signatureMethod} data={record.signatureData} label="Signature" />
