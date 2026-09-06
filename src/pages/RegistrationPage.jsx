@@ -139,10 +139,14 @@ function RegistrationPage({
   onStepChange,
 }) {
   const [editingConsent, setEditingConsent] = useState(false);
+  const [juratConfirmed, setJuratConfirmed] = useState(() => Boolean(
+    answers.CONSENT_VERSION || answers.CONSENT_INFORMATION_READ || answers.REGISTRATION_CONSENT
+  ));
   const [consentDocument, setConsentDocument] = useState(null);
   const [consentLoading, setConsentLoading] = useState(true);
   const [consentLoadError, setConsentLoadError] = useState("");
   const [consentError, setConsentError] = useState("");
+  const [juratError, setJuratError] = useState("");
   const sectionEntries = Object.entries(groupedQuestions);
 
   useEffect(() => {
@@ -169,6 +173,7 @@ function RegistrationPage({
   function setHiddenAnswer(questionCode, value) {
     onAnswerChange({ questionCode }, value);
     setConsentError("");
+    setJuratError("");
   }
 
   const consentRead = answers.CONSENT_INFORMATION_READ;
@@ -189,15 +194,35 @@ function RegistrationPage({
     answers.JURAT_SIGNATURE_METHOD &&
     answers.JURAT_INTERPRETER_SIGNATURE
   );
-  const juratComplete = !juratRequired || Boolean(juratCoreComplete && answers.JURAT_DATE);
+  const juratComplete = answers.JURAT_REQUIRED === "No" || Boolean(juratRequired && juratCoreComplete && answers.JURAT_DATE);
   const consentComplete = consentRead === "Yes" &&
     consentParticipate === "Yes" &&
-    answers.JURAT_REQUIRED &&
-    applicantConsentFieldsComplete &&
     juratComplete &&
+    applicantConsentFieldsComplete &&
     consentVersionMatches;
-  const showConsent = !consentComplete || editingConsent;
-  const eligibilityBlock = consentComplete ? getPhysicalEligibilityBlock(answers) : null;
+  const showJurat = !juratConfirmed && !consentComplete;
+  const showConsent = !showJurat && (!consentComplete || editingConsent);
+  const eligibilityBlock = consentComplete && !editingConsent ? getPhysicalEligibilityBlock(answers) : null;
+
+  function continueFromJurat() {
+    if (!answers.JURAT_REQUIRED) {
+      setJuratError("Please indicate whether someone translated or explained this Application to you.");
+      return;
+    }
+
+    if (juratRequired && !juratCoreComplete) {
+      setJuratError("Please complete all Jurat interpreter details and the interpreter electronic signature.");
+      return;
+    }
+
+    if (juratRequired && !answers.JURAT_DATE) {
+      setHiddenAnswer("JURAT_DATE", localDateString());
+    }
+
+    setJuratConfirmed(true);
+    setJuratError("");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
 
   function continueFromConsent() {
     if (consentRead !== "Yes" || consentParticipate !== "Yes") {
@@ -205,13 +230,8 @@ function RegistrationPage({
       return;
     }
 
-    if (!answers.JURAT_REQUIRED) {
-      setConsentError("Please indicate whether someone translated or explained this Application to you.");
-      return;
-    }
-
     if (!answers.CONSENT_NAME_ID_CODE) {
-      setConsentError("Please enter your Name / ID code.");
+      setConsentError("Please enter your Name.");
       return;
     }
 
@@ -220,16 +240,11 @@ function RegistrationPage({
       return;
     }
 
-    if (juratRequired && !juratCoreComplete) {
-      setConsentError("Please complete all Jurat interpreter details and the interpreter electronic signature.");
-      return;
-    }
-
     setHiddenAnswer("CONSENT_VERSION", consentDocument.version);
     if (!answers.CONSENT_SIGNED_DATE) setHiddenAnswer("CONSENT_SIGNED_DATE", localDateString());
-    if (juratRequired && !answers.JURAT_DATE) setHiddenAnswer("JURAT_DATE", localDateString());
     setEditingConsent(false);
     setConsentError("");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   if (submitResult) {
@@ -268,17 +283,17 @@ function RegistrationPage({
     );
   }
 
-  if (showConsent) {
+  if (showJurat) {
     return (
       <main id="main-content" tabIndex="-1">
-        <section className="ss-form-hero" aria-labelledby="consent-title">
+        <section className="ss-form-hero" aria-labelledby="jurat-title">
           <div className="container">
             <button type="button" className="btn ss-btn-outline mb-4" onClick={onBackToPathways}>
               <i className="bi bi-arrow-left" aria-hidden="true" /> Back to pathways
             </button>
             <span className="ss-small-label light">Digital Futures Programme</span>
-            <h1 id="consent-title">Physical Academy Application</h1>
-            <p>Please read the consent form carefully before signing and continuing to the Application.</p>
+            <h1 id="jurat-title">Physical Academy Application</h1>
+            <p>Before opening the consent form, please tell us whether the Application needs to be translated or explained to you.</p>
           </div>
         </section>
 
@@ -286,35 +301,14 @@ function RegistrationPage({
           <div className="row justify-content-center">
             <div className="col-12 col-xl-9">
               <article className="ss-section-card">
-                <h2>{consentDocument.introductionTitle}</h2>
-                {consentDocument.introduction.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
-
-                <h2 className="h4 mt-4">{consentDocument.purposeTitle}</h2>
-                {consentDocument.purpose.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
-                {consentDocument.informationLinks.map((item) => (
-                  <p key={item.url}>
-                    {item.before}
-                    <a href={item.url} target="_blank" rel="noreferrer">{item.label}</a>
-                    {item.between}
-                    <a href={item.secondUrl} target="_blank" rel="noreferrer">{item.secondLabel}</a>
-                  </p>
-                ))}
-
-                <h2 className="h4 mt-4">{consentDocument.rightsTitle}</h2>
-                <p>
-                  {consentDocument.rights[0]}
-                  <a href={consentDocument.speakUpUrl} target="_blank" rel="noreferrer">{consentDocument.speakUpUrl}</a>
-                </p>
-
-                <h2 className="h4 mt-4">{consentDocument.questionsTitle}</h2>
-                {consentDocument.questions.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
-
-                <hr className="my-4" />
-
-                <h2 className="h4">{consentDocument.juratTitle}</h2>
+                <h2>{consentDocument.juratTitle}</h2>
                 <p>{consentDocument.juratWhen}</p>
                 <ConsentOption
-                  question={{ questionCode: "JURAT_REQUIRED", questionText: "Did you require someone to translate or explain this Application to you?", options: ["Yes", "No"] }}
+                  question={{
+                    questionCode: "JURAT_REQUIRED",
+                    questionText: "Did you require someone to translate or explain this Application to you?",
+                    options: ["Yes", "No"],
+                  }}
                   value={answers.JURAT_REQUIRED}
                   onChange={onAnswerChange}
                 />
@@ -354,6 +348,70 @@ function RegistrationPage({
                   </div>
                 )}
 
+                {juratError && <div className="alert ss-alert-error" role="alert">{juratError}</div>}
+
+                {answers.JURAT_REQUIRED && (
+                  <button type="button" className="btn ss-btn-primary" onClick={continueFromJurat}>
+                    Continue to Consent <i className="bi bi-arrow-right" aria-hidden="true" />
+                  </button>
+                )}
+              </article>
+            </div>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  if (showConsent) {
+    return (
+      <main id="main-content" tabIndex="-1">
+        <section className="ss-form-hero" aria-labelledby="consent-title">
+          <div className="container">
+            <button
+              type="button"
+              className="btn ss-btn-outline mb-4"
+              onClick={() => {
+                setJuratConfirmed(false);
+                setEditingConsent(false);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+            >
+              <i className="bi bi-arrow-left" aria-hidden="true" /> Back to Jurat
+            </button>
+            <span className="ss-small-label light">Digital Futures Programme</span>
+            <h1 id="consent-title">Physical Academy Application</h1>
+            <p>Please read the consent form carefully before signing and continuing to the Application.</p>
+          </div>
+        </section>
+
+        <section className="container py-5">
+          <div className="row justify-content-center">
+            <div className="col-12 col-xl-9">
+              <article className="ss-section-card">
+                <h2>{consentDocument.introductionTitle}</h2>
+                {consentDocument.introduction.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
+
+                <h2 className="h4 mt-4">{consentDocument.purposeTitle}</h2>
+                {consentDocument.purpose.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
+                {consentDocument.informationLinks.map((item) => (
+                  <p key={item.url}>
+                    {item.before}
+                    <a href={item.url} target="_blank" rel="noreferrer">{item.label}</a>
+                    {item.between}
+                    <a href={item.secondUrl} target="_blank" rel="noreferrer">{item.secondLabel}</a>
+                  </p>
+                ))}
+
+                <h2 className="h4 mt-4">{consentDocument.rightsTitle}</h2>
+                <p>
+                  {consentDocument.rights[0]}
+                  <a href={consentDocument.speakUpUrl} target="_blank" rel="noreferrer">{consentDocument.speakUpUrl}</a>
+                </p>
+
+                <h2 className="h4 mt-4">{consentDocument.questionsTitle}</h2>
+                {consentDocument.questions.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
+
                 <hr className="my-4" />
 
                 <h2>{consentDocument.consentTitle}</h2>
@@ -375,13 +433,13 @@ function RegistrationPage({
                   <div className="border-top pt-4 mt-4">
                     <div className="row g-3 mb-3">
                       <div className="col-12 col-md-8">
-                        <label className="form-label fw-semibold">Name / ID code *</label>
+                        <label className="form-label fw-semibold">Name *</label>
                         <input
                           type="text"
                           className="form-control"
                           value={answers.CONSENT_NAME_ID_CODE || ""}
                           onChange={(event) => setHiddenAnswer("CONSENT_NAME_ID_CODE", event.target.value)}
-                          placeholder="Enter your name or ID code"
+                          placeholder="Enter your name"
                         />
                       </div>
                       <div className="col-12 col-md-4">
