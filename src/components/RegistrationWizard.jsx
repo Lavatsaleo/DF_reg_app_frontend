@@ -77,7 +77,10 @@ function RegistrationWizard({
   onClearDraft,
   onStepChange,
 }) {
-  const sectionEntries = useMemo(() => Object.entries(groupedQuestions), [groupedQuestions]);
+  const sectionEntries = useMemo(
+    () => Object.entries(groupedQuestions).filter(([section]) => section !== "Jurat / Interpreter"),
+    [groupedQuestions]
+  );
   const reviewStepIndex = sectionEntries.length;
   const totalSteps = sectionEntries.length + 1;
   const [activeStep, setActiveStep] = useState(() => Math.max(0, Number(currentStep) || 0));
