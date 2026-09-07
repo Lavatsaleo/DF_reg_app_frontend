@@ -7,8 +7,18 @@ function getMetadataCountryValue(question, answers, key) {
   return valuesByCountry[country] || null;
 }
 
+function getMetadataPathwayValue(question, answers, key) {
+  const pathway = answers?.COURSE_APPLIED_FOR;
+  const valuesByPathway = question?.metadata?.[key];
+
+  if (!pathway || !valuesByPathway || typeof valuesByPathway !== "object") return null;
+
+  return valuesByPathway[pathway] || null;
+}
+
 export function resolveQuestionText(question, answers = {}) {
-  return getMetadataCountryValue(question, answers, "labelByCountry") ||
+  return getMetadataPathwayValue(question, answers, "labelByPathway") ||
+    getMetadataCountryValue(question, answers, "labelByCountry") ||
     question?.questionText ||
     question?.label ||
     question?.questionCode ||
@@ -16,5 +26,8 @@ export function resolveQuestionText(question, answers = {}) {
 }
 
 export function resolveQuestionHelpText(question, answers = {}) {
-  return getMetadataCountryValue(question, answers, "helpTextByCountry") || question?.helpText || "";
+  return getMetadataPathwayValue(question, answers, "helpTextByPathway") ||
+    getMetadataCountryValue(question, answers, "helpTextByCountry") ||
+    question?.helpText ||
+    "";
 }
