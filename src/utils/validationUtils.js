@@ -99,6 +99,16 @@ function validateRankGroups(questions, answers, errors) {
   });
 }
 
+function validateExclusiveOptions(question, value, errors) {
+  const exclusiveOptions = question.metadata?.exclusiveOptions;
+  if (!Array.isArray(value) || !Array.isArray(exclusiveOptions) || value.length <= 1) return;
+
+  const selectedExclusive = value.find((item) => exclusiveOptions.includes(item));
+  if (selectedExclusive) {
+    errors[question.questionCode] = `${selectedExclusive} cannot be selected together with another option.`;
+  }
+}
+
 export function validateAnswers({ questions, answers, isQuestionVisible }) {
   const errors = {};
   const visibleQuestions = questions.filter((question) => isQuestionVisible(question, answers));
@@ -113,6 +123,9 @@ export function validateAnswers({ questions, answers, isQuestionVisible }) {
     }
 
     if (isEmpty(value)) continue;
+
+    validateExclusiveOptions(question, value, errors);
+    if (errors[question.questionCode]) continue;
 
     if (["REGISTRATION_CONSENT", "CONSENT_INFORMATION_READ"].includes(question.questionCode) && !isAffirmative(value)) {
       errors[question.questionCode] = "You must answer Yes to continue with the application.";
@@ -156,7 +169,7 @@ export function validateAnswers({ questions, answers, isQuestionVisible }) {
         }
 
         if (age < MIN_ELIGIBLE_AGE || age > MAX_ELIGIBLE_AGE) {
-          errors[question.questionCode] = `Physical Academy applicants must be ${MIN_ELIGIBLE_AGE} to ${MAX_ELIGIBLE_AGE} years old.`;
+          errors[question.questionCode] = `Applicants must be ${MIN_ELIGIBLE_AGE} to ${MAX_ELIGIBLE_AGE} years old.`;
           continue;
         }
       }
