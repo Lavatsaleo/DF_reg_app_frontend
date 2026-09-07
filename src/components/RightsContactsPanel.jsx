@@ -21,6 +21,11 @@ function RightsContactsPanel({ consent, residenceCountry, detectedCountry, compa
     <aside className={`ss-section-card ${compact ? "p-3" : "p-4"}`} aria-label="Your rights and country contacts">
       <span className="ss-small-label dark">Your rights & contacts</span>
       <h2 className={compact ? "h5 mt-2" : "h4 mt-2"}>Help is always visible</h2>
+
+      {consent?.rightsIntro && (
+        <p className="small mb-3">{consent.rightsIntro}</p>
+      )}
+
       <p className="small text-muted">{contextLabel}</p>
 
       <div className="d-grid gap-3">
@@ -38,6 +43,10 @@ function RightsContactsPanel({ consent, residenceCountry, detectedCountry, compa
           </div>
         ))}
       </div>
+
+      {consent?.questionsIntro && (
+        <p className="small mt-3 mb-0">{consent.questionsIntro}</p>
+      )}
 
       <div className="border-top mt-3 pt-3 small">
         <strong className="d-block mb-1">Speak Up</strong>
