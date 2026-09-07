@@ -22,6 +22,11 @@ export function detectProgrammeCountry(latitude, longitude) {
 
 export function requestProgrammeCountry() {
   return new Promise((resolve) => {
+    if (typeof window !== "undefined" && !window.isSecureContext) {
+      resolve({ country: null, status: "insecure_context" });
+      return;
+    }
+
     if (!navigator.geolocation) {
       resolve({ country: null, status: "unavailable" });
       return;
@@ -44,6 +49,17 @@ export function requestProgrammeCountry() {
   });
 }
 
+export function getConsentContactCountries({ detectedCountry }) {
+  if (PROGRAMME_COUNTRIES.includes(detectedCountry)) return [detectedCountry];
+  return PROGRAMME_COUNTRIES;
+}
+
+export function getApplicationContactCountries({ residenceCountry }) {
+  if (PROGRAMME_COUNTRIES.includes(residenceCountry)) return [residenceCountry];
+  return PROGRAMME_COUNTRIES;
+}
+
+// Retained for compatibility with any older components still using the helper.
 export function getContactCountries({ residenceCountry, detectedCountry }) {
   if (PROGRAMME_COUNTRIES.includes(residenceCountry)) return [residenceCountry];
   if (PROGRAMME_COUNTRIES.includes(detectedCountry)) return [detectedCountry];
