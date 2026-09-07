@@ -11,6 +11,13 @@ function formatDate(value) {
   }
 }
 
+function formatJuratClause(template, jurat = {}) {
+  return String(template || "")
+    .replace("[name]", jurat.interpreterName || "[name]")
+    .replace("[address]", jurat.interpreterAddress || "[address]")
+    .replace("[name of language]", jurat.language || "[name of language]");
+}
+
 function SignatureDisplay({ method, data, label }) {
   if (!data) return <span>Not available</span>;
 
@@ -60,9 +67,8 @@ function ConsentText({ consent, contactsDisplayedAtSigning }) {
       {Array.isArray(contactsDisplayedAtSigning) && contactsDisplayedAtSigning.length > 0 && (
         <div className="border rounded-4 p-3 mb-3">
           {contactsDisplayedAtSigning.map((row) => (
-            <div key={row.country} className="mb-3">
-              <strong>{row.country}</strong><br />
-              Country Safeguarding Lead: <ContactValue value={row.safeguarding} />
+            <div key={`safeguarding-${row.country}`} className="mb-2">
+              <strong>{row.country}:</strong> <ContactValue value={row.safeguarding} />
             </div>
           ))}
         </div>
@@ -74,7 +80,7 @@ function ConsentText({ consent, contactsDisplayedAtSigning }) {
       {Array.isArray(contactsDisplayedAtSigning) && contactsDisplayedAtSigning.length > 0 && (
         <div className="border rounded-4 p-3 mb-3">
           {contactsDisplayedAtSigning.map((row) => (
-            <div key={row.country} className="mb-2">
+            <div key={`questions-${row.country}`} className="mb-2">
               <strong>{row.country}:</strong> <ContactValue value={row.questions} />
             </div>
           ))}
@@ -114,7 +120,7 @@ function ConsentRecord({ record, printOnlyId, onPrint }) {
           <section className="border rounded-4 p-4 my-4">
             <h3 className="h5">{consent.juratTitle}</h3>
             <p>{consent.juratWhen}</p>
-            <p className="fw-semibold">{consent.juratClause}</p>
+            <p className="fw-semibold">{formatJuratClause(consent.juratClause, record.jurat)}</p>
             <dl className="row mb-3">
               <dt className="col-sm-4">Interpreter name</dt><dd className="col-sm-8">{record.jurat?.interpreterName || "Not available"}</dd>
               <dt className="col-sm-4">Interpreter address</dt><dd className="col-sm-8">{record.jurat?.interpreterAddress || "Not available"}</dd>
