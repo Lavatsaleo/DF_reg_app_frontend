@@ -34,7 +34,12 @@ function SignatureDisplay({ method, data, label }) {
   );
 }
 
-function ConsentText({ consent }) {
+function ContactValue({ value }) {
+  const text = String(value || "To be confirmed");
+  return text.includes("@") ? <a href={`mailto:${text}`}>{text}</a> : <span>{text}</span>;
+}
+
+function ConsentText({ consent, contactsDisplayedAtSigning }) {
   if (!consent) return <p>Consent wording for this historical version is not available.</p>;
 
   return (
@@ -51,17 +56,30 @@ function ConsentText({ consent }) {
       ))}
 
       <h3>{consent.rightsTitle}</h3>
-      <p>{consent.rights[0]}<a href={consent.speakUpUrl}>{consent.speakUpUrl}</a></p>
+      <p>{consent.rightsIntro}</p>
+      {Array.isArray(contactsDisplayedAtSigning) && contactsDisplayedAtSigning.length > 0 && (
+        <div className="border rounded-4 p-3 mb-3">
+          {contactsDisplayedAtSigning.map((row) => (
+            <div key={row.country} className="mb-3">
+              <strong>{row.country}</strong><br />
+              Country Safeguarding Lead: <ContactValue value={row.safeguarding} />
+            </div>
+          ))}
+        </div>
+      )}
+      <p>{consent.speakUpPrefix}<a href={consent.speakUpUrl}>{consent.speakUpUrl}</a></p>
 
       <h3>{consent.questionsTitle}</h3>
-      {consent.questions.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
-
-      <h3>{consent.juratTitle}</h3>
-      <p>{consent.juratWhen}</p>
-
-      <h3>{consent.consentTitle}</h3>
-      <p>{consent.consentIntro}</p>
-      <ul>{consent.consentBullets.map((item) => <li key={item}>{item}</li>)}</ul>
+      <p>{consent.questionsIntro}</p>
+      {Array.isArray(contactsDisplayedAtSigning) && contactsDisplayedAtSigning.length > 0 && (
+        <div className="border rounded-4 p-3 mb-3">
+          {contactsDisplayedAtSigning.map((row) => (
+            <div key={row.country} className="mb-2">
+              <strong>{row.country}:</strong> <ContactValue value={row.questions} />
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -77,7 +95,7 @@ function ConsentRecord({ record, printOnlyId, onPrint }) {
           <div>
             <span className="ss-small-label dark">Signed consent</span>
             <h2 className="h4 mb-1">{record.applicantName || record.nameOrIdCode || "Applicant"}</h2>
-            <p className="mb-0 text-muted">{record.applicationReference || record.participantCode || "No reference"} · {record.country || "Country not available"}</p>
+            <p className="mb-0 text-muted">{record.applicationReference || record.participantCode || "No reference"} · {record.countryOfResidence || "Country not available"}</p>
           </div>
           <button type="button" className="btn ss-btn-outline" onClick={() => onPrint(record.applicantId)}>
             <i className="bi bi-printer" aria-hidden="true" /> Print this consent
@@ -86,10 +104,11 @@ function ConsentRecord({ record, printOnlyId, onPrint }) {
 
         <div className="border rounded-4 p-3 mb-4">
           <strong>Consent version:</strong> {record.consentVersion || "Not available"}<br />
+          <strong>Detected country at consent:</strong> {record.detectedCountryAtConsent || "Undetermined"}<br />
+          <strong>Country of residence:</strong> {record.countryOfResidence || "Not available"}<br />
+          <strong>Contact context shown when signed:</strong> {record.contactContextAtSigning || "Not available"}<br />
           <strong>Application submitted:</strong> {formatDate(record.submittedAt)}
         </div>
-
-        <ConsentText consent={consent} />
 
         {record.juratRequired && consent && (
           <section className="border rounded-4 p-4 my-4">
@@ -105,6 +124,8 @@ function ConsentRecord({ record, printOnlyId, onPrint }) {
             <SignatureDisplay method={record.jurat?.signatureMethod} data={record.jurat?.signatureData} label="Signature of Interpreter" />
           </section>
         )}
+
+        <ConsentText consent={consent} contactsDisplayedAtSigning={record.contactsDisplayedAtSigning} />
 
         <section className="border-top pt-4 mt-4">
           <h3 className="h5">Your Consent</h3>
@@ -194,7 +215,7 @@ function ConsentRecordsPage({ onBack, onSessionExpired }) {
       {loading ? (
         <div className="text-center py-5 consent-page-actions"><div className="spinner-border" role="status" /><p className="mt-3">Loading signed consents...</p></div>
       ) : records.length === 0 ? (
-        <div className="ss-section-card consent-page-actions"><h2>No signed consents yet</h2><p>Consent records will appear here after applicants submit the new Physical Academy Application.</p></div>
+        <div className="ss-section-card consent-page-actions"><h2>No signed consents yet</h2><p>Consent records will appear here after applicants submit an Application.</p></div>
       ) : (
         records.map((record) => <ConsentRecord key={record.applicantId} record={record} printOnlyId={printOnlyId} onPrint={printOne} />)
       )}
