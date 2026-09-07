@@ -8,7 +8,7 @@ import RightsContactsPanel from "../components/RightsContactsPanel";
 import { API_BASE_URL } from "../config/api";
 import {
   buildContactSnapshot,
-  getContactCountries,
+  getConsentContactCountries,
   requestProgrammeCountry,
 } from "../utils/countryContext";
 
@@ -108,6 +108,13 @@ function getPathwayEligibilityBlock(answers, selectedPathway) {
   return null;
 }
 
+function formatJuratClause(template, answers) {
+  return String(template || "")
+    .replace("[name]", answers.JURAT_INTERPRETER_NAME?.trim() || "[name]")
+    .replace("[address]", answers.JURAT_INTERPRETER_ADDRESS?.trim() || "[address]")
+    .replace("[name of language]", answers.JURAT_LANGUAGE?.trim() || "[name of language]");
+}
+
 function ConsentOption({ question, value, onChange }) {
   return (
     <fieldset className="border-0 p-0 mb-4">
@@ -135,17 +142,17 @@ function ContactValue({ value }) {
   return text.includes("@") ? <a href={`mailto:${text}`}>{text}</a> : <span>{text}</span>;
 }
 
-function ConsentCountryContacts({ consent, residenceCountry, detectedCountry }) {
-  const countries = getContactCountries({ residenceCountry, detectedCountry });
+function ConsentCountryContacts({ consent, detectedCountry, type }) {
+  const countries = getConsentContactCountries({ detectedCountry });
   const contacts = buildContactSnapshot(consent, countries);
+  const isSafeguarding = type === "safeguarding";
 
   return (
     <div className="border rounded-4 p-3 mb-4 bg-light">
       {contacts.map((row) => (
-        <div key={row.country} className="mb-3 last-child-mb-0">
-          <strong>{row.country}</strong>
-          <div>Country Safeguarding Lead: <ContactValue value={row.safeguarding} /></div>
-          <div>Questions or concerns: <ContactValue value={row.questions} /></div>
+        <div key={`${type}-${row.country}`} className="mb-2">
+          <strong>{row.country}: </strong>
+          <ContactValue value={isSafeguarding ? row.safeguarding : row.questions} />
         </div>
       ))}
     </div>
@@ -253,8 +260,8 @@ function ContextualApplicationPage({
     consentVersionMatches;
 
   const residenceCountry = answers.COUNTRY || "";
-  const contactCountries = consentDocument
-    ? getContactCountries({ residenceCountry, detectedCountry })
+  const consentContactCountries = consentDocument
+    ? getConsentContactCountries({ detectedCountry })
     : [];
   const eligibilityBlock = consentComplete ? getPathwayEligibilityBlock(answers, selectedPathway) : null;
 
@@ -295,8 +302,8 @@ function ContextualApplicationPage({
     }
 
     const signedDate = answers.CONSENT_SIGNED_DATE || localDateString();
-    const contextCountry = residenceCountry || detectedCountry || "ALL";
-    const snapshot = buildContactSnapshot(consentDocument, contactCountries);
+    const contextCountry = detectedCountry || "ALL";
+    const snapshot = buildContactSnapshot(consentDocument, consentContactCountries);
 
     setHiddenAnswer("CONSENT_VERSION", consentDocument.version);
     setHiddenAnswer("CONSENT_SIGNED_DATE", signedDate);
@@ -376,7 +383,7 @@ function ContextualApplicationPage({
 
                   {juratRequired && (
                     <div className="border rounded-4 p-4 mb-4 bg-light">
-                      <p className="fw-semibold">{consentDocument.juratClause}</p>
+                      <p className="fw-semibold">{formatJuratClause(consentDocument.juratClause, answers)}</p>
                       <div className="row g-3">
                         <div className="col-12 col-md-6">
                           <label className="form-label fw-semibold">Interpreter name *</label>
@@ -442,7 +449,7 @@ function ContextualApplicationPage({
 
                   <h2 className="h4 mt-4">{consentDocument.rightsTitle}</h2>
                   <p>{consentDocument.rightsIntro}</p>
-                  <ConsentCountryContacts consent={consentDocument} residenceCountry={residenceCountry} detectedCountry={detectedCountry} />
+                  <ConsentCountryContacts consent={consentDocument} detectedCountry={detectedCountry} type="safeguarding" />
                   <p>
                     {consentDocument.speakUpPrefix}
                     <a href={consentDocument.speakUpUrl} target="_blank" rel="noreferrer">{consentDocument.speakUpUrl}</a>
@@ -450,7 +457,13 @@ function ContextualApplicationPage({
 
                   <h2 className="h4 mt-4">{consentDocument.questionsTitle}</h2>
                   <p>{consentDocument.questionsIntro}</p>
-                  <ConsentCountryContacts consent={consentDocument} residenceCountry={residenceCountry} detectedCountry={detectedCountry} />
+                  <ConsentCountryContacts consent={consentDocument} detectedCountry={detectedCountry} type="questions" />
+
+                  {locationStatus !== "checking" && locationStatus !== "detected" && (
+                    <div className="alert alert-info">
+                      We could not confirm a programme country from your current location, so contacts for all four programme countries are shown.
+                    </div>
+                  )}
 
                   <hr className="my-4" />
                   <h2>{consentDocument.consentTitle}</h2>
@@ -574,7 +587,6 @@ function ContextualApplicationPage({
               <RightsContactsPanel
                 consent={consentDocument}
                 residenceCountry={residenceCountry}
-                detectedCountry={detectedCountry}
               />
             </div>
           </div>
