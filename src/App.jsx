@@ -3,7 +3,7 @@ import axios from "axios";
 import AccessibilityToolbar from "./components/AccessibilityToolbar";
 import AppNavbar from "./components/AppNavbar";
 import LandingPage from "./pages/LandingPage";
-import RegistrationPage from "./pages/RegistrationPage";
+import ContextualApplicationPage from "./pages/ContextualApplicationPage";
 import StatusCheckPage from "./pages/StatusCheckPage";
 import SkillsTestPage from "./pages/SkillsTestPage";
 import CommitteeDashboardPage from "./pages/CommitteeDashboardPage";
@@ -175,7 +175,7 @@ function App() {
           onCheckStatus={handleShowStatus}
         />
       ) : (
-        <RegistrationPage
+        <ContextualApplicationPage
           selectedPathway={registration.selectedPathway}
           groupedQuestions={registration.groupedQuestions}
           answers={registration.answers}
