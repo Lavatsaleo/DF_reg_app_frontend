@@ -11,7 +11,7 @@ export const pathways = [
     highlights: [
       "Face-to-face training",
       "Bachelor’s degree required",
-      "Full training availability required",
+      "Full 9-month availability required",
       "Practical classroom support",
       "Peer learning and mentorship",
     ],
@@ -20,15 +20,17 @@ export const pathways = [
     id: "VIRTUAL_ACADEMY",
     title: "Virtual Academy",
     mode: "VIRTUAL",
-    status: "coming_soon",
+    status: "open",
     tag: "Online learning",
     icon: "bi-laptop",
     description:
-      "Access digital skills training remotely through a guided virtual learning pathway.",
+      "Build digital skills through a guided 4-month online learning pathway with mentorship and internship support.",
     highlights: [
+      "4-month online training",
+      "Diploma or higher required",
+      "Full training availability required",
+      "Mentorship and internship support",
       "Remote participation",
-      "Online learning resources",
-      "Flexible learning support",
     ],
   },
   {
