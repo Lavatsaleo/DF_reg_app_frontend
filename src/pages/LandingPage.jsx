@@ -2,6 +2,8 @@ import { pathways } from "../data/pathways";
 import PathwayCard from "../components/PathwayCard";
 
 function LandingPage({ pathwayMessage, onPathwaySelect, onCheckStatus }) {
+  const openPathways = pathways.filter((pathway) => pathway.status === "open");
+
   return (
     <main id="main-content" tabIndex="-1">
       <section className="ss-hero">
@@ -37,15 +39,15 @@ function LandingPage({ pathwayMessage, onPathwaySelect, onCheckStatus }) {
                 <div className="ss-panel-content">
                   <span>Applications</span>
                   <strong>Open</strong>
-                  <p>Physical Academy intake</p>
+                  <p>Physical and Virtual Academy intake</p>
                 </div>
                 <div className="ss-metric-row">
                   <div>
-                    <strong>3</strong>
+                    <strong>{pathways.length}</strong>
                     <span>Pathways</span>
                   </div>
                   <div>
-                    <strong>1</strong>
+                    <strong>{openPathways.length}</strong>
                     <span>Open now</span>
                   </div>
                   <div>
@@ -66,12 +68,12 @@ function LandingPage({ pathwayMessage, onPathwaySelect, onCheckStatus }) {
               <span className="ss-small-label dark">Before you apply</span>
               <h2 id="before-apply-title">Simple, accessible, and trackable</h2>
               <p>
-                Select a pathway, review the consent information, and complete the Application. The system checks first-level eligibility, prevents duplicates, and keeps the same participant identifier across testing and review.
+                Select a pathway, review the Jurat and consent information, and complete the Application. The system checks first-level eligibility, prevents duplicates, and keeps the same participant identifier across testing and review.
               </p>
             </div>
             <div className="ss-before-apply-steps" role="list">
               <div role="listitem"><span>1</span><strong>Select a pathway</strong><small>Start with the pathway that best matches your goals.</small></div>
-              <div role="listitem"><span>2</span><strong>Consent and apply</strong><small>Read the consent information before completing the Application.</small></div>
+              <div role="listitem"><span>2</span><strong>Jurat, consent and apply</strong><small>Complete the accessibility/translation check and consent before the Application.</small></div>
               <div role="listitem"><span>3</span><strong>Secure next step</strong><small>Eligible applicants receive the Basic IT skills test by email.</small></div>
             </div>
           </div>
@@ -85,7 +87,7 @@ function LandingPage({ pathwayMessage, onPathwaySelect, onCheckStatus }) {
               <span className="ss-small-label dark">Choose your pathway</span>
               <h2 className="ss-section-title display-6">Select a Digital Futures pathway</h2>
             </div>
-            <span className="ss-count-badge">3 pathways</span>
+            <span className="ss-count-badge">{pathways.length} pathways</span>
           </div>
 
           {pathwayMessage && (
