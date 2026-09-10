@@ -99,7 +99,7 @@ function getPathwayEligibilityBlock(answers, selectedPathway) {
   if (answers.HAS_DISABILITY === "No") {
     return {
       title: `You do not meet the ${selectedPathway.title} eligibility requirement`,
-      message: `${selectedPathway.title} is currently designed for applicants who identify as persons with disabilities.`,
+      message: `${selectedPathway.title} is currently designed for applicants who identify as people with disabilities.`,
       recommendation: "Please return to the pathway options to review other Digital Futures opportunities.",
       editQuestionCode: "HAS_DISABILITY",
     };
@@ -188,7 +188,7 @@ function ContextualApplicationPage({
   onClearDraft,
   onStepChange,
 }) {
-  const [entryStage, setEntryStage] = useState("jurat");
+  const [entryStage, setEntryStage] = useState("consent");
   const [editingConsent, setEditingConsent] = useState(false);
   const [consentDocument, setConsentDocument] = useState(null);
   const [consentLoading, setConsentLoading] = useState(true);
@@ -265,26 +265,6 @@ function ContextualApplicationPage({
     : [];
   const eligibilityBlock = consentComplete ? getPathwayEligibilityBlock(answers, selectedPathway) : null;
 
-  function continueFromJurat() {
-    if (!answers.JURAT_REQUIRED) {
-      setEntryError("Please indicate whether someone translated or explained this Application to you.");
-      return;
-    }
-
-    if (juratRequired && !juratCoreComplete) {
-      setEntryError("Please complete the interpreter details and electronic signature before continuing.");
-      return;
-    }
-
-    if (juratRequired && !answers.JURAT_DATE) {
-      setHiddenAnswer("JURAT_DATE", localDateString());
-    }
-
-    setEntryStage("consent");
-    setEntryError("");
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }
-
   function continueFromConsent() {
     if (consentRead !== "Yes" || consentParticipate !== "Yes") {
       setEntryError("Consent is required before you can continue to the Application.");
@@ -310,6 +290,26 @@ function ContextualApplicationPage({
     setHiddenAnswer("CONSENT_DETECTED_COUNTRY", detectedCountry || "Undetermined");
     setHiddenAnswer("CONSENT_CONTACT_CONTEXT", contextCountry);
     setHiddenAnswer("CONSENT_CONTACTS_AT_SIGNING", JSON.stringify(snapshot));
+    setEntryStage("jurat");
+    setEntryError("");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function continueFromJurat() {
+    if (!answers.JURAT_REQUIRED) {
+      setEntryError("Please indicate whether someone translated or explained this Application to you.");
+      return;
+    }
+
+    if (juratRequired && !juratCoreComplete) {
+      setEntryError("Please complete the interpreter details and electronic signature before continuing.");
+      return;
+    }
+
+    if (juratRequired && !answers.JURAT_DATE) {
+      setHiddenAnswer("JURAT_DATE", localDateString());
+    }
+
     setEditingConsent(false);
     setEntryError("");
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -332,7 +332,7 @@ function ContextualApplicationPage({
       <main id="main-content" tabIndex="-1" className="container py-5">
         <section className="ss-loading-card text-center" aria-live="polite">
           <div className="spinner-border" role="status" aria-hidden="true" />
-          <h1>Loading {selectedPathway.title} Application...</h1>
+          <h1>Loading {selectedPathway.title} application...</h1>
           <p>Please wait while we prepare the Application.</p>
         </section>
       </main>
@@ -362,8 +362,8 @@ function ContextualApplicationPage({
               <i className="bi bi-arrow-left" aria-hidden="true" /> Back to pathways
             </button>
             <span className="ss-small-label light">Digital Futures Programme</span>
-            <h1>{selectedPathway.title} Application</h1>
-            <p>{showJurat ? "First, tell us whether the Application needs to be translated or explained." : "Please read the consent form carefully before signing."}</p>
+            <h1>{selectedPathway.title} application</h1>
+            <p>{showJurat ? "Consent is complete. Please tell us whether the Application was translated or explained to you." : "Please read the consent information carefully before signing."}</p>
           </div>
         </section>
 
@@ -372,8 +372,15 @@ function ContextualApplicationPage({
             <div className="col-12 col-xl-9">
               {showJurat ? (
                 <article className="ss-section-card">
-                  <span className="ss-small-label dark">Step 1 of 2</span>
-                  <h2 className="mt-2">{consentDocument.juratTitle}</h2>
+                  <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-start gap-3 mb-3">
+                    <div>
+                      <span className="ss-small-label dark">Step 2 of 2 · Jurat</span>
+                      <h2 className="mt-2">{consentDocument.juratTitle}</h2>
+                    </div>
+                    <button type="button" className="btn btn-sm ss-btn-outline" onClick={() => { setEntryStage("consent"); setEntryError(""); }}>
+                      Back to consent
+                    </button>
+                  </div>
                   <p>{consentDocument.juratWhen}</p>
                   <ConsentOption
                     question={{ questionCode: "JURAT_REQUIRED", questionText: "Did you require someone to translate or explain this Application to you?", options: ["Yes", "No"] }}
@@ -399,7 +406,7 @@ function ContextualApplicationPage({
                         </div>
                         <div className="col-12">
                           <ElectronicSignature
-                            label="Signature of Interpreter"
+                            label="Signature of interpreter"
                             method={answers.JURAT_SIGNATURE_METHOD || "DRAWN"}
                             value={answers.JURAT_INTERPRETER_SIGNATURE || ""}
                             onChange={(method, value) => {
@@ -416,23 +423,23 @@ function ContextualApplicationPage({
                     </div>
                   )}
 
-                  {locationStatus === "checking" && (
-                    <div className="alert alert-info">We are checking your current country so the correct safeguarding and application contacts can be shown on the next step.</div>
-                  )}
                   {entryError && <div className="alert ss-alert-error" role="alert">{entryError}</div>}
                   <button type="button" className="btn ss-btn-primary" onClick={continueFromJurat}>
-                    Continue to Consent <i className="bi bi-arrow-right" aria-hidden="true" />
+                    Continue to Application <i className="bi bi-arrow-right" aria-hidden="true" />
                   </button>
                 </article>
               ) : (
                 <article className="ss-section-card">
-                  <div className="d-flex justify-content-between align-items-start gap-3 mb-3">
-                    <div>
-                      <span className="ss-small-label dark">Step 2 of 2</span>
-                      <h2 className="mt-2">{consentDocument.introductionTitle}</h2>
-                    </div>
-                    <button type="button" className="btn btn-sm ss-btn-outline" onClick={() => setEntryStage("jurat")}>Back to Jurat</button>
+                  <div className="mb-4">
+                    <span className="ss-small-label dark">Step 1 of 2 · Consent</span>
+                    <h2 className="mt-2">{consentDocument.introductionTitle}</h2>
                   </div>
+
+                  {locationStatus === "checking" && (
+                    <div className="alert alert-info">
+                      We are checking your current country so the relevant safeguarding and application contacts can be shown. If your location cannot be confirmed, contacts for all programme countries will be displayed.
+                    </div>
+                  )}
 
                   {consentDocument.introduction.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
 
@@ -492,7 +499,7 @@ function ContextualApplicationPage({
                       </div>
 
                       <ElectronicSignature
-                        label="Signature (if applicable)"
+                        label="Electronic signature *"
                         method={answers.CONSENT_SIGNATURE_METHOD || "DRAWN"}
                         value={answers.CONSENT_SIGNATURE_DATA || ""}
                         onChange={(method, value) => {
@@ -503,7 +510,7 @@ function ContextualApplicationPage({
 
                       {entryError && <div className="alert ss-alert-error mt-3" role="alert">{entryError}</div>}
                       <button type="button" className="btn ss-btn-primary mt-4" onClick={continueFromConsent}>
-                        Continue to Application <i className="bi bi-arrow-right" aria-hidden="true" />
+                        Continue to Jurat <i className="bi bi-arrow-right" aria-hidden="true" />
                       </button>
                     </div>
                   ) : (
@@ -556,17 +563,17 @@ function ContextualApplicationPage({
                 <i className="bi bi-arrow-left" aria-hidden="true" /> Back to pathways
               </button>
               <span className="ss-small-label light">Digital Futures Participant Application</span>
-              <h1 id="application-title">{selectedPathway.title} Application</h1>
+              <h1 id="application-title">{selectedPathway.title} application</h1>
               <p>Complete the required fields carefully. Eligibility is checked as you progress through the Application.</p>
               <button
                 type="button"
                 className="btn btn-sm ss-btn-outline"
                 onClick={() => {
                   setEditingConsent(true);
-                  setEntryStage("jurat");
+                  setEntryStage("consent");
                 }}
               >
-                <i className="bi bi-pencil" aria-hidden="true" /> Review consent & Jurat
+                <i className="bi bi-pencil" aria-hidden="true" /> Review consent and Jurat
               </button>
             </div>
             <div className="col-12 col-lg-4">
