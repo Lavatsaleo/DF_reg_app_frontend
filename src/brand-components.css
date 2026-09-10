@@ -1,0 +1,203 @@
+/* Component-level polish for confirmation, status and review surfaces. */
+
+.ss-confirmation-page,
+.ss-status-page {
+  background: var(--ss-website-grey) !important;
+}
+
+.ss-confirmation-hero,
+.ss-status-hero {
+  background: var(--ss-blueberry) !important;
+  background-image: none !important;
+  color: #ffffff !important;
+  padding: 3.25rem 0 !important;
+  border-top: 6px solid var(--ss-yellow) !important;
+}
+
+.ss-status-hero h1,
+.ss-confirmation-hero h1 {
+  color: #ffffff !important;
+}
+
+.ss-status-hero p,
+.ss-confirmation-hero p {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.ss-confirmation-card,
+.ss-status-lookup-card,
+.ss-status-result-card {
+  background: #ffffff !important;
+  border: 1px solid var(--ss-haze) !important;
+  border-radius: var(--ss-radius-lg) !important;
+  box-shadow: var(--ss-shadow) !important;
+}
+
+.ss-confirmation-card {
+  border-top: 6px solid var(--ss-yellow) !important;
+}
+
+.ss-confirmation-card h1,
+.ss-status-result-card h2,
+.ss-status-lookup-card h2 {
+  color: #000000 !important;
+  letter-spacing: 0 !important;
+}
+
+.ss-confirmation-icon {
+  background: var(--ss-raspberry) !important;
+  color: #ffffff !important;
+  border-radius: var(--ss-radius) !important;
+  box-shadow: none !important;
+}
+
+.ss-reference-box {
+  background: var(--ss-blueberry) !important;
+  color: #ffffff !important;
+  border: 0 !important;
+  border-left: 6px solid var(--ss-yellow) !important;
+  border-radius: var(--ss-radius) !important;
+  box-shadow: none !important;
+}
+
+.ss-reference-box span,
+.ss-reference-box strong,
+.ss-reference-box small {
+  color: #ffffff !important;
+}
+
+.ss-confirmation-grid,
+.ss-status-summary-grid {
+  gap: 0.75rem !important;
+}
+
+.ss-confirmation-detail,
+.ss-status-summary-grid > div {
+  background: var(--ss-website-grey) !important;
+  border: 1px solid var(--ss-haze) !important;
+  border-radius: var(--ss-radius) !important;
+  box-shadow: none !important;
+}
+
+.ss-confirmation-detail strong,
+.ss-status-summary-grid strong {
+  color: #000000 !important;
+}
+
+.ss-eligibility-note,
+.ss-status-note,
+.ss-feedback-panel,
+.ss-next-steps {
+  background: #ffffff !important;
+  border: 1px solid var(--ss-haze) !important;
+  border-left: 5px solid var(--ss-forest) !important;
+  border-radius: var(--ss-radius) !important;
+  box-shadow: none !important;
+}
+
+.ss-feedback-panel {
+  border-left-color: var(--ss-raspberry) !important;
+}
+
+.ss-feedback-panel-header i,
+.ss-status-note i,
+.ss-eligibility-note i {
+  color: var(--ss-raspberry) !important;
+}
+
+.ss-timeline-item > span,
+.ss-status-step > span {
+  background: var(--ss-blueberry) !important;
+  color: #ffffff !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.ss-timeline-item.complete > span,
+.ss-status-step.complete > span {
+  background: var(--ss-forest) !important;
+}
+
+.ss-timeline-item.active > span,
+.ss-status-step.active > span {
+  background: var(--ss-raspberry) !important;
+}
+
+.ss-status-timeline,
+.ss-timeline {
+  border-color: var(--ss-haze) !important;
+}
+
+.ss-status-badge {
+  background: #efedf5 !important;
+  color: var(--ss-blueberry) !important;
+  border: 1px solid #b9b4cc !important;
+}
+
+.ss-status-search-row {
+  gap: 0.75rem !important;
+}
+
+.ss-recent-reference {
+  background: #ffffff !important;
+  color: #000000 !important;
+  border: 1px solid var(--ss-haze) !important;
+  border-radius: var(--ss-radius) !important;
+  box-shadow: none !important;
+}
+
+.ss-recent-reference:hover {
+  border-color: var(--ss-raspberry) !important;
+  background: #f8edf3 !important;
+}
+
+.ss-link-button {
+  color: var(--ss-raspberry) !important;
+  font-weight: 700 !important;
+  text-decoration: underline !important;
+}
+
+.ss-wizard-topper,
+.ss-executive-wizard-topper,
+.ss-wizard-progress {
+  background: #ffffff !important;
+  background-image: none !important;
+  border-color: var(--ss-haze) !important;
+}
+
+.ss-wizard-topper h2 {
+  color: #000000 !important;
+}
+
+.ss-quick-facts span {
+  background: var(--ss-website-grey) !important;
+  color: #000000 !important;
+  border: 1px solid var(--ss-haze) !important;
+  border-radius: var(--ss-radius) !important;
+}
+
+.ss-quick-facts i {
+  color: var(--ss-raspberry) !important;
+}
+
+.ss-draft-status {
+  background: #efedf5 !important;
+  color: #000000 !important;
+  border: 1px solid #b9b4cc !important;
+  border-radius: var(--ss-radius) !important;
+}
+
+.ss-wizard-section,
+.ss-review-card,
+.ss-review-section,
+.ss-empty-state {
+  border-radius: var(--ss-radius-lg) !important;
+  box-shadow: none !important;
+}
+
+@media (max-width: 767.98px) {
+  .ss-status-search-row {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+  }
+}
