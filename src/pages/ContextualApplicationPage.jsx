@@ -8,6 +8,7 @@ import RightsContactsPanel from "../components/RightsContactsPanel";
 import { API_BASE_URL } from "../config/api";
 import {
   buildContactSnapshot,
+  getCachedProgrammeCountry,
   getConsentContactCountries,
   requestProgrammeCountry,
 } from "../utils/countryContext";
@@ -139,19 +140,21 @@ function ConsentOption({ question, value, onChange }) {
 
 function ContactValue({ value }) {
   const text = String(value || "To be confirmed");
-  return text.includes("@") ? <a href={`mailto:${text}`}>{text}</a> : <span>{text}</span>;
+  return text.includes("@")
+    ? <a className="ss-contact-value" href={`mailto:${text}`}>{text}</a>
+    : <span className="ss-contact-value">{text}</span>;
 }
 
-function ConsentCountryContacts({ consent, detectedCountry, type }) {
-  const countries = getConsentContactCountries({ detectedCountry });
+function ConsentCountryContacts({ consent, detectedCountry, residenceCountry, type }) {
+  const countries = getConsentContactCountries({ detectedCountry, residenceCountry });
   const contacts = buildContactSnapshot(consent, countries);
   const isSafeguarding = type === "safeguarding";
 
   return (
-    <div className="border rounded-4 p-3 mb-4 bg-light">
+    <div className="border rounded-4 mb-4 bg-light ss-consent-contact-list">
       {contacts.map((row) => (
-        <div key={`${type}-${row.country}`} className="mb-2">
-          <strong>{row.country}: </strong>
+        <div key={`${type}-${row.country}`} className="ss-consent-contact-row">
+          <strong>{row.country}</strong>
           <ContactValue value={isSafeguarding ? row.safeguarding : row.questions} />
         </div>
       ))}
@@ -194,8 +197,8 @@ function ContextualApplicationPage({
   const [consentLoading, setConsentLoading] = useState(true);
   const [consentLoadError, setConsentLoadError] = useState("");
   const [entryError, setEntryError] = useState("");
-  const [detectedCountry, setDetectedCountry] = useState("");
-  const [locationStatus, setLocationStatus] = useState("checking");
+  const [detectedCountry, setDetectedCountry] = useState(() => getCachedProgrammeCountry().country || "");
+  const [locationStatus, setLocationStatus] = useState(() => getCachedProgrammeCountry().country ? "cached" : "checking");
   const sectionEntries = Object.entries(groupedQuestions);
 
   useEffect(() => {
@@ -253,17 +256,31 @@ function ContextualApplicationPage({
     applicantSignatureComplete
   );
   const consentVersionMatches = Boolean(consentDocument?.version) && answers.CONSENT_VERSION === consentDocument.version;
-  const consentComplete = juratComplete &&
-    consentRead === "Yes" &&
+  const consentSignedComplete = consentRead === "Yes" &&
     consentParticipate === "Yes" &&
     applicantConsentFieldsComplete &&
     consentVersionMatches;
+  const consentComplete = consentSignedComplete && juratComplete;
+  const entryComplete = entryStage === "application" && consentComplete;
 
   const residenceCountry = answers.COUNTRY || "";
   const consentContactCountries = consentDocument
-    ? getConsentContactCountries({ detectedCountry })
+    ? getConsentContactCountries({ detectedCountry, residenceCountry })
     : [];
-  const eligibilityBlock = consentComplete ? getPathwayEligibilityBlock(answers, selectedPathway) : null;
+  const eligibilityBlock = entryComplete ? getPathwayEligibilityBlock(answers, selectedPathway) : null;
+
+  useEffect(() => {
+    if (editingConsent) return;
+
+    if (answers.ENTRY_STAGE === "application" && consentComplete) {
+      setEntryStage("application");
+      return;
+    }
+
+    if (answers.ENTRY_STAGE === "jurat" && consentSignedComplete) {
+      setEntryStage("jurat");
+    }
+  }, [answers.ENTRY_STAGE, consentComplete, consentSignedComplete, editingConsent]);
 
   function continueFromConsent() {
     if (consentRead !== "Yes" || consentParticipate !== "Yes") {
@@ -282,7 +299,7 @@ function ContextualApplicationPage({
     }
 
     const signedDate = answers.CONSENT_SIGNED_DATE || localDateString();
-    const contextCountry = detectedCountry || "ALL";
+    const contextCountry = residenceCountry || detectedCountry || "ALL";
     const snapshot = buildContactSnapshot(consentDocument, consentContactCountries);
 
     setHiddenAnswer("CONSENT_VERSION", consentDocument.version);
@@ -290,6 +307,7 @@ function ContextualApplicationPage({
     setHiddenAnswer("CONSENT_DETECTED_COUNTRY", detectedCountry || "Undetermined");
     setHiddenAnswer("CONSENT_CONTACT_CONTEXT", contextCountry);
     setHiddenAnswer("CONSENT_CONTACTS_AT_SIGNING", JSON.stringify(snapshot));
+    setHiddenAnswer("ENTRY_STAGE", "jurat");
     setEntryStage("jurat");
     setEntryError("");
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -310,6 +328,8 @@ function ContextualApplicationPage({
       setHiddenAnswer("JURAT_DATE", localDateString());
     }
 
+    setHiddenAnswer("ENTRY_STAGE", "application");
+    setEntryStage("application");
     setEditingConsent(false);
     setEntryError("");
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -351,7 +371,7 @@ function ContextualApplicationPage({
     );
   }
 
-  if (!consentComplete || editingConsent) {
+  if (!entryComplete || editingConsent) {
     const showJurat = entryStage === "jurat";
 
     return (
@@ -377,7 +397,15 @@ function ContextualApplicationPage({
                       <span className="ss-small-label dark">Step 2 of 2 · Jurat</span>
                       <h2 className="mt-2">{consentDocument.juratTitle}</h2>
                     </div>
-                    <button type="button" className="btn btn-sm ss-btn-outline" onClick={() => { setEntryStage("consent"); setEntryError(""); }}>
+                    <button
+                      type="button"
+                      className="btn btn-sm ss-btn-outline"
+                      onClick={() => {
+                        setHiddenAnswer("ENTRY_STAGE", "consent");
+                        setEntryStage("consent");
+                        setEntryError("");
+                      }}
+                    >
                       Back to consent
                     </button>
                   </div>
@@ -441,6 +469,12 @@ function ContextualApplicationPage({
                     </div>
                   )}
 
+                  {locationStatus === "cached" && detectedCountry && !residenceCountry && (
+                    <div className="alert alert-info">
+                      We are using your most recently detected programme country, {detectedCountry}, while we confirm your current location. Your selected country of residence in the Application will override this.
+                    </div>
+                  )}
+
                   {consentDocument.introduction.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
 
                   <h2 className="h4 mt-4">{consentDocument.purposeTitle}</h2>
@@ -456,7 +490,12 @@ function ContextualApplicationPage({
 
                   <h2 className="h4 mt-4">{consentDocument.rightsTitle}</h2>
                   <p>{consentDocument.rightsIntro}</p>
-                  <ConsentCountryContacts consent={consentDocument} detectedCountry={detectedCountry} type="safeguarding" />
+                  <ConsentCountryContacts
+                    consent={consentDocument}
+                    detectedCountry={detectedCountry}
+                    residenceCountry={residenceCountry}
+                    type="safeguarding"
+                  />
                   <p>
                     {consentDocument.speakUpPrefix}
                     <a href={consentDocument.speakUpUrl} target="_blank" rel="noreferrer">{consentDocument.speakUpUrl}</a>
@@ -464,9 +503,14 @@ function ContextualApplicationPage({
 
                   <h2 className="h4 mt-4">{consentDocument.questionsTitle}</h2>
                   <p>{consentDocument.questionsIntro}</p>
-                  <ConsentCountryContacts consent={consentDocument} detectedCountry={detectedCountry} type="questions" />
+                  <ConsentCountryContacts
+                    consent={consentDocument}
+                    detectedCountry={detectedCountry}
+                    residenceCountry={residenceCountry}
+                    type="questions"
+                  />
 
-                  {locationStatus !== "checking" && locationStatus !== "detected" && (
+                  {locationStatus !== "checking" && !detectedCountry && !residenceCountry && (
                     <div className="alert alert-info">
                       We could not confirm a programme country from your current location, so contacts for all four programme countries are shown.
                     </div>
@@ -589,7 +633,7 @@ function ContextualApplicationPage({
 
       <section className="container-fluid px-3 px-xl-5 py-5">
         <div className="row g-4 align-items-start">
-          <div className="col-12 col-xl-3 order-1">
+          <div className="col-12 col-xl-3 order-2 order-xl-1 ss-application-sidebar">
             <div className="position-sticky" style={{ top: "120px" }}>
               <RightsContactsPanel
                 consent={consentDocument}
@@ -598,7 +642,7 @@ function ContextualApplicationPage({
             </div>
           </div>
 
-          <div className="col-12 col-xl-6 order-2">
+          <div className="col-12 col-xl-6 order-1 order-xl-2">
             <RegistrationWizard
               selectedPathway={selectedPathway}
               groupedQuestions={groupedQuestions}
@@ -626,7 +670,7 @@ function ContextualApplicationPage({
             />
           </div>
 
-          <div className="col-12 col-xl-3 order-3">
+          <div className="col-12 col-xl-3 order-3 ss-application-sidebar">
             <div className="position-sticky" style={{ top: "120px" }}>
               <FormProgress progress={formProgress} sectionCount={sectionEntries.length} submitting={submitting} />
               <div className="ss-help-card mt-4">
