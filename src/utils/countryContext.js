@@ -82,22 +82,13 @@ export function detectProgrammeCountry(latitude, longitude) {
 
 export function requestProgrammeCountry() {
   return new Promise((resolve) => {
-    const cached = readCountryCache();
-    const fallback = (status) => {
-      if (cached?.country) {
-        resolve({ country: cached.country, status: "cached", detectedAt: cached.detectedAt });
-        return;
-      }
-      resolve({ country: null, status });
-    };
-
     if (typeof window !== "undefined" && !window.isSecureContext) {
-      fallback("insecure_context");
+      resolve({ country: null, status: "insecure_context" });
       return;
     }
 
     if (!navigator.geolocation) {
-      fallback("unavailable");
+      resolve({ country: null, status: "unavailable" });
       return;
     }
 
@@ -120,8 +111,10 @@ export function requestProgrammeCountry() {
         resolve({ country: null, status: "outside_programme_countries" });
       },
       (error) => {
+        // Do not let an older cached country replace a failed current check. The caller
+        // will show all programme-country contacts, per the consent design.
         const status = error?.code === 1 ? "permission_denied" : "unavailable";
-        fallback(status);
+        resolve({ country: null, status });
       },
       { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 }
     );
