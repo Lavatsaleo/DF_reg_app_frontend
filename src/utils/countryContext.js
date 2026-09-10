@@ -14,6 +14,15 @@ function isProgrammeCountry(country) {
   return PROGRAMME_COUNTRIES.includes(country);
 }
 
+function clearCountryCache() {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.removeItem(COUNTRY_CACHE_KEY);
+  } catch {
+    // Ignore storage failures; the live geolocation result still works.
+  }
+}
+
 function readCountryCache() {
   if (typeof window === "undefined") return null;
 
@@ -26,7 +35,7 @@ function readCountryCache() {
     const age = Date.now() - detectedAt;
 
     if (!isProgrammeCountry(parsed?.country) || !detectedAt || age < 0 || age > COUNTRY_CACHE_MAX_AGE_MS) {
-      window.localStorage.removeItem(COUNTRY_CACHE_KEY);
+      clearCountryCache();
       return null;
     }
 
@@ -105,7 +114,10 @@ export function requestProgrammeCountry() {
           return;
         }
 
-        fallback("outside_programme_countries");
+        // A successful current GPS reading outside the programme countries is stronger
+        // evidence than an older cache. Show all contacts until residence is selected.
+        clearCountryCache();
+        resolve({ country: null, status: "outside_programme_countries" });
       },
       (error) => {
         const status = error?.code === 1 ? "permission_denied" : "unavailable";
