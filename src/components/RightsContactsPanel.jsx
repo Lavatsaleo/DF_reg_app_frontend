@@ -27,7 +27,7 @@ function RightsContactsPanel({ consent, residenceCountry, compact = false }) {
   return (
     <aside className={`ss-section-card ss-rights-contacts-panel ${compact ? "p-3" : "p-4"}`} aria-label="Your rights and country contacts">
       <span className="ss-small-label dark">Your rights and contacts</span>
-      <h2 className={compact ? "h5 mt-2" : "h4 mt-2"}>Help is always visible</h2>
+      <h2 className={compact ? "h5 mt-2" : "h4 mt-2"}>Rights and support contacts</h2>
       <p className="small">
         You have the right to access, correct, delete, restrict, object to the use of, or request transfer of your personal data. You also have the right to be treated fairly and with respect by everyone involved in this project.
       </p>
