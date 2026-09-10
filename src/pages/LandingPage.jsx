@@ -6,22 +6,20 @@ function LandingPage({ pathwayMessage, onPathwaySelect, onCheckStatus }) {
 
   return (
     <main id="main-content" tabIndex="-1">
-      <section className="ss-hero">
+      <section className="ss-hero" aria-labelledby="digital-futures-title">
         <div className="container">
           <div className="row align-items-center g-5">
             <div className="col-12 col-lg-7">
-              <span className="ss-hero-badge">
-                <i className="bi bi-stars" /> Sightsavers Digital Futures
-              </span>
-              <h1 className="ss-title mt-4">
+              <span className="ss-hero-kicker">Digital Futures Programme</span>
+              <h1 id="digital-futures-title" className="ss-title">
                 Digital skills. <span>Inclusive futures.</span>
               </h1>
               <p className="ss-subtitle mt-4">
-                An accessible application portal for the Digital Futures Project, designed for fast application, inclusive participation, and end-to-end participant tracking.
+                Apply for a Digital Futures training pathway through an accessible portal designed for inclusive participation, clear eligibility checks and secure participant tracking.
               </p>
               <div className="d-flex flex-column flex-sm-row gap-3 mt-4">
                 <a href="#pathways" className="btn ss-btn-primary">
-                  Choose pathway <i className="bi bi-arrow-right-short" />
+                  Choose a pathway <i className="bi bi-arrow-right-short" aria-hidden="true" />
                 </a>
                 <button type="button" className="btn ss-btn-outline" onClick={onCheckStatus}>
                   <i className="bi bi-search" aria-hidden="true" /> Check application status
@@ -30,18 +28,13 @@ function LandingPage({ pathwayMessage, onPathwaySelect, onCheckStatus }) {
             </div>
 
             <div className="col-12 col-lg-5">
-              <div className="ss-hero-panel">
-                <div className="ss-ring-graphic" aria-hidden="true">
-                  <span />
-                  <span />
-                  <span />
-                </div>
+              <aside className="ss-hero-panel" aria-label="Current application intake">
                 <div className="ss-panel-content">
-                  <span>Applications</span>
-                  <strong>Open</strong>
-                  <p>Physical and Virtual Academy intake</p>
+                  <span>Applications open</span>
+                  <strong>Physical and Virtual Academy</strong>
+                  <p>Choose the pathway that best matches your qualifications, availability and preferred training format.</p>
                 </div>
-                <div className="ss-metric-row">
+                <div className="ss-metric-row" aria-label="Application overview">
                   <div>
                     <strong>{pathways.length}</strong>
                     <span>Pathways</span>
@@ -51,11 +44,11 @@ function LandingPage({ pathwayMessage, onPathwaySelect, onCheckStatus }) {
                     <span>Open now</span>
                   </div>
                   <div>
-                    <strong>~5–7m</strong>
-                    <span>To apply</span>
+                    <strong>5–7 min</strong>
+                    <span>Estimated time</span>
                   </div>
                 </div>
-              </div>
+              </aside>
             </div>
           </div>
         </div>
@@ -66,33 +59,33 @@ function LandingPage({ pathwayMessage, onPathwaySelect, onCheckStatus }) {
           <div className="ss-before-apply-card">
             <div>
               <span className="ss-small-label dark">Before you apply</span>
-              <h2 id="before-apply-title">Simple, accessible, and trackable</h2>
+              <h2 id="before-apply-title">A clear and accessible application journey</h2>
               <p>
-                Select a pathway, review the Jurat and consent information, and complete the Application. The system checks first-level eligibility, prevents duplicates, and keeps the same participant identifier across testing and review.
+                Select a pathway, review and sign the consent form, complete the Jurat step if translation or explanation support was needed, then continue to the Application. Eligibility is checked as you progress.
               </p>
             </div>
             <div className="ss-before-apply-steps" role="list">
-              <div role="listitem"><span>1</span><strong>Select a pathway</strong><small>Start with the pathway that best matches your goals.</small></div>
-              <div role="listitem"><span>2</span><strong>Jurat, consent and apply</strong><small>Complete the accessibility/translation check and consent before the Application.</small></div>
-              <div role="listitem"><span>3</span><strong>Secure next step</strong><small>Eligible applicants receive the Basic IT skills test by email.</small></div>
+              <div role="listitem"><span>1</span><strong>Select a pathway</strong><small>Choose the training pathway that best matches your goals.</small></div>
+              <div role="listitem"><span>2</span><strong>Consent and Jurat</strong><small>Review consent first, then complete the Jurat step where applicable.</small></div>
+              <div role="listitem"><span>3</span><strong>Complete the Application</strong><small>Eligible applicants receive the next-step instructions after submission.</small></div>
             </div>
           </div>
         </div>
       </section>
 
-      <section id="pathways" className="ss-pathway-section py-5">
+      <section id="pathways" className="ss-pathway-section py-5" aria-labelledby="pathways-title">
         <div className="container">
           <div className="d-flex flex-column flex-lg-row justify-content-between align-items-lg-end gap-3 mb-4">
             <div>
               <span className="ss-small-label dark">Choose your pathway</span>
-              <h2 className="ss-section-title display-6">Select a Digital Futures pathway</h2>
+              <h2 id="pathways-title" className="ss-section-title display-6">Select a Digital Futures pathway</h2>
             </div>
             <span className="ss-count-badge">{pathways.length} pathways</span>
           </div>
 
           {pathwayMessage && (
             <div className="alert ss-alert-warning" role="alert">
-              <i className="bi bi-info-circle" /> {pathwayMessage}
+              <i className="bi bi-info-circle" aria-hidden="true" /> {pathwayMessage}
             </div>
           )}
 
