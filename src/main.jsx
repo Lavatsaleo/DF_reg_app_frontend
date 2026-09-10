@@ -8,6 +8,7 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import "./index.css";
 import "./brand-overrides.css";
 import "./brand-components.css";
+import "./responsive-fixes.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
