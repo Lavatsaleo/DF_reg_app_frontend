@@ -1,0 +1,505 @@
+/*
+ * Digital Futures programme-wide visual system.
+ * Final UI layer for applicant, consent, Jurat, status, skills-test and utility screens.
+ * Loaded after all earlier participant styles so no legacy corporate palette leaks through.
+ */
+
+:root {
+  --df-bg: #f3f1ef;
+  --df-orange: #ff671b;
+  --df-yellow: #ffc81f;
+  --df-red: #d22a2f;
+  --df-green: #8db92e;
+  --df-teal: #4fcdb0;
+  --df-black: #111111;
+  --df-white: #ffffff;
+  --df-muted: #55514d;
+  --df-border: #d7d2cd;
+  --df-soft-yellow: #fff4cc;
+  --df-soft-teal: #e8f8f4;
+  --df-soft-red: #fbeaec;
+  --df-soft-orange: #fff0e8;
+  --df-soft-green: #f0f7df;
+}
+
+/* Keep every non-staff surface anchored to the approved programme palette. */
+.df-application-page,
+.ss-status-page,
+.ss-confirmation-page,
+.skills-test-page,
+.consent-records-page,
+.reset-password-page {
+  color: var(--df-black) !important;
+  background: var(--df-bg) !important;
+}
+
+/* Entry, consent and Jurat */
+.df-entry-hero,
+.df-application-hero,
+.ss-form-hero,
+.ss-status-hero,
+.ss-confirmation-hero {
+  background: var(--df-bg) !important;
+  border-bottom: 1px solid var(--df-border) !important;
+  color: var(--df-black) !important;
+}
+
+.df-entry-hero::after,
+.df-application-hero::after,
+.ss-form-hero::after,
+.ss-status-hero::after,
+.ss-confirmation-hero::after {
+  background: var(--df-teal) !important;
+}
+
+.df-entry-hero h1,
+.df-application-hero h1,
+.ss-form-hero h1,
+.ss-status-hero h1,
+.ss-confirmation-hero h1 {
+  color: var(--df-black) !important;
+}
+
+.df-entry-hero p,
+.df-application-hero p,
+.ss-form-hero p,
+.ss-status-hero p,
+.ss-confirmation-hero p {
+  color: var(--df-muted) !important;
+}
+
+/* Application shell */
+.ss-registration-wizard,
+.ss-form-shell,
+.ss-section-card,
+.ss-review-card,
+.ss-review-section,
+.ss-status-lookup-card,
+.ss-status-result-card,
+.ss-confirmation-card,
+.ss-loading-card {
+  background: var(--df-white) !important;
+  border-color: var(--df-border) !important;
+  color: var(--df-black) !important;
+}
+
+.ss-wizard-utility-bar,
+.ss-wizard-progress,
+.ss-form-toolbar {
+  background: var(--df-white) !important;
+  border-color: var(--df-border) !important;
+}
+
+.ss-wizard-pathway-label .ss-small-label,
+.ss-small-label,
+.ss-small-label.dark,
+.ss-small-label.light {
+  color: var(--df-red) !important;
+}
+
+.ss-draft-status,
+.ss-draft-status-compact {
+  color: var(--df-black) !important;
+  background: var(--df-bg) !important;
+  border-color: var(--df-border) !important;
+}
+
+/* Wizard sections: remove the old black/gold treatment. */
+.ss-wizard-section {
+  overflow: hidden;
+  background: var(--df-white) !important;
+  border: 1px solid var(--df-border) !important;
+  border-radius: 12px !important;
+  box-shadow: none !important;
+}
+
+.ss-wizard-section.active {
+  border-color: var(--df-teal) !important;
+  box-shadow: 0 0 0 2px rgba(79, 205, 176, 0.14) !important;
+}
+
+.ss-wizard-section.complete {
+  border-color: rgba(141, 185, 46, 0.65) !important;
+}
+
+.ss-wizard-section.needs_attention {
+  border-color: var(--df-red) !important;
+}
+
+.ss-wizard-section-title,
+.ss-wizard-section-trigger,
+.ss-wizard-section-panel {
+  background: var(--df-white) !important;
+  color: var(--df-black) !important;
+  border-color: var(--df-border) !important;
+}
+
+.ss-wizard-section-trigger:hover {
+  background: var(--df-soft-teal) !important;
+}
+
+.ss-wizard-section.active .ss-wizard-section-trigger {
+  background: var(--df-soft-teal) !important;
+}
+
+.ss-wizard-step-number {
+  color: var(--df-black) !important;
+  background: var(--df-teal) !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.ss-wizard-section.complete .ss-wizard-step-number {
+  color: var(--df-black) !important;
+  background: var(--df-green) !important;
+}
+
+.ss-wizard-section.needs_attention .ss-wizard-step-number {
+  color: var(--df-white) !important;
+  background: var(--df-red) !important;
+}
+
+.ss-wizard-step-copy > span,
+.ss-wizard-section-title,
+.ss-wizard-section h2,
+.ss-wizard-section h3 {
+  color: var(--df-black) !important;
+}
+
+.ss-wizard-step-copy small,
+.ss-wizard-step-counter {
+  color: var(--df-muted) !important;
+}
+
+.ss-wizard-status-badge {
+  color: var(--df-black) !important;
+  background: var(--df-bg) !important;
+  border: 1px solid var(--df-border) !important;
+}
+
+.ss-wizard-status-badge.in_progress {
+  background: var(--df-soft-teal) !important;
+  border-color: var(--df-teal) !important;
+}
+
+.ss-wizard-status-badge.complete {
+  background: var(--df-soft-green) !important;
+  border-color: var(--df-green) !important;
+}
+
+.ss-wizard-status-badge.needs_attention {
+  color: #741519 !important;
+  background: var(--df-soft-red) !important;
+  border-color: var(--df-red) !important;
+}
+
+.ss-wizard-section-intro,
+.ss-review-intro,
+.ss-submit-once-note {
+  color: var(--df-black) !important;
+  background: var(--df-soft-teal) !important;
+  border-color: var(--df-teal) !important;
+}
+
+.ss-review-intro i,
+.ss-submit-once-note i {
+  color: var(--df-red) !important;
+}
+
+/* Question cards and form controls */
+.ss-question-card {
+  background: var(--df-white) !important;
+  border: 1px solid var(--df-border) !important;
+  box-shadow: none !important;
+}
+
+.ss-question-card:hover,
+.ss-question-card:focus-within {
+  border-color: var(--df-teal) !important;
+  box-shadow: 0 0 0 2px rgba(79, 205, 176, 0.11) !important;
+}
+
+.ss-question-card.has-error {
+  border-color: var(--df-red) !important;
+  box-shadow: 0 0 0 2px rgba(210, 42, 47, 0.09) !important;
+}
+
+.ss-required-chip {
+  color: #7e171b !important;
+  background: var(--df-soft-red) !important;
+  border: 1px solid rgba(210, 42, 47, 0.45) !important;
+}
+
+.ss-optional-chip {
+  color: var(--df-muted) !important;
+  background: var(--df-bg) !important;
+  border-color: var(--df-border) !important;
+}
+
+.ss-question-help,
+.form-text {
+  color: var(--df-muted) !important;
+}
+
+.form-control,
+.form-select,
+.input-group-text,
+.ss-phone-prefix {
+  color: var(--df-black) !important;
+  background: var(--df-white) !important;
+  border-color: #8a8580 !important;
+}
+
+.input-group-text,
+.ss-phone-prefix {
+  background: var(--df-soft-teal) !important;
+  border-color: var(--df-teal) !important;
+  font-weight: 700 !important;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--df-black) !important;
+  box-shadow: 0 0 0 3px rgba(255, 200, 31, 0.42) !important;
+}
+
+.form-control.is-invalid,
+.form-select.is-invalid {
+  border-color: var(--df-red) !important;
+}
+
+.invalid-feedback,
+.text-danger {
+  color: #8d1b20 !important;
+}
+
+.ss-option-pill,
+.ss-option-card,
+.ss-choice-card {
+  color: var(--df-black) !important;
+  background: var(--df-white) !important;
+  border-color: #8a8580 !important;
+}
+
+.ss-option-pill:hover,
+.ss-option-card:hover,
+.ss-choice-card:hover {
+  background: var(--df-soft-teal) !important;
+  border-color: var(--df-teal) !important;
+}
+
+.ss-option-pill.selected,
+.ss-option-pill:has(input:checked),
+.ss-option-card.selected,
+.ss-choice-card.selected {
+  color: var(--df-black) !important;
+  background: var(--df-soft-yellow) !important;
+  border-color: var(--df-yellow) !important;
+  box-shadow: inset 0 0 0 1px var(--df-black) !important;
+}
+
+.ss-option-pill input,
+.ss-option-card input,
+.ss-choice-card input,
+.form-check-input {
+  accent-color: var(--df-red) !important;
+}
+
+/* Voice and electronic-signature controls */
+.ss-voice-btn {
+  color: var(--df-black) !important;
+  background: var(--df-soft-teal) !important;
+  border: 1px solid var(--df-teal) !important;
+  box-shadow: none !important;
+}
+
+.ss-voice-btn:hover,
+.ss-voice-btn.listening {
+  color: var(--df-black) !important;
+  background: var(--df-yellow) !important;
+  border-color: var(--df-black) !important;
+}
+
+.ss-voice-btn i {
+  color: var(--df-red) !important;
+}
+
+.ss-signature-shell,
+.ss-signature-pad,
+.ss-signature-card {
+  background: var(--df-white) !important;
+  border-color: var(--df-border) !important;
+  box-shadow: none !important;
+}
+
+.ss-signature-mode button.active,
+.ss-signature-tabs button.active {
+  color: var(--df-black) !important;
+  background: var(--df-yellow) !important;
+  border-color: var(--df-black) !important;
+}
+
+/* Buttons: yellow is the primary action colour throughout. */
+.ss-btn-primary,
+.ss-submit-btn,
+.btn-primary {
+  color: var(--df-black) !important;
+  background: var(--df-yellow) !important;
+  border-color: var(--df-yellow) !important;
+  box-shadow: none !important;
+}
+
+.ss-btn-primary:hover:not(:disabled),
+.ss-submit-btn:hover:not(:disabled),
+.btn-primary:hover:not(:disabled) {
+  color: var(--df-black) !important;
+  background: var(--df-white) !important;
+  border-color: var(--df-black) !important;
+}
+
+.ss-btn-outline,
+.btn-outline-dark,
+.ss-mini-edit-btn,
+.ss-link-button {
+  color: var(--df-black) !important;
+  background: var(--df-white) !important;
+  border-color: var(--df-black) !important;
+  box-shadow: none !important;
+}
+
+.ss-btn-outline:hover:not(:disabled),
+.btn-outline-dark:hover:not(:disabled),
+.ss-mini-edit-btn:hover,
+.ss-link-button:hover {
+  color: var(--df-black) !important;
+  background: var(--df-soft-yellow) !important;
+}
+
+/* Progress, review and completion */
+.progress,
+.ss-progress-bar {
+  background: #e5e1dc !important;
+}
+
+.progress-bar,
+.ss-progress-bar .progress-bar {
+  background: var(--df-teal) !important;
+}
+
+.ss-review-card-header {
+  border-color: var(--df-border) !important;
+}
+
+.ss-review-list > div {
+  border-color: var(--df-border) !important;
+}
+
+.ss-review-list dt {
+  color: var(--df-muted) !important;
+}
+
+.ss-review-list dd {
+  color: var(--df-black) !important;
+}
+
+.ss-confirmation-card {
+  border-top-color: var(--df-yellow) !important;
+}
+
+.ss-confirmation-icon {
+  color: var(--df-black) !important;
+  background: var(--df-yellow) !important;
+}
+
+.ss-reference-box {
+  color: var(--df-black) !important;
+  background: var(--df-soft-teal) !important;
+  border-color: var(--df-teal) !important;
+}
+
+/* Public status and skills-test utility cards */
+.ss-status-lookup-card,
+.ss-status-result-card,
+.skills-test-card,
+.skills-test-shell,
+.skills-question-card {
+  color: var(--df-black) !important;
+  background: var(--df-white) !important;
+  border-color: var(--df-border) !important;
+  box-shadow: 0 7px 22px rgba(17, 17, 17, 0.06) !important;
+}
+
+.ss-status-note,
+.ss-eligibility-note,
+.ss-next-steps {
+  color: var(--df-black) !important;
+  background: var(--df-soft-teal) !important;
+  border-color: var(--df-teal) !important;
+}
+
+/* Alerts */
+.alert-info,
+.ss-alert-info {
+  color: var(--df-black) !important;
+  background: var(--df-soft-teal) !important;
+  border-color: var(--df-teal) !important;
+}
+
+.alert-warning,
+.ss-alert-warning {
+  color: var(--df-black) !important;
+  background: var(--df-soft-yellow) !important;
+  border-color: #c79b00 !important;
+}
+
+.alert-danger,
+.ss-alert-error {
+  color: #741519 !important;
+  background: var(--df-soft-red) !important;
+  border-color: var(--df-red) !important;
+}
+
+.alert-success {
+  color: #405b11 !important;
+  background: var(--df-soft-green) !important;
+  border-color: var(--df-green) !important;
+}
+
+/* Tables used outside the committee module. */
+.table {
+  --bs-table-color: var(--df-black) !important;
+  --bs-table-bg: var(--df-white) !important;
+  --bs-table-border-color: var(--df-border) !important;
+}
+
+.table thead th {
+  color: var(--df-white) !important;
+  background: var(--df-red) !important;
+  border-color: var(--df-red) !important;
+}
+
+.table-striped > tbody > tr:nth-of-type(odd) > * {
+  --bs-table-accent-bg: var(--df-bg) !important;
+}
+
+/* Accessibility and focus remain high contrast. */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:not([tabindex="-1"]):focus-visible {
+  outline: 3px solid var(--df-black) !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 0 5px var(--df-yellow) !important;
+}
+
+@media (max-width: 767.98px) {
+  .ss-wizard-section-trigger {
+    align-items: flex-start !important;
+  }
+
+  .ss-wizard-status-badge {
+    white-space: nowrap;
+  }
+}
