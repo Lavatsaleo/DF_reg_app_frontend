@@ -160,19 +160,13 @@ function RegistrationWizard({
         This is a guided step-by-step application. Fields marked with an asterisk are required. Use Save and continue to move through each section.
       </p>
 
-      <div className="ss-wizard-topper ss-executive-wizard-topper">
-        <div>
-          <span className="ss-small-label dark">Digital Futures Participant Application</span>
-          <h2>{selectedPathway.title} Application</h2>
-          <p>Complete one section at a time, review your answers, and submit once.</p>
-          <div className="ss-quick-facts" aria-label="Application summary">
-            <span><i className="bi bi-clock" aria-hidden="true" /> About 5–7 minutes</span>
-            <span><i className="bi bi-shield-check" aria-hidden="true" /> Your information is protected</span>
-            <span><i className="bi bi-envelope-check" aria-hidden="true" /> Eligible applicants receive the next-step link</span>
-          </div>
+      <div className="ss-wizard-utility-bar">
+        <div className="ss-wizard-pathway-label">
+          <span className="ss-small-label dark">Current pathway</span>
+          <strong>{selectedPathway.title}</strong>
         </div>
 
-        <div className="ss-draft-status" aria-live="polite">
+        <div className="ss-draft-status ss-draft-status-compact" aria-live="polite">
           <i className={`bi ${getDraftStatusIcon(draftSaveStatus)}`} aria-hidden="true" />
           <span>{getDraftStatusText({ status: draftSaveStatus, message: draftSaveMessage, lastSavedAt: draftLastSavedAt })}</span>
           {draftReference && <small>Draft ref: {draftReference}</small>}
