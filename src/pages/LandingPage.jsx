@@ -1,84 +1,94 @@
 import { pathways } from "../data/pathways";
 import PathwayCard from "../components/PathwayCard";
+import ProgrammePartnership from "../components/ProgrammePartnership";
 
 function LandingPage({ pathwayMessage, onPathwaySelect, onCheckStatus }) {
   const openPathways = pathways.filter((pathway) => pathway.status === "open");
 
   return (
-    <main id="main-content" tabIndex="-1">
-      <section className="ss-hero" aria-labelledby="digital-futures-title">
+    <main id="main-content" tabIndex="-1" className="df-home-page">
+      <section className="df-home-hero" aria-labelledby="digital-futures-title">
         <div className="container">
-          <div className="row align-items-center g-5">
-            <div className="col-12 col-lg-7">
-              <span className="ss-hero-kicker">Digital Futures Programme</span>
-              <h1 id="digital-futures-title" className="ss-title">
-                Digital skills. <span>Inclusive futures.</span>
+          <div className="df-hero-grid">
+            <div className="df-hero-copy">
+              <span className="df-eyebrow">Digital Futures application portal</span>
+              <h1 id="digital-futures-title" className="df-hero-title">
+                Apply to <span>Digital Futures.</span>
               </h1>
-              <p className="ss-subtitle mt-4">
-                Apply for a Digital Futures training pathway through an accessible portal designed for inclusive participation, clear eligibility checks and secure participant tracking.
+              <p className="df-hero-intro">
+                Choose a training pathway and complete your application through an accessible portal with clear eligibility checks, secure consent and guided next steps.
               </p>
-              <div className="d-flex flex-column flex-sm-row gap-3 mt-4">
+
+              <div className="df-hero-actions">
                 <a href="#pathways" className="btn ss-btn-primary">
-                  Choose a pathway <i className="bi bi-arrow-right-short" aria-hidden="true" />
+                  Choose a pathway <i className="bi bi-arrow-right" aria-hidden="true" />
                 </a>
                 <button type="button" className="btn ss-btn-outline" onClick={onCheckStatus}>
-                  <i className="bi bi-search" aria-hidden="true" /> Check application status
+                  <i className="bi bi-search" aria-hidden="true" /> Check application
                 </button>
               </div>
+
+              <ProgrammePartnership />
             </div>
 
-            <div className="col-12 col-lg-5">
-              <aside className="ss-hero-panel" aria-label="Current application intake">
-                <div className="ss-panel-content">
-                  <span>Applications open</span>
-                  <strong>Physical and Virtual Academy</strong>
-                  <p>Choose the pathway that best matches your qualifications, availability and preferred training format.</p>
+            <div className="df-hero-visual" aria-label="Digital Futures applications currently open">
+              <div className="df-shape df-shape-teal" aria-hidden="true" />
+              <div className="df-shape df-shape-orange" aria-hidden="true" />
+              <div className="df-triangle-stack" aria-hidden="true">
+                <span />
+                <span />
+                <span />
+              </div>
+
+              <div className="df-intake-card">
+                <span className="df-intake-label">Applications open</span>
+                <h2>Physical and Virtual Academy</h2>
+                <p>Select the pathway that best matches your qualifications, availability and preferred training format.</p>
+                <div className="df-intake-stats" aria-label="Application overview">
+                  <div><strong>{openPathways.length}</strong><span>Open now</span></div>
+                  <div><strong>5–7 min</strong><span>Estimated time</span></div>
                 </div>
-                <div className="ss-metric-row" aria-label="Application overview">
-                  <div>
-                    <strong>{pathways.length}</strong>
-                    <span>Pathways</span>
-                  </div>
-                  <div>
-                    <strong>{openPathways.length}</strong>
-                    <span>Open now</span>
-                  </div>
-                  <div>
-                    <strong>5–7 min</strong>
-                    <span>Estimated time</span>
-                  </div>
-                </div>
-              </aside>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="ss-before-apply-section py-5" aria-labelledby="before-apply-title">
+      <section className="df-journey-section" aria-labelledby="before-apply-title">
         <div className="container">
-          <div className="ss-before-apply-card">
-            <div>
-              <span className="ss-small-label dark">Before you apply</span>
-              <h2 id="before-apply-title">A clear and accessible application journey</h2>
-              <p>
-                Select a pathway, review and sign the consent form, complete the Jurat step if translation or explanation support was needed, then continue to the Application. Eligibility is checked as you progress.
-              </p>
-            </div>
-            <div className="ss-before-apply-steps" role="list">
-              <div role="listitem"><span>1</span><strong>Select a pathway</strong><small>Choose the training pathway that best matches your goals.</small></div>
-              <div role="listitem"><span>2</span><strong>Consent and Jurat</strong><small>Review consent first, then complete the Jurat step where applicable.</small></div>
-              <div role="listitem"><span>3</span><strong>Complete the Application</strong><small>Eligible applicants receive the next-step instructions after submission.</small></div>
-            </div>
+          <div className="df-section-heading">
+            <span className="df-eyebrow">Before you apply</span>
+            <h2 id="before-apply-title">A clear application journey</h2>
+            <p>Complete each stage in order. Your progress is saved so you can return to the Application if needed.</p>
+          </div>
+
+          <div className="df-journey-grid" role="list">
+            <article role="listitem" className="df-journey-card">
+              <span className="df-step-number">01</span>
+              <h3>Select a pathway</h3>
+              <p>Choose the training pathway that best matches your goals and circumstances.</p>
+            </article>
+            <article role="listitem" className="df-journey-card">
+              <span className="df-step-number">02</span>
+              <h3>Consent and Jurat</h3>
+              <p>Review and sign the consent information, then complete the Jurat step where applicable.</p>
+            </article>
+            <article role="listitem" className="df-journey-card">
+              <span className="df-step-number">03</span>
+              <h3>Complete the Application</h3>
+              <p>Answer the required questions and submit once you have reviewed your information.</p>
+            </article>
           </div>
         </div>
       </section>
 
-      <section id="pathways" className="ss-pathway-section py-5" aria-labelledby="pathways-title">
+      <section id="pathways" className="df-pathway-section" aria-labelledby="pathways-title">
         <div className="container">
-          <div className="d-flex flex-column flex-lg-row justify-content-between align-items-lg-end gap-3 mb-4">
+          <div className="df-section-heading df-pathway-heading">
             <div>
-              <span className="ss-small-label dark">Choose your pathway</span>
-              <h2 id="pathways-title" className="ss-section-title display-6">Select a Digital Futures pathway</h2>
+              <span className="df-eyebrow">Choose your pathway</span>
+              <h2 id="pathways-title">Digital Futures pathways</h2>
+              <p>Review the options below and start the pathway that is currently open to you.</p>
             </div>
             <span className="ss-count-badge">{pathways.length} pathways</span>
           </div>
