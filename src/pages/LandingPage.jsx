@@ -6,7 +6,6 @@ import programmePartners from "../assets/programme-partners-3.webp";
 
 function LandingPage({ pathwayMessage, onPathwaySelect, onCheckStatus }) {
   const openPathways = pathways.filter((pathway) => pathway.status === "open");
-  const upcomingPathways = pathways.filter((pathway) => pathway.status !== "open");
 
   return (
     <main id="main-content" tabIndex="-1" className="df-home-page df-home-clean">
@@ -57,7 +56,35 @@ function LandingPage({ pathwayMessage, onPathwaySelect, onCheckStatus }) {
         </div>
       </section>
 
-      <section className="df-programme-partners" aria-labelledby="programme-partners-title">
+      <section id="pathways" className="df-clean-pathway-section" aria-labelledby="pathways-title">
+        <div className="container">
+          <div className="df-clean-pathway-heading">
+            <div>
+              <span className="df-eyebrow">Choose your pathway</span>
+              <h2 id="pathways-title">Start with the pathway that fits you</h2>
+              <p>
+                Compare the options at a glance, then choose the pathway that best matches your qualifications, availability and preferred learning format.
+              </p>
+            </div>
+          </div>
+
+          {pathwayMessage && (
+            <div className="alert ss-alert-warning" role="alert">
+              <i className="bi bi-info-circle" aria-hidden="true" /> {pathwayMessage}
+            </div>
+          )}
+
+          <div className="row g-4 df-open-pathways">
+            {pathways.map((pathway) => (
+              <div key={pathway.id} className="col-12 col-md-6 col-xl-4">
+                <PathwayCard pathway={pathway} onSelect={onPathwaySelect} />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="df-programme-partners df-programme-partners-footer" aria-labelledby="programme-partners-title">
         <div className="container">
           <div className="df-programme-partners-inner">
             <div>
@@ -70,45 +97,6 @@ function LandingPage({ pathwayMessage, onPathwaySelect, onCheckStatus }) {
               className="df-programme-partner-strip"
             />
           </div>
-        </div>
-      </section>
-
-      <section id="pathways" className="df-clean-pathway-section" aria-labelledby="pathways-title">
-        <div className="container">
-          <div className="df-clean-pathway-heading">
-            <div>
-              <span className="df-eyebrow">Choose your pathway</span>
-              <h2 id="pathways-title">Start with the pathway that fits you</h2>
-              <p>
-                Choose an open pathway below. You will review consent and the Jurat step before continuing to the Application.
-              </p>
-            </div>
-          </div>
-
-          {pathwayMessage && (
-            <div className="alert ss-alert-warning" role="alert">
-              <i className="bi bi-info-circle" aria-hidden="true" /> {pathwayMessage}
-            </div>
-          )}
-
-          <div className="row g-4 df-open-pathways">
-            {openPathways.map((pathway) => (
-              <div key={pathway.id} className="col-12 col-lg-6">
-                <PathwayCard pathway={pathway} onSelect={onPathwaySelect} simplified />
-              </div>
-            ))}
-          </div>
-
-          {upcomingPathways.length > 0 && (
-            <div className="df-coming-soon-bar" aria-label="Upcoming Digital Futures pathways">
-              <div className="df-coming-soon-copy">
-                <span className="df-coming-soon-kicker">Coming soon</span>
-                <strong>{upcomingPathways.map((pathway) => pathway.title).join(", ")}</strong>
-                <small>More Digital Futures opportunities will be added as applications open.</small>
-              </div>
-              <span className="df-coming-soon-status">Not yet open</span>
-            </div>
-          )}
         </div>
       </section>
     </main>
