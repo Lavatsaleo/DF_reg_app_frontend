@@ -1,0 +1,537 @@
+/*
+ * Digital Futures programme identity for the Selection Committee and staff surfaces.
+ * Imported after CommitteeDashboardPage.css so the approved programme palette wins
+ * without changing any committee permissions, data or review behaviour.
+ */
+
+.committee-page {
+  --ss-yellow: #ffc81f;
+  --ss-yellow-deep: #d9a900;
+  --ss-black: #111111;
+  --ss-ink: #111111;
+  --ss-muted: #55514d;
+  --ss-soft: #fff4cc;
+  --ss-soft-2: #f3f1ef;
+  --ss-border: #d7d2cd;
+  --ss-card: #ffffff;
+  --ss-success: #567514;
+  --ss-warning: #a34112;
+  --ss-danger: #8d1b20;
+  --committee-red: #d22a2f;
+  --committee-teal: #4fcdb0;
+  --committee-orange: #ff671b;
+  --committee-green: #8db92e;
+  --committee-bg: #f3f1ef;
+  --committee-soft-red: #fbeaec;
+  --committee-soft-teal: #e8f8f4;
+  --committee-soft-orange: #fff0e8;
+  --committee-soft-green: #f0f7df;
+  color: var(--ss-ink) !important;
+  background: var(--committee-bg) !important;
+  background-image: none !important;
+  font-family: Arial, Helvetica, sans-serif !important;
+}
+
+.committee-page h1,
+.committee-page h2,
+.committee-page h3,
+.committee-page h4,
+.committee-page h5,
+.committee-page h6 {
+  color: var(--ss-black) !important;
+  font-family: Arial, Helvetica, sans-serif !important;
+  letter-spacing: 0 !important;
+}
+
+.committee-page h1,
+.committee-hero h1 {
+  font-family: "Arial Black", Arial, Helvetica, sans-serif !important;
+  font-weight: 900 !important;
+}
+
+.committee-page input,
+.committee-page select,
+.committee-page textarea {
+  color: var(--ss-black) !important;
+  background: #ffffff !important;
+  border: 1.5px solid #8a8580 !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+}
+
+.committee-page input:focus,
+.committee-page select:focus,
+.committee-page textarea:focus {
+  border-color: var(--ss-black) !important;
+  box-shadow: 0 0 0 3px rgba(255, 200, 31, 0.42) !important;
+}
+
+.committee-page label {
+  color: var(--ss-black) !important;
+}
+
+/* Header/hero: programme-led, not the previous black/yellow Sightsavers treatment. */
+.committee-hero {
+  padding: clamp(1.6rem, 3vw, 2.4rem) !important;
+  color: var(--ss-black) !important;
+  background: #ffffff !important;
+  border: 1px solid var(--ss-border) !important;
+  border-top: 8px solid var(--committee-teal) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 10px 28px rgba(17, 17, 17, 0.07) !important;
+}
+
+.committee-hero::before {
+  background:
+    radial-gradient(circle at 92% 5%, rgba(79, 205, 176, 0.26), transparent 24%),
+    linear-gradient(90deg, var(--committee-red) 0 7px, transparent 7px) !important;
+}
+
+.committee-hero h1 {
+  color: var(--ss-black) !important;
+  line-height: 1.02 !important;
+}
+
+.committee-hero p {
+  color: var(--ss-muted) !important;
+}
+
+.committee-hero .eyebrow,
+.committee-page .eyebrow,
+.committee-page .ss-small-label,
+.committee-page .ss-small-label.dark {
+  color: var(--committee-red) !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+.committee-hero-card {
+  color: var(--ss-black) !important;
+  background: var(--committee-soft-teal) !important;
+  border: 1px solid var(--committee-teal) !important;
+  border-radius: 10px !important;
+}
+
+.committee-hero-card span {
+  color: var(--committee-red) !important;
+}
+
+.committee-hero-card strong {
+  color: var(--ss-black) !important;
+}
+
+.committee-page .back-button {
+  color: var(--ss-black) !important;
+  background: #ffffff !important;
+  border: 2px solid var(--ss-black) !important;
+  border-radius: 999px !important;
+}
+
+.committee-page .back-button:hover,
+.committee-page .back-button:focus-visible {
+  color: var(--ss-black) !important;
+  background: var(--ss-soft) !important;
+  border-color: var(--ss-black) !important;
+}
+
+/* Main cards */
+.committee-shell,
+.committee-section-card,
+.committee-add-member-card,
+.committee-review-panel,
+.committee-workload-card,
+.committee-board-card,
+.committee-selected-report-card,
+.committee-waiting-panel {
+  background: #ffffff !important;
+  border-color: var(--ss-border) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 24px rgba(17, 17, 17, 0.06) !important;
+}
+
+.committee-shell {
+  border-top: 7px solid var(--committee-yellow, #ffc81f) !important;
+}
+
+.committee-action-bar {
+  background: var(--committee-soft-teal) !important;
+  border-color: var(--committee-teal) !important;
+  border-radius: 10px !important;
+}
+
+.committee-board-card > .committee-section-header {
+  background: var(--committee-bg) !important;
+  background-image: none !important;
+  border-bottom-color: var(--ss-border) !important;
+}
+
+.committee-section-header h2,
+.committee-action-bar h2,
+.committee-add-member-card h3,
+.committee-member-card h3,
+.committee-panel-header h2 {
+  color: var(--ss-black) !important;
+}
+
+.committee-section-header p,
+.committee-action-bar p,
+.committee-add-member-card p,
+.committee-member-card p,
+.committee-panel-header p {
+  color: var(--ss-muted) !important;
+}
+
+/* Stats use the full approved programme palette. */
+.committee-stat-card {
+  background: #ffffff !important;
+  border-color: var(--ss-border) !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+}
+
+.committee-stat-card > span {
+  color: var(--ss-black) !important;
+  background: var(--committee-teal) !important;
+  border-radius: 8px !important;
+}
+
+.committee-stat-card:nth-child(2) > span,
+.committee-stat-orange > span {
+  background: var(--ss-yellow) !important;
+}
+
+.committee-stat-card:nth-child(3) > span,
+.committee-stat-purple > span {
+  background: var(--committee-orange) !important;
+}
+
+.committee-stat-card:nth-child(4) > span,
+.committee-stat-green > span {
+  background: var(--committee-green) !important;
+}
+
+.committee-stat-card strong {
+  color: var(--ss-black) !important;
+}
+
+.committee-stat-card p {
+  color: var(--ss-muted) !important;
+}
+
+/* Members and assignments */
+.committee-member-card,
+.committee-assignment-card,
+.committee-waiting-card,
+.committee-test-card,
+.committee-existing-review,
+.committee-empty-state,
+.committee-empty-text {
+  background: var(--committee-bg) !important;
+  background-image: none !important;
+  border-color: var(--ss-border) !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+}
+
+.committee-assignment-card.active {
+  background: #ffffff !important;
+  border-color: var(--committee-teal) !important;
+  box-shadow: 0 0 0 2px rgba(79, 205, 176, 0.14) !important;
+}
+
+.committee-member-avatar,
+.committee-waiting-icon {
+  color: var(--ss-black) !important;
+  background: var(--committee-teal) !important;
+  border-radius: 8px !important;
+}
+
+.committee-member-card:nth-child(3n + 2) .committee-member-avatar {
+  background: var(--ss-yellow) !important;
+}
+
+.committee-member-card:nth-child(3n) .committee-member-avatar {
+  background: var(--committee-orange) !important;
+}
+
+.committee-assignment-title,
+.committee-waiting-main h3,
+.committee-profile-grid strong,
+.committee-test-card strong {
+  color: var(--ss-black) !important;
+}
+
+.committee-assignment-title:hover {
+  color: var(--committee-red) !important;
+}
+
+.committee-assignment-meta span,
+.committee-workload-row span,
+.committee-waiting-meta span,
+.committee-profile-grid div {
+  color: var(--ss-black) !important;
+  background: #ffffff !important;
+  border-color: var(--ss-border) !important;
+  border-radius: 8px !important;
+}
+
+.committee-unassigned-strip,
+.committee-waiting-panel {
+  color: var(--ss-black) !important;
+  background: var(--ss-soft) !important;
+  border-color: var(--ss-yellow) !important;
+}
+
+.committee-waiting-panel,
+.committee-review-panel {
+  border-top-color: var(--committee-teal) !important;
+}
+
+/* Role/status pills */
+.committee-role-pill,
+.committee-assignment-status,
+.committee-login-pill,
+.committee-report-actions > span {
+  border-radius: 999px !important;
+}
+
+.committee-role-pill.member,
+.committee-assignment-status.status-assigned {
+  color: var(--ss-black) !important;
+  background: var(--committee-soft-teal) !important;
+  border: 1px solid var(--committee-teal) !important;
+}
+
+.committee-role-pill.chair,
+.committee-assignment-status.status-in_review,
+.committee-login-pill.profile-only {
+  color: var(--ss-black) !important;
+  background: var(--ss-soft) !important;
+  border: 1px solid var(--ss-yellow) !important;
+}
+
+.committee-assignment-status.status-completed,
+.committee-login-pill.active {
+  color: #405b11 !important;
+  background: var(--committee-soft-green) !important;
+  border: 1px solid var(--committee-green) !important;
+}
+
+/* Actions */
+.committee-primary-action,
+.committee-secondary-action,
+.committee-small-action {
+  color: var(--ss-black) !important;
+  background: var(--ss-yellow) !important;
+  border: 2px solid var(--ss-yellow) !important;
+  border-radius: 999px !important;
+  box-shadow: none !important;
+  font-weight: 700 !important;
+}
+
+.committee-primary-action:hover,
+.committee-primary-action:focus-visible,
+.committee-secondary-action:hover,
+.committee-secondary-action:focus-visible,
+.committee-small-action:hover,
+.committee-small-action:focus-visible {
+  color: var(--ss-black) !important;
+  background: #ffffff !important;
+  border-color: var(--ss-black) !important;
+  transform: none !important;
+}
+
+.committee-danger-ghost {
+  color: #7e171b !important;
+  background: var(--committee-soft-red) !important;
+  border-color: var(--committee-red) !important;
+}
+
+.committee-success-ghost {
+  color: #405b11 !important;
+  background: var(--committee-soft-green) !important;
+  border-color: var(--committee-green) !important;
+}
+
+/* Review decision controls */
+.committee-score-badge {
+  color: var(--ss-black) !important;
+  background: var(--ss-yellow) !important;
+  border-color: var(--ss-yellow) !important;
+  border-radius: 8px !important;
+}
+
+.committee-decision-option {
+  color: var(--ss-black) !important;
+  background: #ffffff !important;
+  border-color: var(--ss-border) !important;
+  border-radius: 8px !important;
+}
+
+.committee-decision-option:hover {
+  background: var(--committee-soft-teal) !important;
+  border-color: var(--committee-teal) !important;
+}
+
+.committee-decision-option.selected {
+  color: var(--ss-black) !important;
+  background: var(--ss-soft) !important;
+  border-color: var(--ss-yellow) !important;
+  box-shadow: inset 0 0 0 1px var(--ss-black) !important;
+}
+
+/* Privacy/reporting */
+.committee-privacy-notice,
+.committee-report-note {
+  color: var(--ss-black) !important;
+  background: var(--committee-soft-teal) !important;
+  border-color: var(--committee-teal) !important;
+  border-radius: 8px !important;
+}
+
+.committee-privacy-notice i,
+.committee-report-note i {
+  color: var(--committee-red) !important;
+}
+
+.committee-selected-report-card {
+  border-top-color: var(--committee-red) !important;
+}
+
+.committee-report-actions > span {
+  color: var(--ss-black) !important;
+  background: var(--ss-yellow) !important;
+}
+
+.committee-report-table-wrap {
+  border-color: var(--ss-border) !important;
+  border-radius: 8px !important;
+}
+
+.committee-report-table {
+  color: var(--ss-black) !important;
+  background: #ffffff !important;
+}
+
+.committee-report-table th {
+  color: #ffffff !important;
+  background: var(--committee-red) !important;
+  border-color: var(--committee-red) !important;
+}
+
+.committee-report-table td {
+  color: var(--ss-black) !important;
+  background: #ffffff !important;
+  border-color: var(--ss-border) !important;
+}
+
+.committee-report-table tbody tr:nth-child(even) td {
+  background: var(--committee-bg) !important;
+}
+
+/* Staff sign-in uses the same programme identity. */
+.staff-login-page {
+  color: var(--df-black) !important;
+  background: var(--df-bg) !important;
+  background-image: none !important;
+}
+
+.staff-login-intro,
+.staff-login-card {
+  background: #ffffff !important;
+  border: 1px solid var(--df-border) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 10px 28px rgba(17, 17, 17, 0.07) !important;
+}
+
+.staff-login-intro {
+  border-top: 8px solid var(--df-teal) !important;
+}
+
+.staff-login-intro::after {
+  background: rgba(79, 205, 176, 0.2) !important;
+}
+
+.staff-login-card::before {
+  background: linear-gradient(90deg, var(--df-red), var(--df-yellow), var(--df-teal)) !important;
+}
+
+.staff-login-intro h1,
+.staff-login-card-header h2 {
+  color: var(--df-black) !important;
+  letter-spacing: 0 !important;
+}
+
+.staff-login-lead,
+.staff-login-feature-grid span,
+.staff-login-card-header span,
+.staff-login-note {
+  color: var(--df-muted) !important;
+}
+
+.staff-login-feature-grid div {
+  background: var(--df-bg) !important;
+  border-color: var(--df-border) !important;
+  border-radius: 10px !important;
+}
+
+.staff-login-feature-grid i,
+.staff-login-lock {
+  color: var(--df-black) !important;
+  background: var(--df-teal) !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+}
+
+.staff-login-form input {
+  color: var(--df-black) !important;
+  background: #ffffff !important;
+  border: 1.5px solid #8a8580 !important;
+  border-radius: 8px !important;
+}
+
+.staff-login-form input:focus {
+  border-color: var(--df-black) !important;
+  box-shadow: 0 0 0 3px rgba(255, 200, 31, 0.42) !important;
+}
+
+.staff-login-back {
+  color: var(--df-black) !important;
+  background: #ffffff !important;
+  border-color: var(--df-black) !important;
+  box-shadow: none !important;
+}
+
+.staff-login-back:hover,
+.staff-login-back:focus-visible {
+  color: var(--df-black) !important;
+  background: var(--df-soft-yellow) !important;
+}
+
+.staff-login-note {
+  background: var(--df-soft-teal) !important;
+  border-color: var(--df-teal) !important;
+  border-radius: 8px !important;
+}
+
+/* Keep all focus states accessible. */
+.committee-page button:focus-visible,
+.committee-page a:focus-visible,
+.committee-page input:focus-visible,
+.committee-page select:focus-visible,
+.committee-page textarea:focus-visible {
+  outline: 3px solid var(--ss-black) !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 0 5px var(--ss-yellow) !important;
+}
+
+@media (max-width: 760px) {
+  .committee-page {
+    padding: 12px !important;
+  }
+
+  .committee-hero,
+  .committee-shell {
+    border-radius: 10px !important;
+  }
+}
