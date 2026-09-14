@@ -1,10 +1,10 @@
-function PathwayCard({ pathway, onSelect }) {
+function PathwayCard({ pathway, onSelect, simplified = false }) {
   const isOpen = pathway.status === "open";
 
   return (
-    <article className={`ss-pathway-card h-100 ${!isOpen ? "is-disabled" : ""}`}>
-      <div className="d-flex justify-content-between align-items-start gap-3 mb-4">
-        <div className="ss-pathway-icon">
+    <article className={`ss-pathway-card df-clean-pathway-card h-100 ${!isOpen ? "is-disabled" : ""}`}>
+      <div className="df-clean-pathway-topline">
+        <div className="ss-pathway-icon" aria-hidden="true">
           <i className={`bi ${pathway.icon}`} />
         </div>
         <span className={`ss-status-badge ${isOpen ? "open" : "soon"}`}>
@@ -14,23 +14,30 @@ function PathwayCard({ pathway, onSelect }) {
 
       <span className="ss-small-label">{pathway.tag}</span>
       <h3>{pathway.title}</h3>
-      <p>{pathway.description}</p>
+      <p className="df-clean-pathway-description">{pathway.description}</p>
 
-      <ul className="ss-highlight-list">
-        {pathway.highlights.map((highlight) => (
-          <li key={highlight}>
-            <i className="bi bi-check2-circle" />
-            <span>{highlight}</span>
-          </li>
-        ))}
-      </ul>
+      {!simplified && (
+        <ul className="ss-highlight-list">
+          {pathway.highlights.map((highlight) => (
+            <li key={highlight}>
+              <i className="bi bi-check2-circle" aria-hidden="true" />
+              <span>{highlight}</span>
+            </li>
+          ))}
+        </ul>
+      )}
 
       <button
         type="button"
         className={`btn w-100 mt-auto ${isOpen ? "ss-btn-primary" : "ss-btn-muted"}`}
         onClick={() => onSelect(pathway)}
+        disabled={!isOpen}
       >
-        {isOpen ? `Start ${pathway.title} application` : "Not yet available"}
+        {isOpen ? (
+          <>Start application <i className="bi bi-arrow-right" aria-hidden="true" /></>
+        ) : (
+          "Not yet available"
+        )}
       </button>
     </article>
   );
