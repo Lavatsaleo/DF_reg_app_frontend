@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import ApplicationConfirmation from "../components/ApplicationConfirmation";
 import ElectronicSignature from "../components/ElectronicSignature";
-import FormProgress from "../components/FormProgress";
 import RegistrationWizard from "../components/RegistrationWizard";
 import RightsContactsPanel from "../components/RightsContactsPanel";
 import { API_BASE_URL } from "../config/api";
@@ -28,14 +27,12 @@ const CONSENT_PARTICIPATION_QUESTION = {
 const PATHWAY_RULES = {
   PHYSICAL_ACADEMY: {
     duration: "9 months",
-    label: "9-month Physical Academy",
     allowedEducation: ["Bachelor’s degree", "Postgraduate"],
     educationMessage: "The Physical Academy requires a completed Bachelor’s degree or Postgraduate qualification.",
     educationRecommendation: "Please return to the pathway options to explore another Digital Futures pathway that may better match your profile.",
   },
   VIRTUAL_ACADEMY: {
     duration: "4 months",
-    label: "4-month Virtual Academy",
     allowedEducation: ["Diploma", "Bachelor’s degree", "Postgraduate"],
     educationMessage: "The Virtual Academy requires a completed Diploma, Bachelor’s degree or Postgraduate qualification.",
     educationRecommendation: "Please return to the pathway options to explore another Digital Futures pathway that may better match your profile.",
@@ -199,7 +196,6 @@ function ContextualApplicationPage({
   const [entryError, setEntryError] = useState("");
   const [detectedCountry, setDetectedCountry] = useState(() => getCachedProgrammeCountry().country || "");
   const [locationStatus, setLocationStatus] = useState(() => getCachedProgrammeCountry().country ? "cached" : "checking");
-  const sectionEntries = Object.entries(groupedQuestions);
 
   useEffect(() => {
     let active = true;
@@ -262,6 +258,13 @@ function ContextualApplicationPage({
     consentVersionMatches;
   const consentComplete = consentSignedComplete && juratComplete;
   const entryComplete = entryStage === "application" && consentComplete;
+  const consentReadyToAdvance = Boolean(
+    consentDocument?.version &&
+    consentRead === "Yes" &&
+    consentParticipate === "Yes" &&
+    answers.CONSENT_NAME_ID_CODE?.trim() &&
+    applicantSignatureComplete
+  );
 
   const residenceCountry = answers.COUNTRY || "";
   const consentContactCountries = consentDocument
@@ -282,53 +285,88 @@ function ContextualApplicationPage({
     }
   }, [answers.ENTRY_STAGE, consentComplete, consentSignedComplete, editingConsent]);
 
-  function continueFromConsent() {
-    if (consentRead !== "Yes" || consentParticipate !== "Yes") {
-      setEntryError("Consent is required before you can continue to the Application.");
-      return;
-    }
-
-    if (!answers.CONSENT_NAME_ID_CODE) {
-      setEntryError("Please enter your Name.");
-      return;
-    }
-
-    if (!applicantSignatureComplete) {
-      setEntryError("Please provide your electronic signature.");
-      return;
-    }
+  useEffect(() => {
+    if (editingConsent || entryStage !== "consent" || !consentReadyToAdvance || !consentDocument?.version) return;
 
     const signedDate = answers.CONSENT_SIGNED_DATE || localDateString();
     const contextCountry = residenceCountry || detectedCountry || "ALL";
-    const snapshot = buildContactSnapshot(consentDocument, consentContactCountries);
+    const contactCountries = getConsentContactCountries({ detectedCountry, residenceCountry });
+    const snapshot = buildContactSnapshot(consentDocument, contactCountries);
 
-    setHiddenAnswer("CONSENT_VERSION", consentDocument.version);
-    setHiddenAnswer("CONSENT_SIGNED_DATE", signedDate);
-    setHiddenAnswer("CONSENT_DETECTED_COUNTRY", detectedCountry || "Undetermined");
-    setHiddenAnswer("CONSENT_CONTACT_CONTEXT", contextCountry);
-    setHiddenAnswer("CONSENT_CONTACTS_AT_SIGNING", JSON.stringify(snapshot));
-    setHiddenAnswer("ENTRY_STAGE", "jurat");
+    onAnswerChange({ questionCode: "CONSENT_VERSION" }, consentDocument.version);
+    onAnswerChange({ questionCode: "CONSENT_SIGNED_DATE" }, signedDate);
+    onAnswerChange({ questionCode: "CONSENT_DETECTED_COUNTRY" }, detectedCountry || "Undetermined");
+    onAnswerChange({ questionCode: "CONSENT_CONTACT_CONTEXT" }, contextCountry);
+    onAnswerChange({ questionCode: "CONSENT_CONTACTS_AT_SIGNING" }, JSON.stringify(snapshot));
+    onAnswerChange({ questionCode: "ENTRY_STAGE" }, "jurat");
+    setEntryStage("jurat");
+    setEntryError("");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [
+    editingConsent,
+    entryStage,
+    consentReadyToAdvance,
+    consentDocument,
+    answers.CONSENT_SIGNED_DATE,
+    residenceCountry,
+    detectedCountry,
+    onAnswerChange,
+  ]);
+
+  useEffect(() => {
+    if (editingConsent || entryStage !== "jurat" || !consentSignedComplete) return;
+
+    const juratAnswer = answers.JURAT_REQUIRED;
+    if (!juratAnswer) return;
+
+    if (juratAnswer === "Yes" && !juratCoreComplete) return;
+
+    if (juratAnswer === "Yes" && !answers.JURAT_DATE) {
+      onAnswerChange({ questionCode: "JURAT_DATE" }, localDateString());
+      return;
+    }
+
+    onAnswerChange({ questionCode: "ENTRY_STAGE" }, "application");
+    setEntryStage("application");
+    setEntryError("");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [
+    editingConsent,
+    entryStage,
+    consentSignedComplete,
+    answers.JURAT_REQUIRED,
+    answers.JURAT_DATE,
+    juratCoreComplete,
+    onAnswerChange,
+  ]);
+
+  function moveReviewToJurat() {
+    if (!consentReadyToAdvance) {
+      setEntryError("Please complete the consent details before reviewing the Jurat step.");
+      return;
+    }
+
     setEntryStage("jurat");
     setEntryError("");
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  function continueFromJurat() {
+  function returnFromReviewToApplication() {
     if (!answers.JURAT_REQUIRED) {
       setEntryError("Please indicate whether someone translated or explained this Application to you.");
       return;
     }
 
     if (juratRequired && !juratCoreComplete) {
-      setEntryError("Please complete the interpreter details and electronic signature before continuing.");
+      setEntryError("Please complete the interpreter details and electronic signature before returning to the Application.");
       return;
     }
 
     if (juratRequired && !answers.JURAT_DATE) {
-      setHiddenAnswer("JURAT_DATE", localDateString());
+      onAnswerChange({ questionCode: "JURAT_DATE" }, localDateString());
     }
 
-    setHiddenAnswer("ENTRY_STAGE", "application");
+    onAnswerChange({ questionCode: "ENTRY_STAGE" }, "application");
     setEntryStage("application");
     setEditingConsent(false);
     setEntryError("");
@@ -376,7 +414,7 @@ function ContextualApplicationPage({
 
     return (
       <main id="main-content" tabIndex="-1">
-        <section className="ss-form-hero">
+        <section className="ss-form-hero df-entry-hero">
           <div className="container">
             <button type="button" className="btn ss-btn-outline mb-4" onClick={onBackToPathways}>
               <i className="bi bi-arrow-left" aria-hidden="true" /> Back to pathways
@@ -401,7 +439,6 @@ function ContextualApplicationPage({
                       type="button"
                       className="btn btn-sm ss-btn-outline"
                       onClick={() => {
-                        setHiddenAnswer("ENTRY_STAGE", "consent");
                         setEntryStage("consent");
                         setEntryError("");
                       }}
@@ -452,9 +489,15 @@ function ContextualApplicationPage({
                   )}
 
                   {entryError && <div className="alert ss-alert-error" role="alert">{entryError}</div>}
-                  <button type="button" className="btn ss-btn-primary" onClick={continueFromJurat}>
-                    Continue to Application <i className="bi bi-arrow-right" aria-hidden="true" />
-                  </button>
+                  {editingConsent ? (
+                    <button type="button" className="btn ss-btn-primary" onClick={returnFromReviewToApplication}>
+                      Return to Application <i className="bi bi-arrow-right" aria-hidden="true" />
+                    </button>
+                  ) : (
+                    <p className="df-auto-advance-note" aria-live="polite">
+                      <i className="bi bi-arrow-right-circle" aria-hidden="true" /> Once this step is complete, the Application will open automatically.
+                    </p>
+                  )}
                 </article>
               ) : (
                 <article className="ss-section-card">
@@ -553,9 +596,15 @@ function ContextualApplicationPage({
                       />
 
                       {entryError && <div className="alert ss-alert-error mt-3" role="alert">{entryError}</div>}
-                      <button type="button" className="btn ss-btn-primary mt-4" onClick={continueFromConsent}>
-                        Continue to Jurat <i className="bi bi-arrow-right" aria-hidden="true" />
-                      </button>
+                      {editingConsent ? (
+                        <button type="button" className="btn ss-btn-primary mt-4" onClick={moveReviewToJurat}>
+                          Review Jurat <i className="bi bi-arrow-right" aria-hidden="true" />
+                        </button>
+                      ) : (
+                        <p className="df-auto-advance-note mt-4" aria-live="polite">
+                          <i className="bi bi-arrow-right-circle" aria-hidden="true" /> After your name and signature are complete, you will move to the Jurat step automatically.
+                        </p>
+                      )}
                     </div>
                   ) : (
                     <p className="text-muted mb-0">Please answer both consent questions to continue.</p>
@@ -595,54 +644,57 @@ function ContextualApplicationPage({
     );
   }
 
-  const pathwayRule = PATHWAY_RULES[selectedPathway.id] || PATHWAY_RULES.PHYSICAL_ACADEMY;
-
   return (
-    <main id="main-content" tabIndex="-1">
-      <section className="ss-form-hero" aria-labelledby="application-title">
-        <div className="container-fluid px-3 px-xl-5">
-          <div className="row align-items-center g-4">
-            <div className="col-12 col-lg-8">
-              <button type="button" className="btn ss-btn-outline mb-4" onClick={onBackToPathways}>
+    <main id="main-content" tabIndex="-1" className="df-application-page">
+      <section className="ss-form-hero df-application-hero" aria-labelledby="application-title">
+        <div className="container">
+          <div className="df-application-hero-row">
+            <div>
+              <button type="button" className="btn ss-btn-outline mb-3" onClick={onBackToPathways}>
                 <i className="bi bi-arrow-left" aria-hidden="true" /> Back to pathways
               </button>
               <span className="ss-small-label light">Digital Futures Participant Application</span>
               <h1 id="application-title">{selectedPathway.title} application</h1>
-              <p>Complete the required fields carefully. Eligibility is checked as you progress through the Application.</p>
-              <button
-                type="button"
-                className="btn btn-sm ss-btn-outline"
-                onClick={() => {
-                  setEditingConsent(true);
-                  setEntryStage("consent");
-                }}
-              >
-                <i className="bi bi-pencil" aria-hidden="true" /> Review consent and Jurat
-              </button>
+              <p>Complete one section at a time. Your progress is saved as you go.</p>
             </div>
-            <div className="col-12 col-lg-4">
-              <div className="ss-selected-card">
-                <span>Selected pathway</span>
-                <strong>{selectedPathway.title}</strong>
-                <small>{pathwayRule.label}</small>
-              </div>
-            </div>
+            <button
+              type="button"
+              className="btn btn-sm ss-btn-outline df-review-consent-button"
+              onClick={() => {
+                setEditingConsent(true);
+                setEntryStage("consent");
+              }}
+            >
+              <i className="bi bi-pencil" aria-hidden="true" /> Review consent &amp; Jurat
+            </button>
           </div>
         </div>
       </section>
 
-      <section className="container-fluid px-3 px-xl-5 py-5">
-        <div className="row g-4 align-items-start">
-          <div className="col-12 col-xl-3 order-2 order-xl-1 ss-application-sidebar">
-            <div className="position-sticky" style={{ top: "120px" }}>
-              <RightsContactsPanel
-                consent={consentDocument}
-                residenceCountry={residenceCountry}
-              />
-            </div>
-          </div>
+      <section className="container py-4 py-lg-5">
+        <div className="df-application-layout">
+          <aside className="df-application-support-rail">
+            <details className="df-support-details">
+              <summary>
+                <span><i className="bi bi-shield-check" aria-hidden="true" /> Rights &amp; support contacts</span>
+                <i className="bi bi-chevron-down" aria-hidden="true" />
+              </summary>
+              <div className="df-support-details-body">
+                <RightsContactsPanel
+                  consent={consentDocument}
+                  residenceCountry={residenceCountry}
+                  compact
+                />
+              </div>
+            </details>
 
-          <div className="col-12 col-xl-6 order-1 order-xl-2">
+            <div className="df-application-note">
+              <strong>Submit only once</strong>
+              <span>Use the same application rather than starting again with the same email address or phone number.</span>
+            </div>
+          </aside>
+
+          <div className="df-application-main">
             <RegistrationWizard
               selectedPathway={selectedPathway}
               groupedQuestions={groupedQuestions}
@@ -668,20 +720,6 @@ function ContextualApplicationPage({
               onClearDraft={onClearDraft}
               onStepChange={onStepChange}
             />
-          </div>
-
-          <div className="col-12 col-xl-3 order-3 ss-application-sidebar">
-            <div className="position-sticky" style={{ top: "120px" }}>
-              <FormProgress progress={formProgress} sectionCount={sectionEntries.length} submitting={submitting} />
-              <div className="ss-help-card mt-4">
-                <span className="ss-small-label dark">Submit only once</span>
-                <p className="mb-0">Do not create another Application using the same email address or phone number.</p>
-              </div>
-              <div className="ss-help-card mt-4">
-                <span className="ss-small-label dark">Need help?</span>
-                <p className="mb-0">Use the accessibility tools above to increase text size, switch contrast, reduce movement or read the page aloud.</p>
-              </div>
-            </div>
           </div>
         </div>
       </section>
