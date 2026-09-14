@@ -286,34 +286,6 @@ function ContextualApplicationPage({
   }, [answers.ENTRY_STAGE, consentComplete, consentSignedComplete, editingConsent]);
 
   useEffect(() => {
-    if (editingConsent || entryStage !== "consent" || !consentReadyToAdvance || !consentDocument?.version) return;
-
-    const signedDate = answers.CONSENT_SIGNED_DATE || localDateString();
-    const contextCountry = residenceCountry || detectedCountry || "ALL";
-    const contactCountries = getConsentContactCountries({ detectedCountry, residenceCountry });
-    const snapshot = buildContactSnapshot(consentDocument, contactCountries);
-
-    onAnswerChange({ questionCode: "CONSENT_VERSION" }, consentDocument.version);
-    onAnswerChange({ questionCode: "CONSENT_SIGNED_DATE" }, signedDate);
-    onAnswerChange({ questionCode: "CONSENT_DETECTED_COUNTRY" }, detectedCountry || "Undetermined");
-    onAnswerChange({ questionCode: "CONSENT_CONTACT_CONTEXT" }, contextCountry);
-    onAnswerChange({ questionCode: "CONSENT_CONTACTS_AT_SIGNING" }, JSON.stringify(snapshot));
-    onAnswerChange({ questionCode: "ENTRY_STAGE" }, "jurat");
-    setEntryStage("jurat");
-    setEntryError("");
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [
-    editingConsent,
-    entryStage,
-    consentReadyToAdvance,
-    consentDocument,
-    answers.CONSENT_SIGNED_DATE,
-    residenceCountry,
-    detectedCountry,
-    onAnswerChange,
-  ]);
-
-  useEffect(() => {
     if (editingConsent || entryStage !== "jurat" || !consentSignedComplete) return;
 
     const juratAnswer = answers.JURAT_REQUIRED;
@@ -340,12 +312,23 @@ function ContextualApplicationPage({
     onAnswerChange,
   ]);
 
-  function moveReviewToJurat() {
-    if (!consentReadyToAdvance) {
-      setEntryError("Please complete the consent details before reviewing the Jurat step.");
+  function continueFromConsent() {
+    if (!consentReadyToAdvance || !consentDocument?.version) {
+      setEntryError("Please complete your name and electronic signature before continuing.");
       return;
     }
 
+    const signedDate = answers.CONSENT_SIGNED_DATE || localDateString();
+    const contextCountry = residenceCountry || detectedCountry || "ALL";
+    const contactCountries = getConsentContactCountries({ detectedCountry, residenceCountry });
+    const snapshot = buildContactSnapshot(consentDocument, contactCountries);
+
+    onAnswerChange({ questionCode: "CONSENT_VERSION" }, consentDocument.version);
+    onAnswerChange({ questionCode: "CONSENT_SIGNED_DATE" }, signedDate);
+    onAnswerChange({ questionCode: "CONSENT_DETECTED_COUNTRY" }, detectedCountry || "Undetermined");
+    onAnswerChange({ questionCode: "CONSENT_CONTACT_CONTEXT" }, contextCountry);
+    onAnswerChange({ questionCode: "CONSENT_CONTACTS_AT_SIGNING" }, JSON.stringify(snapshot));
+    onAnswerChange({ questionCode: "ENTRY_STAGE" }, "jurat");
     setEntryStage("jurat");
     setEntryError("");
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -596,15 +579,14 @@ function ContextualApplicationPage({
                       />
 
                       {entryError && <div className="alert ss-alert-error mt-3" role="alert">{entryError}</div>}
-                      {editingConsent ? (
-                        <button type="button" className="btn ss-btn-primary mt-4" onClick={moveReviewToJurat}>
-                          Review Jurat <i className="bi bi-arrow-right" aria-hidden="true" />
-                        </button>
-                      ) : (
-                        <p className="df-auto-advance-note mt-4" aria-live="polite">
-                          <i className="bi bi-arrow-right-circle" aria-hidden="true" /> After your name and signature are complete, you will move to the Jurat step automatically.
-                        </p>
-                      )}
+                      <button
+                        type="button"
+                        className="btn ss-btn-primary mt-4"
+                        onClick={continueFromConsent}
+                        disabled={!consentReadyToAdvance}
+                      >
+                        Next <i className="bi bi-arrow-right" aria-hidden="true" />
+                      </button>
                     </div>
                   ) : (
                     <p className="text-muted mb-0">Please answer both consent questions to continue.</p>
