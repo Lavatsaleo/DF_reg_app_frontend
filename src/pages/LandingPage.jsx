@@ -2,7 +2,7 @@ import { pathways } from "../data/pathways";
 import PathwayCard from "../components/PathwayCard";
 import ProgrammePartnership from "../components/ProgrammePartnership";
 import heroPerson from "../assets/hero-person.webp";
-import programmePartners from "../assets/programme-partners.webp";
+import programmePartners from "../assets/programme-partners-3.webp";
 
 function LandingPage({ pathwayMessage, onPathwaySelect, onCheckStatus }) {
   const openPathways = pathways.filter((pathway) => pathway.status === "open");
@@ -40,7 +40,7 @@ function LandingPage({ pathwayMessage, onPathwaySelect, onCheckStatus }) {
             <div className="df-clean-hero-media" aria-label="Digital Futures participant">
               <div className="df-photo-shape df-photo-shape-teal" aria-hidden="true" />
               <div className="df-photo-frame">
-                <img src={heroPerson} alt="Digital Futures participant" />
+                <img src={heroPerson} alt="Person featured in Digital Futures programme artwork" />
               </div>
               <div className="df-photo-triangles" aria-hidden="true">
                 <span />
@@ -66,7 +66,7 @@ function LandingPage({ pathwayMessage, onPathwaySelect, onCheckStatus }) {
             </div>
             <img
               src={programmePartners}
-              alt="Digital Futures programme partner logos"
+              alt="ACET, ADF and ILO programme partner logos"
               className="df-programme-partner-strip"
             />
           </div>
