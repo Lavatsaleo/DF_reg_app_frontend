@@ -1,0 +1,367 @@
+/* Final simplification pass for pathway choice and the participant Application. */
+
+/* --------------------------------------------------------------------------
+   Pathway tiles: informative but still scan-friendly
+   -------------------------------------------------------------------------- */
+
+.df-open-pathways {
+  max-width: none !important;
+}
+
+.df-clean-pathway-card {
+  min-height: 100% !important;
+}
+
+.df-clean-pathway-card .ss-highlight-list {
+  margin: 0 0 1.4rem !important;
+  padding: 0 !important;
+  display: grid;
+  gap: 0.58rem;
+  list-style: none;
+}
+
+.df-clean-pathway-card .ss-highlight-list li {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  align-items: start;
+  gap: 0.55rem;
+  color: var(--df-black);
+  font-size: 0.94rem;
+  line-height: 1.4;
+}
+
+.df-clean-pathway-card .ss-highlight-list i {
+  margin-top: 0.08rem;
+  color: var(--df-green);
+  font-size: 1rem;
+}
+
+.df-clean-pathway-card.is-disabled {
+  opacity: 1 !important;
+  background: rgba(255, 255, 255, 0.64) !important;
+  border-top-color: #bdb7b1 !important;
+  box-shadow: none !important;
+}
+
+.df-clean-pathway-card.is-disabled .ss-pathway-icon {
+  background: #e8e5e2 !important;
+  color: var(--df-muted) !important;
+}
+
+.df-clean-pathway-card.is-disabled .ss-highlight-list i {
+  color: #8d8883 !important;
+}
+
+.df-clean-pathway-card.is-disabled .btn {
+  color: var(--df-muted) !important;
+  background: #ece9e6 !important;
+  border-color: #d3cec9 !important;
+}
+
+.df-programme-partners-footer {
+  margin-top: 0;
+  border-top: 1px solid var(--df-border) !important;
+  border-bottom: 0 !important;
+}
+
+/* --------------------------------------------------------------------------
+   Automatic transition guidance
+   -------------------------------------------------------------------------- */
+
+.df-auto-advance-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0.85rem 1rem;
+  color: #423f3b;
+  background: var(--df-soft-teal);
+  border-left: 4px solid var(--df-teal);
+  border-radius: 6px;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.df-auto-advance-note i {
+  flex: 0 0 auto;
+  margin-top: 0.08rem;
+}
+
+/* --------------------------------------------------------------------------
+   Cleaner Application page
+   -------------------------------------------------------------------------- */
+
+.df-application-page {
+  background: var(--df-bg);
+}
+
+.df-application-hero {
+  padding: clamp(1.75rem, 3vw, 2.65rem) 0 !important;
+}
+
+.df-application-hero-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.df-application-hero h1 {
+  max-width: 780px;
+  margin-bottom: 0.55rem !important;
+  font-size: clamp(2.3rem, 4vw, 3.65rem) !important;
+}
+
+.df-application-hero p {
+  max-width: 720px;
+  margin-bottom: 0 !important;
+}
+
+.df-review-consent-button {
+  flex: 0 0 auto;
+  margin-bottom: 0.25rem;
+}
+
+.df-application-layout {
+  display: grid;
+  grid-template-columns: minmax(230px, 270px) minmax(0, 1fr);
+  grid-template-areas: "support main";
+  align-items: start;
+  gap: clamp(1rem, 2.3vw, 2rem);
+  max-width: 1320px;
+  margin: 0 auto;
+}
+
+.df-application-support-rail {
+  grid-area: support;
+  position: sticky;
+  top: 112px;
+  min-width: 0;
+}
+
+.df-application-main {
+  grid-area: main;
+  min-width: 0;
+}
+
+.df-support-details {
+  overflow: hidden;
+  background: #ffffff;
+  border: 1px solid var(--df-border);
+  border-radius: 10px;
+  box-shadow: 0 5px 16px rgba(17, 17, 17, 0.05);
+}
+
+.df-support-details > summary {
+  min-height: 58px;
+  padding: 0.9rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  color: var(--df-black);
+  cursor: pointer;
+  font-weight: 700;
+  list-style: none;
+}
+
+.df-support-details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.df-support-details > summary span {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.df-support-details > summary > i {
+  transition: transform 160ms ease;
+}
+
+.df-support-details[open] > summary > i {
+  transform: rotate(180deg);
+}
+
+.df-support-details-body {
+  border-top: 1px solid var(--df-border);
+}
+
+.df-support-details .ss-rights-contacts-panel {
+  margin: 0 !important;
+  padding: 1rem !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.df-support-details .ss-rights-contacts-panel > .ss-small-label,
+.df-support-details .ss-rights-contacts-panel > h2 {
+  display: none;
+}
+
+.df-support-details .ss-contact-card {
+  padding: 0.85rem !important;
+}
+
+.df-support-details .ss-contact-row {
+  min-width: 0;
+}
+
+.df-support-details .ss-contact-value {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.df-application-note {
+  margin-top: 0.9rem;
+  padding: 0.9rem 1rem;
+  display: grid;
+  gap: 0.25rem;
+  color: var(--df-muted);
+  background: rgba(255, 255, 255, 0.58);
+  border: 1px solid var(--df-border);
+  border-radius: 10px;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.df-application-note strong {
+  color: var(--df-black);
+}
+
+/* Remove the large duplicated dashboard-like topper. */
+.ss-registration-wizard {
+  border-radius: 12px !important;
+  box-shadow: 0 8px 24px rgba(17, 17, 17, 0.06) !important;
+}
+
+.ss-wizard-utility-bar {
+  padding: 1rem 1.15rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  background: #ffffff;
+  border-bottom: 1px solid var(--df-border);
+}
+
+.ss-wizard-pathway-label {
+  min-width: 0;
+  display: grid;
+  gap: 0.15rem;
+}
+
+.ss-wizard-pathway-label .ss-small-label {
+  margin: 0;
+}
+
+.ss-wizard-pathway-label strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 1rem;
+}
+
+.ss-draft-status-compact {
+  max-width: min(560px, 64%);
+  margin: 0 !important;
+  padding: 0.62rem 0.75rem !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  background: var(--df-bg) !important;
+  border: 1px solid var(--df-border) !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+  font-size: 0.86rem;
+}
+
+.ss-draft-status-compact span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ss-draft-status-compact small {
+  display: none;
+}
+
+.ss-wizard-progress {
+  padding: 0.9rem 1.15rem !important;
+  background: #ffffff;
+}
+
+.ss-wizard-stack {
+  padding: 0.35rem 1rem 1rem;
+}
+
+/* On tablets and phones, keep the form first and support information second. */
+@media (max-width: 991.98px) {
+  .df-application-hero-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .df-review-consent-button {
+    margin-bottom: 0;
+  }
+
+  .df-application-layout {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "main"
+      "support";
+  }
+
+  .df-application-support-rail {
+    position: static;
+  }
+
+  .ss-wizard-utility-bar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .ss-draft-status-compact {
+    max-width: none;
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .df-clean-pathway-card .ss-highlight-list {
+    gap: 0.5rem;
+  }
+
+  .df-application-hero {
+    padding: 1.4rem 0 !important;
+  }
+
+  .df-application-hero h1 {
+    font-size: clamp(2rem, 9vw, 2.7rem) !important;
+  }
+
+  .ss-wizard-utility-bar,
+  .ss-wizard-progress {
+    padding-left: 0.9rem !important;
+    padding-right: 0.9rem !important;
+  }
+
+  .ss-wizard-stack {
+    padding-left: 0.65rem;
+    padding-right: 0.65rem;
+  }
+
+  .ss-draft-status-compact {
+    display: grid !important;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .ss-draft-status-compact span {
+    white-space: normal;
+  }
+}
