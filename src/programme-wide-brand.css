@@ -482,6 +482,53 @@
   --bs-table-accent-bg: var(--df-bg) !important;
 }
 
+/* Natural page-reader voice selector. */
+.ss-reader-voice-control {
+  min-height: 42px;
+  max-width: 250px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0 0.7rem;
+  color: var(--df-black) !important;
+  background: var(--df-bg) !important;
+  border: 1px solid var(--df-border) !important;
+  border-radius: 999px;
+  font-weight: 700;
+  flex: 0 1 250px;
+}
+
+.ss-reader-voice-control > i {
+  flex: 0 0 auto;
+  color: var(--df-red);
+}
+
+.ss-reader-voice-select {
+  min-width: 0;
+  width: 100%;
+  height: 38px;
+  padding: 0 1.6rem 0 0;
+  color: var(--df-black);
+  background-color: transparent;
+  border: 0;
+  outline: 0;
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+}
+
+.ss-reader-voice-select:focus-visible {
+  outline: 2px solid var(--df-black) !important;
+  outline-offset: 2px;
+  box-shadow: none !important;
+}
+
+.ss-a11y-btn:disabled {
+  opacity: 0.66;
+  cursor: wait;
+}
+
 /* Accessibility and focus remain high contrast. */
 button:focus-visible,
 a:focus-visible,
@@ -501,5 +548,10 @@ textarea:focus-visible,
 
   .ss-wizard-status-badge {
     white-space: nowrap;
+  }
+
+  .ss-reader-voice-control {
+    flex: 0 0 min(245px, 82vw);
+    max-width: min(245px, 82vw);
   }
 }
