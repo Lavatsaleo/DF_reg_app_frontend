@@ -1,13 +1,61 @@
-import { getReadablePageText, speakText, stopSpeaking } from "../utils/speechUtils";
+import { useEffect, useMemo, useState } from "react";
+import { getReadablePageText } from "../utils/speechUtils";
+import {
+  getSavedReaderVoiceName,
+  readTextNaturally,
+  saveReaderVoiceName,
+  stopNaturalReading,
+  waitForReaderVoices,
+} from "../utils/naturalPageReader";
 
 function AccessibilityToolbar({ preferences, onTogglePreference, onResetPreferences }) {
-  function handleReadPage() {
+  const [readerVoices, setReaderVoices] = useState([]);
+  const [readerVoiceName, setReaderVoiceName] = useState(() => getSavedReaderVoiceName());
+  const [readerBusy, setReaderBusy] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+
+    waitForReaderVoices().then((voices) => {
+      if (!active) return;
+      setReaderVoices(voices);
+    });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const visibleReaderVoices = useMemo(() => {
+    const englishVoices = readerVoices.filter((voice) => String(voice.lang || "").toLowerCase().startsWith("en"));
+    const source = englishVoices.length > 0 ? englishVoices : readerVoices;
+
+    // Keep the control useful rather than presenting dozens of operating-system voices.
+    return source.slice(0, 10);
+  }, [readerVoices]);
+
+  async function handleReadPage() {
     const text = getReadablePageText();
-    const spoken = speakText(text);
+    setReaderBusy(true);
+
+    const spoken = await readTextNaturally(text, { voiceName: readerVoiceName });
+    setReaderBusy(false);
 
     if (!spoken) {
       window.alert("Read aloud is not available in this browser. You can still use a screen reader or your device accessibility tools.");
     }
+  }
+
+  function handleVoiceChange(event) {
+    const nextVoiceName = event.target.value;
+    setReaderVoiceName(nextVoiceName);
+    saveReaderVoiceName(nextVoiceName);
+    stopNaturalReading();
+  }
+
+  function handleStopReading() {
+    stopNaturalReading();
+    setReaderBusy(false);
   }
 
   return (
@@ -47,11 +95,31 @@ function AccessibilityToolbar({ preferences, onTogglePreference, onResetPreferen
               <i className="bi bi-person-walking" aria-hidden="true" /> Reduce motion
             </button>
 
-            <button type="button" className="btn ss-a11y-btn" onClick={handleReadPage}>
-              <i className="bi bi-volume-up" aria-hidden="true" /> Read page
+            {visibleReaderVoices.length > 1 && (
+              <label className="ss-reader-voice-control">
+                <span className="visually-hidden">Reading voice</span>
+                <i className="bi bi-person-sound" aria-hidden="true" />
+                <select
+                  className="ss-reader-voice-select"
+                  value={readerVoiceName}
+                  onChange={handleVoiceChange}
+                  aria-label="Choose reading voice"
+                >
+                  <option value="">Best available voice</option>
+                  {visibleReaderVoices.map((voice) => (
+                    <option key={`${voice.name}-${voice.lang}`} value={voice.name}>
+                      {voice.name} ({voice.lang})
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+
+            <button type="button" className="btn ss-a11y-btn" onClick={handleReadPage} disabled={readerBusy}>
+              <i className="bi bi-volume-up" aria-hidden="true" /> {readerBusy ? "Starting..." : "Read page"}
             </button>
 
-            <button type="button" className="btn ss-a11y-btn" onClick={stopSpeaking}>
+            <button type="button" className="btn ss-a11y-btn" onClick={handleStopReading}>
               <i className="bi bi-stop-circle" aria-hidden="true" /> Stop reading
             </button>
 
