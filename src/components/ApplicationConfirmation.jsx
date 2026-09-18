@@ -101,7 +101,7 @@ function IneligibleConfirmation({ result, selectedPathway, onStartNewApplication
                 <span className="ss-small-label dark">Application outcome</span>
                 <h1 id="confirmation-title">Unfortunately, you are not eligible for this programme at this time.</h1>
                 <p className="ss-confirmation-lead">
-                  Thank you for your interest in the <strong>{selectedPathway?.title || "Digital Futures programme"}</strong>. Your details have been received, but the Application does not meet the current requirements.
+                  Thank you for your interest in the <strong>{selectedPathway?.title || "Digital Futures"}</strong>. Your details have been received, but the Application does not meet the current requirements.
                 </p>
 
                 <div className="ss-feedback-panel" role="note" aria-labelledby="ineligibility-feedback-title">
