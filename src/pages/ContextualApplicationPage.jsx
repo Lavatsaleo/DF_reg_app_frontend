@@ -193,8 +193,8 @@ function ContextualApplicationPage({
   const [consentLoading, setConsentLoading] = useState(true);
   const [consentLoadError, setConsentLoadError] = useState("");
   const [entryError, setEntryError] = useState("");
-  const [detectedCountry, setDetectedCountry] = useState(() => getCachedProgrammeCountry().country || "");
-  const [locationStatus, setLocationStatus] = useState(() => getCachedProgrammeCountry().country ? "cached" : "checking");
+  const [detectedCountry] = useState(() => getCachedProgrammeCountry().country || "");
+  const locationStatus = detectedCountry ? "cached" : "unavailable";
 
   useEffect(() => {
     let active = true;
