@@ -123,6 +123,7 @@ function RegistrationWizard({
   function goToStep(stepIndex) {
     const nextStep = Math.max(0, Math.min(stepIndex, reviewStepIndex));
     setActiveStep(nextStep);
+    onStepChange?.(nextStep);
 
     window.requestAnimationFrame(() => {
       const panel = document.querySelector(`#wizard-step-${nextStep}`) || document.querySelector(".ss-registration-wizard");
@@ -142,6 +143,16 @@ function RegistrationWizard({
     goToStep(nextStep);
   }
 
+  function handleWizardSubmit(event) {
+    if (activeStep !== reviewStepIndex) {
+      event.preventDefault();
+      setAnnouncement("Complete this section using Continue. The full application is submitted only from Review and submit.");
+      return;
+    }
+
+    onSubmit(event);
+  }
+
   if (sectionEntries.length === 0) {
     return (
       <section className="ss-section-card">
@@ -155,7 +166,7 @@ function RegistrationWizard({
   }
 
   return (
-    <form className="ss-form-shell ss-registration-wizard" onSubmit={onSubmit} noValidate aria-describedby="registration-form-guidance">
+    <form className="ss-form-shell ss-registration-wizard" onSubmit={handleWizardSubmit} noValidate aria-describedby="registration-form-guidance">
       <p id="registration-form-guidance" className="visually-hidden">
         This is a guided step-by-step application. Fields marked with an asterisk are required. Use Save and continue to move through each section.
       </p>
