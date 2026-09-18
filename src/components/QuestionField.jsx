@@ -30,10 +30,6 @@ function getAutocomplete(question) {
   return undefined;
 }
 
-function supportsVoiceInput(question) {
-  return ["TEXT", "LONG_TEXT", "PHONE", "EMAIL", "NUMBER"].includes(question.responseType) || !question.responseType;
-}
-
 function isPersonNameQuestion(question) {
   return question.validationType === "PERSON_NAME" ||
     ["FIRST_NAME", "LAST_NAME", "NEXT_OF_KIN_NAME"].includes(question.questionCode);
