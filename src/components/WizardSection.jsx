@@ -1,6 +1,11 @@
 import FormSection from "./FormSection";
 
 const SECTION_META = {
+  "Eligibility Check": {
+    icon: "bi-person-check",
+    caption: "Quick eligibility check",
+    intro: "Start with the questions that determine whether this pathway is suitable for you. This avoids asking you to complete the full application before eligibility is checked.",
+  },
   Location: {
     icon: "bi-geo-alt",
     caption: "Where you are applying from",
