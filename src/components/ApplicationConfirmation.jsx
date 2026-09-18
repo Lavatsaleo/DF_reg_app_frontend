@@ -228,13 +228,6 @@ function ApplicationConfirmation({ result, selectedPathway, onStartNewApplicatio
                   </div>
                 )}
 
-                {isEligible && result?.skillsTestInviteUrl && result?.testInvitationEmailSent === false && (
-                  <div className="ss-eligibility-note" role="note">
-                    <i className="bi bi-link-45deg" aria-hidden="true" />
-                    <p>Local testing link: <a href={result.skillsTestInviteUrl}>Open Basic IT Skills Test</a></p>
-                  </div>
-                )}
-
                 <div className="ss-next-steps" aria-labelledby="next-steps-title">
                   <h2 id="next-steps-title">What happens next?</h2>
                   <div className="ss-timeline">
@@ -250,6 +243,11 @@ function ApplicationConfirmation({ result, selectedPathway, onStartNewApplicatio
                       <div>
                         <strong>{nextStep.title}</strong>
                         <p>{nextStep.body}</p>
+                        {isEligible && result?.skillsTestInviteUrl && result?.testInvitationEmailSent === false && (
+                          <a className="btn ss-btn-primary btn-sm mt-2" href={result.skillsTestInviteUrl}>
+                            Complete Basic IT Skills Test <i className="bi bi-arrow-right" aria-hidden="true" />
+                          </a>
+                        )}
                       </div>
                     </div>
                     <div className="ss-timeline-item">
