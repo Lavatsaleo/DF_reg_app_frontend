@@ -170,7 +170,7 @@ function SkillsTestPage({ initialReference = "", initialToken = "", onBackHome, 
     setFieldErrors({});
 
     if (!endpoint) {
-      setMessage("Please open the test using the invitation link sent to your email. For local testing, you may enter the application reference number.");
+      setMessage("Please open the test using the invitation link sent to your email. If the project team has asked you to use an application reference, you can enter it below.");
       return;
     }
 
@@ -337,7 +337,7 @@ function SkillsTestPage({ initialReference = "", initialToken = "", onBackHome, 
               <p>
                 {hasInvitationToken
                   ? "This page was opened from your secure Basic IT skills test invitation link."
-                  : "Use the invitation link sent to your email. For local testing only, you can load the test using the application reference."}
+                  : "Use the invitation link sent to your email. If the project team has asked you to use an application reference, you can enter it below."}
               </p>
 
               {!hasInvitationToken && (
