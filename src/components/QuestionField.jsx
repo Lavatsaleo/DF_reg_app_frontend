@@ -1,5 +1,4 @@
 import AccessibleDateOfBirthPicker from "./AccessibleDateOfBirthPicker";
-import VoiceInputButton from "./VoiceInputButton";
 
 const COUNTRY_DIAL_CODES = {
   Kenya: "+254",
@@ -161,12 +160,8 @@ function QuestionField({
     "aria-describedby": describedBy,
   };
 
-  const voiceButton = supportsVoiceInput(question) ? (
-    <VoiceInputButton
-      question={question}
-      onTranscript={(transcript) => onAnswerChange(question, sanitizeAnswerValue(question, transcript))}
-    />
-  ) : null;
+  // Disabled until the voice feature has passed cross-browser and accessibility testing.
+  const voiceButton = null;
 
   if (question.responseType === "LONG_TEXT") {
     return (
