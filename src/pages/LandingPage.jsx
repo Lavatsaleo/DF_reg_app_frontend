@@ -1,8 +1,7 @@
 import { pathways } from "../data/pathways";
 import PathwayCard from "../components/PathwayCard";
-import ProgrammePartnership from "../components/ProgrammePartnership";
 import heroPerson from "../assets/hero-person.webp";
-import programmePartners from "../assets/programme-partners-3.webp";
+import secondaryLogoLockup from "../assets/digital-futures-secondary-logo-lockup.png";
 
 function LandingPage({ pathwayMessage, onPathwaySelect, onCheckStatus }) {
   const openPathways = pathways.filter((pathway) => pathway.status === "open");
@@ -31,15 +30,12 @@ function LandingPage({ pathwayMessage, onPathwaySelect, onCheckStatus }) {
                 </button>
               </div>
 
-              <div className="df-clean-partnership">
-                <ProgrammePartnership />
-              </div>
             </div>
 
             <div className="df-clean-hero-media" aria-label="Digital Futures participant">
               <div className="df-photo-shape df-photo-shape-teal" aria-hidden="true" />
               <div className="df-photo-frame">
-                <img src={heroPerson} alt="Person featured in Digital Futures programme artwork" />
+                <img src={heroPerson} alt="Person featured in Digital Futures artwork" />
               </div>
               <div className="df-photo-triangles" aria-hidden="true">
                 <span />
@@ -84,19 +80,13 @@ function LandingPage({ pathwayMessage, onPathwaySelect, onCheckStatus }) {
         </div>
       </section>
 
-      <section className="df-programme-partners df-programme-partners-footer" aria-labelledby="programme-partners-title">
+      <section className="df-programme-partners df-programme-partners-footer" aria-label="Digital Futures partnership">
         <div className="container">
-          <div className="df-programme-partners-inner">
-            <div>
-              <span className="df-eyebrow">Working together</span>
-              <h2 id="programme-partners-title">Programme partners</h2>
-            </div>
-            <img
-              src={programmePartners}
-              alt="ACET, ADF and ILO programme partner logos"
-              className="df-programme-partner-strip"
-            />
-          </div>
+          <img
+            src={secondaryLogoLockup}
+            alt="In partnership with Mastercard Foundation, ACET, African Disability Forum, International Labour Organization and Sightsavers"
+            className="df-secondary-logo-lockup"
+          />
         </div>
       </section>
     </main>
