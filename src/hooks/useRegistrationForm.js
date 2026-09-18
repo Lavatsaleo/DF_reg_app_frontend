@@ -353,8 +353,7 @@ export function useRegistrationForm() {
 
     const hasErrors = Object.keys(validationErrors).length > 0;
     if (hasErrors) {
-      setErrorMessage("Please complete the highlighted questions before continuing.");
-      scrollToFormErrors();
+      setErrorMessage("Please complete the highlighted questions in this section before continuing.");
       return false;
     }
 
