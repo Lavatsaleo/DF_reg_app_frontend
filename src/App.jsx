@@ -36,6 +36,22 @@ function App() {
     configureAxiosAuth(staffSession?.token || "");
   }, [staffSession?.token]);
 
+  useEffect(() => {
+    const hasActiveApplication = Boolean(
+      registration.selectedPathway && !registration.submitResult
+    );
+
+    if (!hasActiveApplication) return undefined;
+
+    function protectApplicationProgress(event) {
+      event.preventDefault();
+      event.returnValue = "";
+    }
+
+    window.addEventListener("beforeunload", protectApplicationProgress);
+    return () => window.removeEventListener("beforeunload", protectApplicationProgress);
+  }, [registration.selectedPathway, registration.submitResult]);
+
   function resetBrowserPath() {
     if (window.location.pathname !== "/") window.history.replaceState({}, "", "/");
   }
