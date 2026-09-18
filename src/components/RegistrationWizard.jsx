@@ -83,6 +83,9 @@ function RegistrationWizard({
   );
   const reviewStepIndex = sectionEntries.length;
   const totalSteps = sectionEntries.length + 1;
+  const contactStepIndex = sectionEntries.findIndex(([, questions]) =>
+    questions.some((question) => question.questionCode === "CONTACT_NUMBER")
+  );
   const [activeStep, setActiveStep] = useState(() => Math.max(0, Number(currentStep) || 0));
   const [announcement, setAnnouncement] = useState("Start with the first section of the application form.");
   const hasAppliedRestoredStep = useRef(false);
@@ -181,6 +184,15 @@ function RegistrationWizard({
           <i className={`bi ${getDraftStatusIcon(draftSaveStatus)}`} aria-hidden="true" />
           <span>{getDraftStatusText({ status: draftSaveStatus, message: draftSaveMessage, lastSavedAt: draftLastSavedAt })}</span>
           {draftReference && <small>Draft ref: {draftReference}</small>}
+          {draftSaveStatus === "waiting_for_mobile" && contactStepIndex >= 0 && (
+            <button
+              type="button"
+              className="btn btn-sm ss-link-button"
+              onClick={() => goToStep(contactStepIndex)}
+            >
+              Add mobile number
+            </button>
+          )}
           <button type="button" className="btn btn-sm ss-link-button" onClick={onClearDraft}>Clear</button>
         </div>
       </div>
