@@ -555,3 +555,94 @@ textarea:focus-visible,
     max-width: min(245px, 82vw);
   }
 }
+
+
+/* --------------------------------------------------------------------------
+   UX review and secondary-brand remediation — 18 September 2026
+   -------------------------------------------------------------------------- */
+
+/* Sightsavers accessibility review: hyperlinks need a distinct dark green. */
+a:not(.btn) {
+  color: #465C17 !important;
+}
+
+a:not(.btn):hover,
+a:not(.btn):focus {
+  color: #33430f !important;
+}
+
+.ss-contact-value {
+  color: #465C17 !important;
+}
+
+/* Back navigation is intentionally lower emphasis than the page content. */
+.df-back-link {
+  color: #465C17 !important;
+  font-weight: 700 !important;
+  text-decoration: underline !important;
+  text-underline-offset: 3px;
+}
+
+/* Keep long consent/support material available without overwhelming entry. */
+.df-consent-details {
+  overflow: hidden;
+  border: 1px solid var(--df-border);
+  border-radius: var(--df-radius-lg);
+  background: var(--df-white);
+}
+
+.df-consent-details summary {
+  cursor: pointer;
+  padding: 1rem 1.1rem;
+  color: var(--df-black);
+  font-weight: 800;
+}
+
+.df-consent-details summary:focus-visible {
+  outline: 3px solid var(--df-black);
+  outline-offset: -3px;
+}
+
+.df-consent-details-body {
+  padding: 0 1.1rem 1.1rem;
+}
+
+/* Review page copy must remain legible after the programme colour overrides. */
+.ss-review-intro p {
+  color: var(--df-black) !important;
+}
+
+/* The skills-test hero sits on a dark background: force readable foregrounds. */
+.ss-skills-hero h1 {
+  color: #ffffff !important;
+}
+
+.ss-skills-hero p {
+  color: rgba(255, 255, 255, 0.92) !important;
+}
+
+.ss-skills-hero .ss-small-label.light {
+  color: var(--df-yellow) !important;
+}
+
+/* Approved secondary partnership lock-up in the page footer. */
+.df-programme-partners-footer {
+  padding: 1.5rem 0 !important;
+  background: #ffffff !important;
+}
+
+.df-secondary-logo-lockup {
+  display: block;
+  width: 100%;
+  max-width: 1783px;
+  height: auto;
+  margin: 0 auto;
+}
+
+/* Foundation icon pack used for the three pathway cards. */
+.df-foundation-pathway-icon {
+  display: block;
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+}
