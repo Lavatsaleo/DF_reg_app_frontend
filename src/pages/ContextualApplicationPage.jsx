@@ -9,7 +9,6 @@ import {
   buildContactSnapshot,
   getCachedProgrammeCountry,
   getConsentContactCountries,
-  requestProgrammeCountry,
 } from "../utils/countryContext";
 
 const CONSENT_INFORMATION_QUESTION = {
@@ -217,16 +216,6 @@ function ContextualApplicationPage({
     return () => { active = false; };
   }, []);
 
-  useEffect(() => {
-    let active = true;
-    requestProgrammeCountry().then((result) => {
-      if (!active) return;
-      setDetectedCountry(result.country || "");
-      setLocationStatus(result.status || "unavailable");
-    });
-    return () => { active = false; };
-  }, []);
-
   function setHiddenAnswer(questionCode, value) {
     onAnswerChange({ questionCode }, value);
     setEntryError("");
@@ -399,10 +388,10 @@ function ContextualApplicationPage({
       <main id="main-content" tabIndex="-1">
         <section className="ss-form-hero df-entry-hero">
           <div className="container">
-            <button type="button" className="btn ss-btn-outline mb-4" onClick={onBackToPathways}>
+            <button type="button" className="btn btn-link df-back-link p-0 mb-4" onClick={onBackToPathways}>
               <i className="bi bi-arrow-left" aria-hidden="true" /> Back to pathways
             </button>
-            <span className="ss-small-label light">Digital Futures Programme</span>
+            <span className="ss-small-label light">Digital Futures</span>
             <h1>{selectedPathway.title} application</h1>
             <p>{showJurat ? "Consent is complete. Please tell us whether the Application was translated or explained to you." : "Please read the consent information carefully before signing."}</p>
           </div>
@@ -415,7 +404,7 @@ function ContextualApplicationPage({
                 <article className="ss-section-card">
                   <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-start gap-3 mb-3">
                     <div>
-                      <span className="ss-small-label dark">Step 2 of 2 · Jurat</span>
+                      <span className="ss-small-label dark">Pre-application · Step 2 of 2 · Jurat</span>
                       <h2 className="mt-2">{consentDocument.juratTitle}</h2>
                     </div>
                     <button
@@ -474,18 +463,18 @@ function ContextualApplicationPage({
                   {entryError && <div className="alert ss-alert-error" role="alert">{entryError}</div>}
                   {editingConsent ? (
                     <button type="button" className="btn ss-btn-primary" onClick={returnFromReviewToApplication}>
-                      Return to Application <i className="bi bi-arrow-right" aria-hidden="true" />
+                      Continue to main application <i className="bi bi-arrow-right" aria-hidden="true" />
                     </button>
                   ) : (
                     <p className="df-auto-advance-note" aria-live="polite">
-                      <i className="bi bi-arrow-right-circle" aria-hidden="true" /> Once this step is complete, the Application will open automatically.
+                      <i className="bi bi-arrow-right-circle" aria-hidden="true" /> Once this step is complete, you will continue to the main application.
                     </p>
                   )}
                 </article>
               ) : (
                 <article className="ss-section-card">
                   <div className="mb-4">
-                    <span className="ss-small-label dark">Step 1 of 2 · Consent</span>
+                    <span className="ss-small-label dark">Pre-application · Step 1 of 2 · Consent</span>
                     <h2 className="mt-2">{consentDocument.introductionTitle}</h2>
                   </div>
 
@@ -497,7 +486,7 @@ function ContextualApplicationPage({
 
                   {locationStatus === "cached" && detectedCountry && !residenceCountry && (
                     <div className="alert alert-info">
-                      We are using your most recently detected programme country, {detectedCountry}, while we confirm your current location. Your selected country of residence in the Application will override this.
+                      We are using your previously saved programme country, {detectedCountry}, to show relevant contacts. Your selected country of residence in the main application will override this.
                     </div>
                   )}
 
@@ -514,31 +503,39 @@ function ContextualApplicationPage({
                     </p>
                   ))}
 
-                  <h2 className="h4 mt-4">{consentDocument.rightsTitle}</h2>
-                  <p>{consentDocument.rightsIntro}</p>
-                  <ConsentCountryContacts
-                    consent={consentDocument}
-                    detectedCountry={detectedCountry}
-                    residenceCountry={residenceCountry}
-                    type="safeguarding"
-                  />
-                  <p>
-                    {consentDocument.speakUpPrefix}
-                    <a href={consentDocument.speakUpUrl} target="_blank" rel="noreferrer">{consentDocument.speakUpUrl}</a>
-                  </p>
+                  <details className="df-consent-details mt-4">
+                    <summary>{consentDocument.rightsTitle}</summary>
+                    <div className="df-consent-details-body">
+                      <p>{consentDocument.rightsIntro}</p>
+                      <ConsentCountryContacts
+                        consent={consentDocument}
+                        detectedCountry={detectedCountry}
+                        residenceCountry={residenceCountry}
+                        type="safeguarding"
+                      />
+                      <p>
+                        {consentDocument.speakUpPrefix}
+                        <a href={consentDocument.speakUpUrl} target="_blank" rel="noreferrer">{consentDocument.speakUpUrl}</a>
+                      </p>
+                    </div>
+                  </details>
 
-                  <h2 className="h4 mt-4">{consentDocument.questionsTitle}</h2>
-                  <p>{consentDocument.questionsIntro}</p>
-                  <ConsentCountryContacts
-                    consent={consentDocument}
-                    detectedCountry={detectedCountry}
-                    residenceCountry={residenceCountry}
-                    type="questions"
-                  />
+                  <details className="df-consent-details mt-3">
+                    <summary>{consentDocument.questionsTitle}</summary>
+                    <div className="df-consent-details-body">
+                      <p>{consentDocument.questionsIntro}</p>
+                      <ConsentCountryContacts
+                        consent={consentDocument}
+                        detectedCountry={detectedCountry}
+                        residenceCountry={residenceCountry}
+                        type="questions"
+                      />
+                    </div>
+                  </details>
 
                   {locationStatus !== "checking" && !detectedCountry && !residenceCountry && (
                     <div className="alert alert-info">
-                      We could not confirm a programme country from your current location, so contacts for all four programme countries are shown.
+                      We have not asked for your device location. Contacts for all four programme countries are shown until you select your country of residence in the main application.
                     </div>
                   )}
 
@@ -632,7 +629,7 @@ function ContextualApplicationPage({
         <div className="container">
           <div className="df-application-hero-row">
             <div>
-              <button type="button" className="btn ss-btn-outline mb-3" onClick={onBackToPathways}>
+              <button type="button" className="btn btn-link df-back-link p-0 mb-3" onClick={onBackToPathways}>
                 <i className="bi bi-arrow-left" aria-hidden="true" /> Back to pathways
               </button>
               <span className="ss-small-label light">Digital Futures Participant Application</span>
