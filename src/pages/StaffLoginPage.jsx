@@ -1,6 +1,5 @@
 import { useState } from "react";
 import axios from "axios";
-import sightsaversLogo from "../assets/sightsavers-logo.png";
 import { API_BASE_URL } from "../config/api";
 
 const EMPTY_LOGIN_FORM = {
@@ -42,11 +41,6 @@ function StaffLoginPage({ onLogin, onBackHome }) {
           <button type="button" className="back-button staff-login-back" onClick={onBackHome}>
             <i className="bi bi-arrow-left" aria-hidden="true" /> Back to portal
           </button>
-
-          <div className="staff-login-brand-card" aria-hidden="true">
-            <img src={sightsaversLogo} alt="" />
-            <span>Digital Futures</span>
-          </div>
 
           <p className="eyebrow">Internal committee access</p>
           <h1 id="committee-sign-in-title">Review dashboard sign in</h1>
