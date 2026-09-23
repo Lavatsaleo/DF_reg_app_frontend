@@ -101,7 +101,7 @@ function App() {
     }
     window.addEventListener("popstate", handleBrowserNavigation);
     return () => window.removeEventListener("popstate", handleBrowserNavigation);
-  }, [registration.selectedPathway]);
+  }, [registration.selectedPathway, registration.handlePathwaySelect]);
 
   // NVDA should encounter the heading before the applicant-support card.
   useEffect(() => {
