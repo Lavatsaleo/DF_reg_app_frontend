@@ -12,10 +12,33 @@ import StaffLoginPage from "./pages/StaffLoginPage";
 import { useAccessibilityPreferences } from "./hooks/useAccessibilityPreferences";
 import { useRegistrationForm } from "./hooks/useRegistrationForm";
 import { clearStaffSession, loadStaffSession, saveStaffSession } from "./utils/staffAuthStorage";
+import { pathways } from "./data/pathways";
 
 function getInitialSkillsTestToken() {
   const match = window.location.pathname.match(/^\/basic-skills-test\/([^/]+)\/?$/);
   return match ? decodeURIComponent(match[1]) : "";
+}
+
+const PATHWAY_SLUGS = {
+  PHYSICAL_ACADEMY: "physical-academy",
+  VIRTUAL_ACADEMY: "virtual-academy",
+};
+
+function getPathwayFromBrowserPath() {
+  const match = window.location.pathname.match(/^\/apply\/([^/]+)\/?$/);
+  if (!match) return null;
+  return pathways.find((pathway) => PATHWAY_SLUGS[pathway.id] === match[1] && pathway.status === "open") || null;
+}
+
+function getInitialView() {
+  if (getInitialSkillsTestToken() || window.location.pathname === "/basic-skills-test") return "skills-test";
+  if (window.location.pathname === "/status") return "status";
+  if (getPathwayFromBrowserPath()) return "application";
+  return "home";
+}
+
+function navigateTo(path) {
+  if (window.location.pathname !== path) window.history.pushState({ digitalFutures: true }, "", path);
 }
 
 function configureAxiosAuth(token) {
@@ -27,7 +50,7 @@ function App() {
   const registration = useRegistrationForm();
   const accessibility = useAccessibilityPreferences();
   const initialSkillsTestToken = getInitialSkillsTestToken();
-  const [currentView, setCurrentView] = useState(initialSkillsTestToken ? "skills-test" : "home");
+  const [currentView, setCurrentView] = useState(getInitialView);
   const [skillsTestReference, setSkillsTestReference] = useState("");
   const [skillsTestToken, setSkillsTestToken] = useState(initialSkillsTestToken);
   const [staffSession, setStaffSession] = useState(() => loadStaffSession());
@@ -38,7 +61,7 @@ function App() {
 
   useEffect(() => {
     const hasActiveApplication = Boolean(
-      registration.selectedPathway && !registration.submitResult
+      currentView === "application" && registration.selectedPathway && !registration.submitResult
     );
 
     if (!hasActiveApplication) return undefined;
@@ -50,38 +73,76 @@ function App() {
 
     window.addEventListener("beforeunload", protectApplicationProgress);
     return () => window.removeEventListener("beforeunload", protectApplicationProgress);
-  }, [registration.selectedPathway, registration.submitResult]);
+  }, [currentView, registration.selectedPathway, registration.submitResult]);
 
-  function resetBrowserPath() {
-    if (window.location.pathname !== "/") window.history.replaceState({}, "", "/");
-  }
+  // A direct link to /apply/<pathway> restores the same application and its local draft.
+  useEffect(() => {
+    const deepLinkedPathway = getPathwayFromBrowserPath();
+    if (deepLinkedPathway) registration.handlePathwaySelect(deepLinkedPathway);
+    // The popstate listener handles navigation after initial load.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    function handleBrowserNavigation() {
+      const invitedToken = getInitialSkillsTestToken();
+      const pathway = getPathwayFromBrowserPath();
+      if (invitedToken || window.location.pathname === "/basic-skills-test") {
+        setSkillsTestToken(invitedToken);
+        setCurrentView("skills-test");
+      } else if (pathway) {
+        if (registration.selectedPathway?.id !== pathway.id) registration.handlePathwaySelect(pathway);
+        setCurrentView("application");
+      } else if (window.location.pathname === "/status") {
+        setCurrentView("status");
+      } else {
+        setCurrentView("home");
+      }
+    }
+    window.addEventListener("popstate", handleBrowserNavigation);
+    return () => window.removeEventListener("popstate", handleBrowserNavigation);
+  }, [registration.selectedPathway]);
+
+  // NVDA should encounter the heading before the applicant-support card.
+  useEffect(() => {
+    if (currentView !== "status") return undefined;
+    const frame = window.requestAnimationFrame(() => {
+      const heading = document.getElementById("status-page-title");
+      heading?.focus({ preventScroll: true });
+      heading?.scrollIntoView({ block: "start" });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [currentView]);
 
   function handleShowHome() {
-    resetBrowserPath();
+    navigateTo("/");
     setCurrentView("home");
     setSkillsTestReference("");
     setSkillsTestToken("");
+    // Keep the selected pathway and all draft answers while returning to the homepage.
+  }
+
+  function handleStartNewApplication() {
     registration.handleBackToPathways();
+    handleShowHome();
   }
 
   function handleShowStatus() {
-    resetBrowserPath();
+    navigateTo("/status");
     setCurrentView("status");
     setSkillsTestReference("");
     setSkillsTestToken("");
-    registration.handleBackToPathways();
   }
 
   function handleShowCommittee() {
-    resetBrowserPath();
+    navigateTo("/");
     setCurrentView(staffSession?.token ? "committee" : "staff-login");
     setSkillsTestReference("");
     setSkillsTestToken("");
-    registration.handleBackToPathways();
   }
 
   function handleShowConsents() {
-    resetBrowserPath();
+    navigateTo("/");
     if (!staffSession?.token) {
       setCurrentView("staff-login");
       return;
@@ -91,7 +152,6 @@ function App() {
       return;
     }
     setCurrentView("consents");
-    registration.handleBackToPathways();
   }
 
   function handleStaffLogin(session) {
@@ -116,17 +176,17 @@ function App() {
   }
 
   function handleShowSkillsTest(reference = "") {
-    resetBrowserPath();
+    navigateTo("/basic-skills-test");
     setCurrentView("skills-test");
     setSkillsTestReference(reference || "");
     setSkillsTestToken("");
-    registration.handleBackToPathways();
   }
 
   function handlePathwaySelect(pathway) {
-    resetBrowserPath();
-    setCurrentView("home");
     registration.handlePathwaySelect(pathway);
+    if (pathway.status !== "open" || !PATHWAY_SLUGS[pathway.id]) return;
+    navigateTo("/apply/" + PATHWAY_SLUGS[pathway.id]);
+    setCurrentView("application");
   }
 
   const showStatusButton = !(
@@ -184,7 +244,7 @@ function App() {
           onBackHome={handleShowHome}
           onCheckStatus={handleShowStatus}
         />
-      ) : !registration.selectedPathway ? (
+      ) : currentView !== "application" || !registration.selectedPathway ? (
         <LandingPage
           pathwayMessage={registration.pathwayMessage}
           onPathwaySelect={handlePathwaySelect}
@@ -209,6 +269,7 @@ function App() {
           draftSaveMessage={registration.draftSaveMessage}
           currentStep={registration.currentStep}
           onBackToPathways={handleShowHome}
+          onStartNewApplication={handleStartNewApplication}
           onCheckStatus={handleShowStatus}
           onTakeSkillsTest={handleShowSkillsTest}
           onAnswerChange={registration.handleAnswerChange}
