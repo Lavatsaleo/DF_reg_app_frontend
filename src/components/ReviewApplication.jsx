@@ -18,6 +18,7 @@ function ReviewApplication({
   onToggle,
   onPrevious,
   onEditSection,
+  onFinalSubmitIntent,
 }) {
   const panelId = "wizard-review-panel";
   const buttonId = "wizard-review-button";
@@ -91,7 +92,7 @@ function ReviewApplication({
             <i className="bi bi-arrow-left" aria-hidden="true" /> Previous
           </button>
 
-          <button type="submit" className="btn ss-submit-btn" disabled={submitting}>
+          <button type="submit" className="btn ss-submit-btn" disabled={submitting} onClick={onFinalSubmitIntent}>
             {submitting ? (
               <>
                 <span className="spinner-border spinner-border-sm" aria-hidden="true" /> Submitting...
