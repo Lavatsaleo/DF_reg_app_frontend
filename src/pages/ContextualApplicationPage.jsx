@@ -452,16 +452,16 @@ function ContextualApplicationPage({
                       <p className="fw-semibold">{formatJuratClause(consentDocument.juratClause, answers)}</p>
                       <div className="row g-3">
                         <div className="col-12 col-md-6">
-                          <label className="form-label fw-semibold">Interpreter name (required field)</label>
-                          <input className="form-control" type="text" value={answers.JURAT_INTERPRETER_NAME || ""} onChange={(event) => setHiddenAnswer("JURAT_INTERPRETER_NAME", event.target.value)} />
+                          <label className="form-label fw-semibold" htmlFor="jurat-interpreter-name">Interpreter name (required field)</label>
+                          <input id="jurat-interpreter-name" aria-required="true" className="form-control" type="text" value={answers.JURAT_INTERPRETER_NAME || ""} onChange={(event) => setHiddenAnswer("JURAT_INTERPRETER_NAME", event.target.value)} />
                         </div>
                         <div className="col-12 col-md-6">
-                          <label className="form-label fw-semibold">Interpreter address (required field)</label>
-                          <input className="form-control" type="text" value={answers.JURAT_INTERPRETER_ADDRESS || ""} onChange={(event) => setHiddenAnswer("JURAT_INTERPRETER_ADDRESS", event.target.value)} />
+                          <label className="form-label fw-semibold" htmlFor="jurat-interpreter-address">Interpreter address (required field)</label>
+                          <input id="jurat-interpreter-address" aria-required="true" className="form-control" type="text" value={answers.JURAT_INTERPRETER_ADDRESS || ""} onChange={(event) => setHiddenAnswer("JURAT_INTERPRETER_ADDRESS", event.target.value)} />
                         </div>
                         <div className="col-12">
-                          <label className="form-label fw-semibold">Name of language / dialect (required field)</label>
-                          <input className="form-control" type="text" value={answers.JURAT_LANGUAGE || ""} onChange={(event) => setHiddenAnswer("JURAT_LANGUAGE", event.target.value)} />
+                          <label className="form-label fw-semibold" htmlFor="jurat-language">Name of language / dialect (required field)</label>
+                          <input id="jurat-language" aria-required="true" className="form-control" type="text" value={answers.JURAT_LANGUAGE || ""} onChange={(event) => setHiddenAnswer("JURAT_LANGUAGE", event.target.value)} />
                         </div>
                         <div className="col-12">
                           <ElectronicSignature
@@ -475,8 +475,8 @@ function ContextualApplicationPage({
                           />
                         </div>
                         <div className="col-12 col-md-6">
-                          <label className="form-label fw-semibold">Date (required field)</label>
-                          <input className="form-control" type="date" value={answers.JURAT_DATE || localDateString()} onChange={(event) => setHiddenAnswer("JURAT_DATE", event.target.value)} />
+                          <label className="form-label fw-semibold" htmlFor="jurat-date">Date (required field)</label>
+                          <input id="jurat-date" aria-required="true" className="form-control" type="date" value={answers.JURAT_DATE || localDateString()} onChange={(event) => setHiddenAnswer("JURAT_DATE", event.target.value)} />
                         </div>
                       </div>
                     </div>
@@ -578,12 +578,12 @@ function ContextualApplicationPage({
                     <div className="border-top pt-4 mt-4">
                       <div className="row g-3 mb-3">
                         <div className="col-12 col-md-8">
-                          <label className="form-label fw-semibold">Name (required field)</label>
-                          <input type="text" className="form-control" value={answers.CONSENT_NAME_ID_CODE || ""} onChange={(event) => setHiddenAnswer("CONSENT_NAME_ID_CODE", event.target.value)} placeholder="Enter your name" />
+                          <label className="form-label fw-semibold" htmlFor="consent-name">Name (required field)</label>
+                          <input type="text" id="consent-name" aria-required="true" className="form-control" value={answers.CONSENT_NAME_ID_CODE || ""} onChange={(event) => setHiddenAnswer("CONSENT_NAME_ID_CODE", event.target.value)} placeholder="Enter your name" />
                         </div>
                         <div className="col-12 col-md-4">
-                          <label className="form-label fw-semibold">Date *</label>
-                          <input type="date" className="form-control" value={answers.CONSENT_SIGNED_DATE || localDateString()} onChange={(event) => setHiddenAnswer("CONSENT_SIGNED_DATE", event.target.value)} />
+                          <label className="form-label fw-semibold" htmlFor="consent-date">Date (required field)</label>
+                          <input type="date" id="consent-date" aria-required="true" className="form-control" value={answers.CONSENT_SIGNED_DATE || localDateString()} onChange={(event) => setHiddenAnswer("CONSENT_SIGNED_DATE", event.target.value)} />
                         </div>
                       </div>
 
