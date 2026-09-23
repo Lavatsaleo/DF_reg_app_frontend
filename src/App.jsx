@@ -183,8 +183,40 @@ function App() {
   }
 
   function handlePathwaySelect(pathway) {
+    if (pathway.status !== "open" || !PATHWAY_SLUGS[pathway.id]) {
+      registration.handlePathwaySelect(pathway);
+      return;
+    }
+
+    const switchingDraft = registration.selectedPathway &&
+      registration.selectedPathway.id !== pathway.id && !registration.submitResult &&
+      Object.entries(registration.answers).some(([code, answer]) =>
+        code !== "COURSE_APPLIED_FOR" && answer !== "" && answer != null
+      );
+
+    if (switchingDraft) {
+      const confirmed = window.confirm(
+        "Switching pathways will start a different application. Save your current progress on this device and switch?"
+      );
+      if (!confirmed) return;
+
+      // The normal autosave is debounced; persist answers synchronously before switching.
+      try {
+        const storageKey = "sightsavers-registration-draft-" + registration.selectedPathway.id;
+        window.localStorage.setItem(storageKey, JSON.stringify({
+          answers: registration.answers,
+          documentType: registration.documentType,
+          draftReference: registration.draftReference,
+          currentStep: registration.currentStep,
+          savedAt: new Date().toISOString(),
+        }));
+      } catch {
+        window.alert("Unable to save the current draft on this device. Please stay on this pathway and try again.");
+        return;
+      }
+    }
+
     registration.handlePathwaySelect(pathway);
-    if (pathway.status !== "open" || !PATHWAY_SLUGS[pathway.id]) return;
     navigateTo("/apply/" + PATHWAY_SLUGS[pathway.id]);
     setCurrentView("application");
   }
