@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import ApplicationConfirmation from "../components/ApplicationConfirmation";
 import ElectronicSignature from "../components/ElectronicSignature";
@@ -176,6 +176,7 @@ function ContextualApplicationPage({
   draftSaveMessage,
   currentStep,
   onBackToPathways,
+  onStartNewApplication,
   onCheckStatus,
   onTakeSkillsTest,
   onAnswerChange,
@@ -188,6 +189,7 @@ function ContextualApplicationPage({
   onStepChange,
 }) {
   const [entryStage, setEntryStage] = useState("consent");
+  const focusedStageRef = useRef(null);
   const [editingConsent, setEditingConsent] = useState(false);
   const [consentDocument, setConsentDocument] = useState(null);
   const [consentLoading, setConsentLoading] = useState(true);
@@ -260,6 +262,26 @@ function ContextualApplicationPage({
     ? getConsentContactCountries({ detectedCountry, residenceCountry })
     : [];
   const eligibilityBlock = entryComplete ? getPathwayEligibilityBlock(answers, selectedPathway) : null;
+  const accessibleStage = submitResult || consentLoading || !consentDocument
+    ? null
+    : (!entryComplete || editingConsent)
+      ? (entryStage === "jurat" ? "jurat" : "consent")
+      : eligibilityBlock ? "eligibility" : "application";
+
+  // Scrolling does not change NVDA's reading position. Focus the new step heading.
+  useEffect(() => {
+    if (!accessibleStage || focusedStageRef.current === accessibleStage) return undefined;
+    focusedStageRef.current = accessibleStage;
+    const headingId = accessibleStage === "consent" || accessibleStage === "jurat"
+      ? "df-preapplication-step-title"
+      : accessibleStage === "eligibility" ? "df-eligibility-title" : "application-title";
+    const frame = window.requestAnimationFrame(() => {
+      const heading = document.getElementById(headingId);
+      heading?.focus({ preventScroll: true });
+      heading?.scrollIntoView({ block: "start" });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [accessibleStage]);
 
   useEffect(() => {
     if (editingConsent) return;
@@ -350,7 +372,7 @@ function ContextualApplicationPage({
       <ApplicationConfirmation
         result={submitResult}
         selectedPathway={selectedPathway}
-        onStartNewApplication={onBackToPathways}
+        onStartNewApplication={onStartNewApplication || onBackToPathways}
         onCheckStatus={onCheckStatus}
         onTakeSkillsTest={onTakeSkillsTest}
       />
@@ -405,7 +427,7 @@ function ContextualApplicationPage({
                   <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-start gap-3 mb-3">
                     <div>
                       <span className="ss-small-label dark">Pre-application · Step 2 of 2 · Jurat</span>
-                      <h2 className="mt-2">{consentDocument.juratTitle}</h2>
+                      <h2 className="mt-2" id="df-preapplication-step-title" tabIndex="-1">{consentDocument.juratTitle}</h2>
                     </div>
                     <button
                       type="button"
@@ -430,20 +452,20 @@ function ContextualApplicationPage({
                       <p className="fw-semibold">{formatJuratClause(consentDocument.juratClause, answers)}</p>
                       <div className="row g-3">
                         <div className="col-12 col-md-6">
-                          <label className="form-label fw-semibold">Interpreter name *</label>
+                          <label className="form-label fw-semibold">Interpreter name (required field)</label>
                           <input className="form-control" type="text" value={answers.JURAT_INTERPRETER_NAME || ""} onChange={(event) => setHiddenAnswer("JURAT_INTERPRETER_NAME", event.target.value)} />
                         </div>
                         <div className="col-12 col-md-6">
-                          <label className="form-label fw-semibold">Interpreter address *</label>
+                          <label className="form-label fw-semibold">Interpreter address (required field)</label>
                           <input className="form-control" type="text" value={answers.JURAT_INTERPRETER_ADDRESS || ""} onChange={(event) => setHiddenAnswer("JURAT_INTERPRETER_ADDRESS", event.target.value)} />
                         </div>
                         <div className="col-12">
-                          <label className="form-label fw-semibold">Name of language / dialect *</label>
+                          <label className="form-label fw-semibold">Name of language / dialect (required field)</label>
                           <input className="form-control" type="text" value={answers.JURAT_LANGUAGE || ""} onChange={(event) => setHiddenAnswer("JURAT_LANGUAGE", event.target.value)} />
                         </div>
                         <div className="col-12">
                           <ElectronicSignature
-                            label="Signature of interpreter"
+                            label="Signature of interpreter (required field)"
                             method={answers.JURAT_SIGNATURE_METHOD || "DRAWN"}
                             value={answers.JURAT_INTERPRETER_SIGNATURE || ""}
                             onChange={(method, value) => {
@@ -453,7 +475,7 @@ function ContextualApplicationPage({
                           />
                         </div>
                         <div className="col-12 col-md-6">
-                          <label className="form-label fw-semibold">Date *</label>
+                          <label className="form-label fw-semibold">Date (required field)</label>
                           <input className="form-control" type="date" value={answers.JURAT_DATE || localDateString()} onChange={(event) => setHiddenAnswer("JURAT_DATE", event.target.value)} />
                         </div>
                       </div>
@@ -475,7 +497,7 @@ function ContextualApplicationPage({
                 <article className="ss-section-card">
                   <div className="mb-4">
                     <span className="ss-small-label dark">Pre-application · Step 1 of 2 · Consent</span>
-                    <h2 className="mt-2">{consentDocument.introductionTitle}</h2>
+                    <h2 className="mt-2" id="df-preapplication-step-title" tabIndex="-1">{consentDocument.introductionTitle}</h2>
                   </div>
 
                   {locationStatus === "checking" && (
@@ -556,7 +578,7 @@ function ContextualApplicationPage({
                     <div className="border-top pt-4 mt-4">
                       <div className="row g-3 mb-3">
                         <div className="col-12 col-md-8">
-                          <label className="form-label fw-semibold">Name *</label>
+                          <label className="form-label fw-semibold">Name (required field)</label>
                           <input type="text" className="form-control" value={answers.CONSENT_NAME_ID_CODE || ""} onChange={(event) => setHiddenAnswer("CONSENT_NAME_ID_CODE", event.target.value)} placeholder="Enter your name" />
                         </div>
                         <div className="col-12 col-md-4">
@@ -566,7 +588,7 @@ function ContextualApplicationPage({
                       </div>
 
                       <ElectronicSignature
-                        label="Electronic signature *"
+                        label="Electronic signature (required field)"
                         method={answers.CONSENT_SIGNATURE_METHOD || "DRAWN"}
                         value={answers.CONSENT_SIGNATURE_DATA || ""}
                         onChange={(method, value) => {
@@ -602,7 +624,7 @@ function ContextualApplicationPage({
       <main id="main-content" tabIndex="-1" className="container py-5">
         <section className="ss-section-card mx-auto" style={{ maxWidth: "760px" }}>
           <span className="ss-small-label dark">{selectedPathway.title} eligibility</span>
-          <h1>{eligibilityBlock.title}</h1>
+          <h1 id="df-eligibility-title" tabIndex="-1">{eligibilityBlock.title}</h1>
           <p>{eligibilityBlock.message}</p>
           <div className="alert alert-info">{eligibilityBlock.recommendation}</div>
           <div className="d-flex flex-wrap gap-3">
@@ -633,7 +655,7 @@ function ContextualApplicationPage({
                 <i className="bi bi-arrow-left" aria-hidden="true" /> Back to pathways
               </button>
               <span className="ss-small-label light">Digital Futures Participant Application</span>
-              <h1 id="application-title">{selectedPathway.title} application</h1>
+              <h1 id="application-title" tabIndex="-1">{selectedPathway.title} application</h1>
               <p>Complete one section at a time. Your progress is saved as you go.</p>
             </div>
             <button
