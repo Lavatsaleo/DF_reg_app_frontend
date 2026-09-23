@@ -103,13 +103,19 @@ function AccessibleDateOfBirthPicker({
   const describedBy = [helpId, error ? errorId : null].filter(Boolean).join(" ") || undefined;
 
   // Sync a restored draft without remounting the picker while a keyboard user is editing it.
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (lastLocalValueRef.current === value) {
       lastLocalValueRef.current = null;
       return;
     }
-    setParts(parseIsoDate(value));
+    const incoming = parseIsoDate(value);
+    setParts((current) =>
+      current.year === incoming.year && current.month === incoming.month && current.day === incoming.day
+        ? current : incoming
+    );
   }, [value]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   useEffect(() => {
     if (!isYearPickerOpen) return;
