@@ -91,6 +91,7 @@ function RegistrationWizard({
   const hasAppliedRestoredStep = useRef(false);
   const finalSubmitIntentRef = useRef(false);
   const pendingInvalidFocusRef = useRef(false);
+  const reviewErrorFocusRef = useRef(false);
 
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
@@ -119,6 +120,7 @@ function RegistrationWizard({
     );
 
     if (firstErrorSectionIndex >= 0 && activeStep === reviewStepIndex) {
+      reviewErrorFocusRef.current = true;
       setActiveStep(firstErrorSectionIndex);
       setAnnouncement("Some questions need attention. The first section with an error is now open.");
     }
@@ -140,14 +142,30 @@ function RegistrationWizard({
   }, [fieldErrors, sectionEntries]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
+  useEffect(() => {
+    if (!reviewErrorFocusRef.current || activeStep === reviewStepIndex) return undefined;
+    reviewErrorFocusRef.current = false;
+    const frame = window.requestAnimationFrame(() => {
+      const questions = sectionEntries[activeStep]?.[1] || [];
+      const firstInvalid = questions.find((question) => fieldErrors?.[question.questionCode]);
+      const card = firstInvalid && document.getElementById(firstInvalid.questionCode + "-card");
+      const control = card?.querySelector('input:not([type="hidden"]), select, textarea, button');
+      control?.focus({ preventScroll: true });
+      control?.scrollIntoView({ block: "center" });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [activeStep, reviewStepIndex, fieldErrors, sectionEntries]);
+
   function goToStep(stepIndex) {
     const nextStep = Math.max(0, Math.min(stepIndex, reviewStepIndex));
     setActiveStep(nextStep);
     onStepChange?.(nextStep);
 
     window.requestAnimationFrame(() => {
-      const panel = document.querySelector(`#wizard-step-${nextStep}`) || document.querySelector(".ss-registration-wizard");
-      panel?.scrollIntoView({ behavior: "smooth", block: "start" });
+      const buttonId = nextStep === reviewStepIndex ? "wizard-review-button" : `wizard-section-button-${nextStep}`;
+      const headingButton = document.getElementById(buttonId);
+      headingButton?.focus({ preventScroll: true });
+      headingButton?.scrollIntoView({ block: "start" });
     });
   }
 
@@ -208,7 +226,7 @@ function RegistrationWizard({
   return (
     <form className="ss-form-shell ss-registration-wizard" onSubmit={handleWizardSubmit} onKeyDown={handleFormKeyDown} noValidate aria-describedby="registration-form-guidance">
       <p id="registration-form-guidance" className="visually-hidden">
-        This is a guided step-by-step application. Fields marked with an asterisk are required. Use Save and continue to move through each section.
+        This is a guided step-by-step application. Fields marked with an asterisk are required. Use Continue to move through each section.
       </p>
 
       <div className="ss-wizard-utility-bar">
