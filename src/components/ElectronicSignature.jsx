@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useId, useMemo, useRef, useState } from "react";
 
 const VIEWBOX_WIDTH = 800;
 const VIEWBOX_HEIGHT = 220;
@@ -27,6 +27,7 @@ function ElectronicSignature({ value, method = "DRAWN", onChange, label = "Elect
   const [strokes, setStrokes] = useState([]);
   const [drawing, setDrawing] = useState(false);
   const surfaceRef = useRef(null);
+  const signatureInputId = useId();
 
   const existingDrawnPath = activeMethod === "DRAWN" ? pathToDisplay(value) : "";
   const currentPath = useMemo(() => strokes.length > 0 ? strokesToPath(strokes) : existingDrawnPath, [strokes, existingDrawnPath]);
@@ -74,15 +75,15 @@ function ElectronicSignature({ value, method = "DRAWN", onChange, label = "Elect
   }
 
   return (
-    <div className="border rounded-4 p-3 bg-white">
+    <div className="border rounded-4 p-3 bg-white" role="group" aria-label={label}>
       <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
         <div>
-          <label className="form-label fw-semibold mb-1">{label}{required ? " *" : ""}</label>
+          <label className="form-label fw-semibold mb-1" htmlFor={activeMethod === "TYPED" ? signatureInputId : undefined}>{label}{required ? " (required field)" : ""}</label>
           <p className="small text-muted mb-0">Draw your signature, or type your full name if drawing is not accessible for you.</p>
         </div>
         <div className="btn-group" role="group" aria-label="Electronic signature method">
-          <button type="button" className={`btn btn-sm ${activeMethod === "DRAWN" ? "btn-dark" : "btn-outline-dark"}`} onClick={() => changeMethod("DRAWN")}>Draw</button>
-          <button type="button" className={`btn btn-sm ${activeMethod === "TYPED" ? "btn-dark" : "btn-outline-dark"}`} onClick={() => changeMethod("TYPED")}>Type</button>
+          <button type="button" className={`btn btn-sm ${activeMethod === "DRAWN" ? "btn-dark" : "btn-outline-dark"}`} onClick={() => changeMethod("DRAWN")} aria-pressed={activeMethod === "DRAWN"}>Draw</button>
+          <button type="button" className={`btn btn-sm ${activeMethod === "TYPED" ? "btn-dark" : "btn-outline-dark"}`} onClick={() => changeMethod("TYPED")} aria-pressed={activeMethod === "TYPED"}>Type</button>
         </div>
       </div>
 
@@ -111,7 +112,9 @@ function ElectronicSignature({ value, method = "DRAWN", onChange, label = "Elect
         </>
       ) : (
         <input
+          id={signatureInputId}
           type="text"
+          aria-required={required ? "true" : "false"}
           className="form-control"
           value={activeMethod === "TYPED" ? String(value || "") : ""}
           onChange={(event) => onChange("TYPED", event.target.value)}
