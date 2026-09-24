@@ -48,6 +48,7 @@ function configureAxiosAuth(token) {
 
 function App() {
   const registration = useRegistrationForm();
+  const { selectedPathway: historySelectedPathway, handlePathwaySelect: historySelectPathway } = registration;
   const accessibility = useAccessibilityPreferences();
   const initialSkillsTestToken = getInitialSkillsTestToken();
   const [currentView, setCurrentView] = useState(getInitialView);
@@ -91,7 +92,7 @@ function App() {
         setSkillsTestToken(invitedToken);
         setCurrentView("skills-test");
       } else if (pathway) {
-        if (registration.selectedPathway?.id !== pathway.id) registration.handlePathwaySelect(pathway);
+        if (historySelectedPathway?.id !== pathway.id) historySelectPathway(pathway);
         setCurrentView("application");
       } else if (window.location.pathname === "/status") {
         setCurrentView("status");
@@ -101,7 +102,7 @@ function App() {
     }
     window.addEventListener("popstate", handleBrowserNavigation);
     return () => window.removeEventListener("popstate", handleBrowserNavigation);
-  }, [registration.selectedPathway, registration.handlePathwaySelect]);
+  }, [historySelectedPathway, historySelectPathway]);
 
   // NVDA should encounter the heading before the applicant-support card.
   useEffect(() => {
