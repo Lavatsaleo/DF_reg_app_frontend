@@ -258,9 +258,6 @@ function ContextualApplicationPage({
   );
 
   const residenceCountry = answers.COUNTRY || "";
-  const consentContactCountries = consentDocument
-    ? getConsentContactCountries({ detectedCountry, residenceCountry })
-    : [];
   const eligibilityBlock = entryComplete ? getPathwayEligibilityBlock(answers, selectedPathway) : null;
   const accessibleStage = submitResult || consentLoading || !consentDocument
     ? null
@@ -283,6 +280,9 @@ function ContextualApplicationPage({
     return () => window.cancelAnimationFrame(frame);
   }, [accessibleStage]);
 
+  // These effects restore and advance already-signed consent/Jurat states.
+  // Preserve the established signing sequence while implementing the accessibility changes.
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (editingConsent) return;
 
@@ -322,6 +322,7 @@ function ContextualApplicationPage({
     juratCoreComplete,
     onAnswerChange,
   ]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   function continueFromConsent() {
     if (!consentReadyToAdvance || !consentDocument?.version) {
