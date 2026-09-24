@@ -173,7 +173,38 @@ function ConsentRecordsPage({ onBack, onSessionExpired }) {
     }
   }
 
-  useEffect(() => { loadRecords(); }, []);
+  useEffect(() => {
+    // Load the staff consent archive asynchronously on mount. Avoid synchronous
+    // state changes in the effect, and disregard results after unmount.
+    const controller = new AbortController();
+    let active = true;
+
+    async function loadInitialRecords() {
+      try {
+        const response = await axios.get(`${API_BASE_URL}/api/consents`, {
+          signal: controller.signal,
+        });
+        if (!active) return;
+        setRecords(response.data?.records || []);
+        setGeneratedAt(response.data?.generatedAt || null);
+      } catch (requestError) {
+        if (!active) return;
+        if (requestError.response?.status === 401) {
+          onSessionExpired?.();
+          return;
+        }
+        setError(requestError.response?.data?.message || "Unable to load consent records.");
+      } finally {
+        if (active) setLoading(false);
+      }
+    }
+
+    void loadInitialRecords();
+    return () => {
+      active = false;
+      controller.abort();
+    };
+  }, [onSessionExpired]);
 
   useEffect(() => {
     const reset = () => setPrintOnlyId("");

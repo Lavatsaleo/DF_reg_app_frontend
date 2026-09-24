@@ -243,6 +243,12 @@ export function useRegistrationForm() {
   );
 
   function handlePathwaySelect(pathway) {
+    // Navigating back to the same pathway resumes the in-progress draft.
+    if (selectedPathway?.id === pathway.id && !submitResult && pathway.status === "open") {
+      setPathwayMessage("");
+      return;
+    }
+
     setPathwayMessage("");
     setSubmitResult(null);
     setErrorMessage("");
@@ -260,9 +266,10 @@ export function useRegistrationForm() {
 
     setSelectedPathway(pathway);
     setAnswers((previousAnswers) => ({
-      ...previousAnswers,
+      ...(selectedPathway?.id === pathway.id ? previousAnswers : {}),
       COURSE_APPLIED_FOR: pathway.title,
     }));
+    if (selectedPathway?.id !== pathway.id) setDocuments([]);
   }
 
   function handleBackToPathways() {

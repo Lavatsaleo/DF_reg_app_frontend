@@ -288,7 +288,7 @@ function StatusCheckPage({ onBackHome, onStartApplication }) {
                 <i className="bi bi-arrow-left" aria-hidden="true" /> Back to home
               </button>
               <span className="ss-small-label light">Application tracking</span>
-              <h1 id="status-page-title">Check your registration status</h1>
+              <h1 id="status-page-title" tabIndex="-1">Check your registration status</h1>
               <p>
                 Enter your application reference or the mobile number used during registration to see the latest status available to this portal.
               </p>

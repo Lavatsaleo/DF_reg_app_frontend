@@ -92,6 +92,7 @@ function AccessibleDateOfBirthPicker({
   const currentDay = today.getDate();
   const defaultDecade = Math.floor((currentYear - 25) / 10) * 10;
   const [parts, setParts] = useState(() => parseIsoDate(value));
+  const lastLocalValueRef = useRef(null);
   const [isYearPickerOpen, setIsYearPickerOpen] = useState(false);
   const [visibleDecade, setVisibleDecade] = useState(() => {
     const parsed = parseIsoDate(value);
@@ -100,6 +101,19 @@ function AccessibleDateOfBirthPicker({
   const yearPanelRef = useRef(null);
 
   const describedBy = [helpId, error ? errorId : null].filter(Boolean).join(" ") || undefined;
+
+  // Sync a restored draft without remounting the picker while a keyboard user is editing it.
+  useEffect(() => {
+    if (lastLocalValueRef.current === value) {
+      lastLocalValueRef.current = null;
+      return;
+    }
+    const incoming = parseIsoDate(value);
+    setParts((current) =>
+      current.year === incoming.year && current.month === incoming.month && current.day === incoming.day
+        ? current : incoming
+    );
+  }, [value]);
 
   useEffect(() => {
     if (!isYearPickerOpen) return;
@@ -161,13 +175,18 @@ function AccessibleDateOfBirthPicker({
     }
 
     setParts(adjustedParts);
-    onChange(toIsoDate(adjustedParts));
+    const nextValue = toIsoDate(adjustedParts);
+    lastLocalValueRef.current = nextValue;
+    onChange(nextValue);
   }
 
   function handleYearSelect(year) {
     updateParts({ ...parts, year: String(year) });
     setVisibleDecade(Math.floor(year / 10) * 10);
     setIsYearPickerOpen(false);
+    window.requestAnimationFrame(() => {
+      document.getElementById(`${id}-year-button`)?.focus();
+    });
   }
 
   function handleYearPanelKeyDown(event) {

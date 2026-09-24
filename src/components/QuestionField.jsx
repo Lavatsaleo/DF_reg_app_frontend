@@ -200,7 +200,6 @@ function QuestionField({
     if (isDateOfBirth) {
       return (
         <AccessibleDateOfBirthPicker
-          key={safeValue || "empty-date-of-birth"}
           id={question.questionCode}
           value={safeValue}
           error={error}
