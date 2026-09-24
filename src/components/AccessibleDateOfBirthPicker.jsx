@@ -103,7 +103,6 @@ function AccessibleDateOfBirthPicker({
   const describedBy = [helpId, error ? errorId : null].filter(Boolean).join(" ") || undefined;
 
   // Sync a restored draft without remounting the picker while a keyboard user is editing it.
-  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (lastLocalValueRef.current === value) {
       lastLocalValueRef.current = null;
@@ -115,7 +114,6 @@ function AccessibleDateOfBirthPicker({
         ? current : incoming
     );
   }, [value]);
-  /* eslint-enable react-hooks/set-state-in-effect */
 
   useEffect(() => {
     if (!isYearPickerOpen) return;
