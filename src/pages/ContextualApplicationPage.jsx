@@ -411,9 +411,16 @@ function ContextualApplicationPage({
       <main id="main-content" tabIndex="-1">
         <section className="ss-form-hero df-entry-hero">
           <div className="container">
-            <button type="button" className="btn btn-link df-back-link p-0 mb-4" onClick={onBackToPathways}>
+            <a
+              href="/"
+              className="df-back-link d-inline-flex align-items-center gap-2 mb-4"
+              onClick={(event) => {
+                event.preventDefault();
+                onBackToPathways();
+              }}
+            >
               <i className="bi bi-arrow-left" aria-hidden="true" /> Back to pathways
-            </button>
+            </a>
             <span className="ss-small-label light">Digital Futures</span>
             <h1>{selectedPathway.title} application</h1>
             <p>{showJurat ? "Consent is complete. Please tell us whether the Application was translated or explained to you." : "Please read the consent information carefully before signing."}</p>
@@ -466,7 +473,7 @@ function ContextualApplicationPage({
                         </div>
                         <div className="col-12">
                           <ElectronicSignature
-                            label="Signature of interpreter (required field)"
+                            label="Signature of interpreter"
                             method={answers.JURAT_SIGNATURE_METHOD || "DRAWN"}
                             value={answers.JURAT_INTERPRETER_SIGNATURE || ""}
                             onChange={(method, value) => {
@@ -589,7 +596,7 @@ function ContextualApplicationPage({
                       </div>
 
                       <ElectronicSignature
-                        label="Electronic signature (required field)"
+                        label="Electronic signature"
                         method={answers.CONSENT_SIGNATURE_METHOD || "DRAWN"}
                         value={answers.CONSENT_SIGNATURE_DATA || ""}
                         onChange={(method, value) => {
@@ -652,9 +659,16 @@ function ContextualApplicationPage({
         <div className="container">
           <div className="df-application-hero-row">
             <div>
-              <button type="button" className="btn btn-link df-back-link p-0 mb-3" onClick={onBackToPathways}>
+              <a
+                href="/"
+                className="df-back-link d-inline-flex align-items-center gap-2 mb-3"
+                onClick={(event) => {
+                  event.preventDefault();
+                  onBackToPathways();
+                }}
+              >
                 <i className="bi bi-arrow-left" aria-hidden="true" /> Back to pathways
-              </button>
+              </a>
               <span className="ss-small-label light">Digital Futures Participant Application</span>
               <h1 id="application-title" tabIndex="-1">{selectedPathway.title} application</h1>
               <p>Complete one section at a time. Your progress is saved as you go.</p>
