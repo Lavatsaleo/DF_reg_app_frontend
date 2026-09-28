@@ -36,7 +36,7 @@ function LandingPage({ pathwayMessage, onPathwaySelect, onCheckStatus }) {
             <div className="df-clean-hero-media" aria-label="Digital Futures participant">
               <div className="df-photo-shape df-photo-shape-teal" aria-hidden="true" />
               <div className="df-photo-frame">
-                <img src={heroPerson} alt="Person featured in Digital Futures artwork" />
+                <img src={heroPerson} alt="Digital Futures participant wearing glasses and a pink shirt" />
               </div>
               <div className="df-photo-triangles" aria-hidden="true">
                 <span />
@@ -44,9 +44,9 @@ function LandingPage({ pathwayMessage, onPathwaySelect, onCheckStatus }) {
                 <span />
               </div>
               <div className="df-open-badge">
-                <span>Applications open</span>
+                <span>Accepting applications</span>
                 <strong>Physical &amp; Virtual Academy</strong>
-                <small>{openPathways.length} pathways open now</small>
+                <small>{openPathways.length} pathways accepting applications</small>
               </div>
             </div>
           </div>
