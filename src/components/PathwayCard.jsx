@@ -22,7 +22,7 @@ function PathwayCard({ pathway, onSelect, simplified = false }) {
           />
         </div>
         <span className={`ss-status-badge ${isOpen ? "open" : "soon"}`}>
-          {isOpen ? "Open" : "Coming soon"}
+          {isOpen ? "Accepting applications" : "Coming soon"}
         </span>
       </div>
 
@@ -48,9 +48,9 @@ function PathwayCard({ pathway, onSelect, simplified = false }) {
         disabled={!isOpen}
       >
         {isOpen ? (
-          <>Start application <i className="bi bi-arrow-right" aria-hidden="true" /></>
+          <>Apply for {pathway.title} <i className="bi bi-arrow-right" aria-hidden="true" /></>
         ) : (
-          "Not yet available"
+          `${pathway.title} not yet available`
         )}
       </button>
     </article>
