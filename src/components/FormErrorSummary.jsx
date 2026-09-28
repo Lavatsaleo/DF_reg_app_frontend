@@ -4,10 +4,14 @@ function FormErrorSummary({ errors }) {
   const summaryRef = useRef(null);
   const entries = Object.entries(errors || {});
 
+  const previousErrorCountRef = useRef(0);
+
   useEffect(() => {
-    if (entries.length > 0) {
+    const previousCount = previousErrorCountRef.current;
+    if (previousCount === 0 && entries.length > 0) {
       summaryRef.current?.focus();
     }
+    previousErrorCountRef.current = entries.length;
   }, [entries.length]);
 
   if (entries.length === 0) return null;
