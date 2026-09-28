@@ -646,3 +646,99 @@ a:not(.btn):focus {
   height: 42px;
   object-fit: contain;
 }
+
+
+/* --------------------------------------------------------------------------
+   Accessibility review remediation — external testing release
+   -------------------------------------------------------------------------- */
+
+/* Keep brand icons large enough to identify and force the artwork into a
+   high-contrast monochrome treatment on a white background. */
+.df-clean-pathway-card .ss-pathway-icon {
+  width: 66px !important;
+  height: 66px !important;
+  display: grid !important;
+  place-items: center !important;
+  background: #ffffff !important;
+  border: 2px solid #465C17 !important;
+  border-radius: 12px !important;
+}
+
+.df-foundation-pathway-icon {
+  width: 48px !important;
+  height: 48px !important;
+  filter: grayscale(1) brightness(0.28) contrast(1.8);
+}
+
+.df-clean-pathway-card.is-disabled .ss-pathway-icon {
+  background: #ffffff !important;
+  border-color: #68635f !important;
+}
+
+.df-clean-pathway-card.is-disabled .df-foundation-pathway-icon {
+  opacity: 0.78;
+}
+
+/* Avoid low-contrast green/yellow pictograms on white. */
+.ss-highlight-list i,
+.df-auto-advance-note i,
+.ss-review-intro i,
+.ss-submit-once-note i,
+.ss-accessibility-title i,
+.ss-error-icon i {
+  color: #465C17 !important;
+}
+
+.ss-highlight-list i {
+  font-size: 1.15rem !important;
+}
+
+.ss-accessibility-title i,
+.ss-a11y-btn i,
+.df-nav-actions i,
+.btn i.bi {
+  font-size: 1.05rem;
+}
+
+/* The supplied hero photo is 260x308. Do not upscale it on desktop, which
+   caused visible blurring in the accessibility review. */
+.df-clean-hero-media {
+  min-height: 390px !important;
+}
+
+.df-photo-frame {
+  width: min(260px, 88%) !important;
+  aspect-ratio: 260 / 308 !important;
+}
+
+.df-photo-frame img {
+  transform: none !important;
+}
+
+.df-photo-shape-teal {
+  width: min(285px, 62%) !important;
+}
+
+.df-open-badge {
+  left: 3% !important;
+  bottom: 2% !important;
+}
+
+/* Make availability text readable as status, not button-like decoration. */
+.ss-status-badge.open {
+  color: #263711 !important;
+  background: #eef4e3 !important;
+  border-color: #465C17 !important;
+}
+
+@media (max-width: 767.98px) {
+  .df-clean-hero-media {
+    min-height: 350px !important;
+  }
+
+  .df-photo-frame {
+    width: min(260px, 82vw) !important;
+    height: auto !important;
+    aspect-ratio: 260 / 308 !important;
+  }
+}
