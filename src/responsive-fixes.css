@@ -1,0 +1,342 @@
+/* Responsive hardening for Digital Futures field testing and executive review. */
+
+html,
+body,
+#root {
+  max-width: 100%;
+}
+
+body {
+  overflow-x: clip;
+}
+
+img,
+svg,
+canvas,
+video {
+  max-width: 100%;
+}
+
+.row > *,
+.ss-section-card,
+.ss-form-shell,
+.ss-question-card,
+.ss-help-card,
+.ss-progress-card,
+.ss-selected-card,
+.ss-rights-contacts-panel,
+.ss-contact-card,
+.ss-confirmation-card,
+.ss-status-result-card,
+.ss-status-lookup-card {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* Long email addresses and URLs must never force a card wider than the viewport. */
+a,
+.ss-contact-value,
+.ss-contact-value:link,
+a[href^="mailto:"],
+a[href^="https://"],
+a[href^="http://"] {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.ss-contact-card {
+  padding: 1rem;
+  border: 1px solid var(--ss-haze);
+  border-radius: var(--ss-radius);
+  background: #ffffff;
+}
+
+.ss-contact-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.1rem;
+  min-width: 0;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid var(--ss-website-grey);
+}
+
+.ss-contact-row:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.ss-contact-country {
+  display: block;
+  color: #000000;
+  font-weight: 700;
+}
+
+.ss-contact-value {
+  display: block;
+  min-width: 0;
+  line-height: 1.45;
+}
+
+/* Consent contact lists use the same safe wrapping even before the residence country is selected. */
+.ss-consent-contact-list {
+  min-width: 0;
+  max-width: 100%;
+  padding: 1rem;
+}
+
+.ss-consent-contact-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.1rem;
+  min-width: 0;
+  padding: 0.45rem 0;
+}
+
+.ss-consent-contact-row strong {
+  display: block;
+}
+
+/* Inputs, choices and buttons should shrink cleanly instead of overflowing their parent. */
+.form-control,
+.form-select,
+textarea,
+input,
+select,
+.ss-option-pill,
+.ss-option-card,
+.ss-choice-card,
+.btn {
+  max-width: 100%;
+  min-width: 0;
+}
+
+.ss-option-pill,
+.ss-option-card,
+.ss-choice-card,
+.btn {
+  white-space: normal;
+}
+
+.ss-option-pill {
+  overflow-wrap: anywhere;
+}
+
+svg[aria-label="Signature drawing area"] {
+  width: 100% !important;
+  height: clamp(140px, 32vw, 190px) !important;
+}
+
+/* Desktop application sidebars remain sticky; smaller screens become normal flow. */
+.ss-application-sidebar {
+  min-width: 0;
+}
+
+@media (max-width: 1199.98px) {
+  .ss-application-sidebar .position-sticky {
+    position: static !important;
+    top: auto !important;
+  }
+
+  .ss-rights-contacts-panel,
+  .ss-progress-card,
+  .ss-help-card {
+    box-shadow: none !important;
+  }
+}
+
+/* Tablet navigation and hero treatment. */
+@media (max-width: 991.98px) {
+  .ss-navbar .container {
+    max-width: 100%;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .ss-navbar .navbar-brand {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .ss-navbar .d-flex.ms-auto {
+    width: 100%;
+    margin-left: 0 !important;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
+  .ss-form-hero .row,
+  .ss-hero .row {
+    --bs-gutter-x: 1.5rem;
+  }
+
+  .ss-form-hero h1,
+  .ss-title {
+    overflow-wrap: anywhere;
+  }
+
+  .ss-before-apply-card {
+    padding: 1.5rem !important;
+  }
+}
+
+/* Phone layout: prioritise the form and reduce decorative spacing. */
+@media (max-width: 767.98px) {
+  .container,
+  .container-fluid {
+    --bs-gutter-x: 1.25rem;
+  }
+
+  .ss-navbar {
+    position: relative !important;
+  }
+
+  .ss-logo {
+    height: 32px !important;
+    width: auto;
+  }
+
+  .ss-brand-divider {
+    height: 30px !important;
+  }
+
+  .ss-brand-text {
+    font-size: 1rem !important;
+    line-height: 1.15;
+  }
+
+  .ss-navbar .d-flex.ms-auto {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem !important;
+  }
+
+  .ss-navbar .d-flex.ms-auto > .btn {
+    width: 100%;
+    min-height: 44px;
+    padding: 0.55rem 0.65rem !important;
+  }
+
+  .ss-committee-corner {
+    width: 44px !important;
+    justify-self: start;
+  }
+
+  .ss-accessibility-toolbar .container {
+    max-width: 100%;
+  }
+
+  .ss-accessibility-inner {
+    display: block !important;
+  }
+
+  .ss-accessibility-title {
+    margin-bottom: 0.75rem;
+  }
+
+  .ss-accessibility-actions {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .ss-a11y-btn {
+    width: 100%;
+    min-height: 44px;
+    padding: 0.55rem !important;
+  }
+
+  .ss-hero,
+  .ss-form-hero,
+  .ss-confirmation-hero,
+  .ss-status-hero {
+    padding-top: 2.25rem !important;
+    padding-bottom: 2.25rem !important;
+  }
+
+  .ss-title {
+    font-size: clamp(2.15rem, 11vw, 3rem) !important;
+    line-height: 1.05 !important;
+  }
+
+  .ss-form-hero h1,
+  .ss-confirmation-hero h1,
+  .ss-status-hero h1 {
+    font-size: clamp(1.85rem, 9vw, 2.6rem) !important;
+  }
+
+  .ss-section-card,
+  .ss-form-shell,
+  .ss-confirmation-card,
+  .ss-status-lookup-card,
+  .ss-status-result-card {
+    padding: 1.1rem !important;
+  }
+
+  .ss-question-card,
+  .ss-help-card,
+  .ss-progress-card,
+  .ss-contact-card {
+    padding: 0.95rem !important;
+  }
+
+  .ss-selected-card strong {
+    font-size: 1.2rem !important;
+  }
+
+  .ss-option-pill {
+    width: 100%;
+  }
+
+  .ss-form-hero .d-flex.flex-wrap,
+  .ss-confirmation-actions,
+  .ss-status-search-row {
+    width: 100%;
+  }
+
+  .ss-form-hero .btn,
+  .ss-confirmation-actions .btn {
+    width: 100%;
+  }
+
+  .ss-quick-facts {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+  }
+
+  .ss-metric-row {
+    width: 100%;
+  }
+
+  .table {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 419.98px) {
+  .ss-navbar .d-flex.ms-auto,
+  .ss-accessibility-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .ss-navbar .navbar-brand {
+    gap: 0.6rem !important;
+  }
+
+  .ss-logo {
+    height: 29px !important;
+  }
+
+  .ss-brand-text {
+    font-size: 0.95rem !important;
+  }
+
+  .ss-title {
+    font-size: 2.05rem !important;
+  }
+
+  .ss-section-card,
+  .ss-form-shell {
+    padding: 0.9rem !important;
+  }
+}

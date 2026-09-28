@@ -1,0 +1,812 @@
+/*
+ * Digital Futures portal — Sightsavers brand and accessibility refinement
+ * CEO review pass. Loaded after the legacy stylesheet so the existing
+ * application behaviour stays intact while the visual system is normalised.
+ */
+
+:root {
+  --ss-yellow: #ffbb22;
+  --ss-gold: #ffbb22;
+  --ss-black: #000000;
+  --ss-dark: #000000;
+  --ss-blueberry: #403a60;
+  --ss-raspberry: #960051;
+  --ss-forest: #006f62;
+  --ss-orange: #fb6500;
+  --ss-slate: #4c4c4c;
+  --ss-fog: #999999;
+  --ss-haze: #d9d9d9;
+  --ss-website-grey: #f0f1f2;
+  --ss-soft-bg: #f7f7f8;
+  --ss-light-yellow: #fff7df;
+  --ss-border: #d9d9d9;
+  --ss-muted: #4c4c4c;
+  --ss-green: #006f62;
+  --ss-danger: #af272f;
+  --ss-focus: #403a60;
+  --ss-radius: 6px;
+  --ss-radius-lg: 8px;
+  --ss-shadow: 0 8px 24px rgba(64, 58, 96, 0.08);
+}
+
+html,
+body,
+button,
+a,
+input,
+select,
+textarea,
+label,
+legend,
+table,
+.navbar,
+.btn,
+.form-control,
+.form-select {
+  font-family: Arial, Helvetica, sans-serif !important;
+}
+
+body {
+  margin: 0;
+  color: #000000;
+  background: #ffffff !important;
+  background-image: none !important;
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: #000000;
+  font-family: Arial, Helvetica, sans-serif !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
+  line-height: 1.15 !important;
+  text-transform: none !important;
+}
+
+p,
+li,
+label,
+legend,
+small {
+  letter-spacing: 0 !important;
+}
+
+a {
+  color: var(--ss-raspberry);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+a:hover {
+  color: #612141;
+}
+
+button,
+a,
+input,
+select,
+textarea,
+[tabindex]:not([tabindex="-1"]) {
+  outline-offset: 3px;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:not([tabindex="-1"]):focus-visible {
+  outline: 3px solid var(--ss-focus) !important;
+  box-shadow: none !important;
+}
+
+/* Navigation and partnership lockup — retain current lockup pending brand-team decision. */
+.ss-navbar {
+  background: #ffffff !important;
+  border-bottom: 1px solid var(--ss-haze) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06) !important;
+  backdrop-filter: none !important;
+}
+
+.ss-logo {
+  height: 38px;
+}
+
+.ss-brand-divider {
+  background: var(--ss-haze) !important;
+}
+
+.ss-brand-text {
+  color: #000000 !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
+}
+
+.ss-nav-chip {
+  background: var(--ss-blueberry) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--ss-blueberry) !important;
+  border-radius: var(--ss-radius) !important;
+  box-shadow: none !important;
+  font-weight: 700 !important;
+}
+
+.ss-nav-status,
+.ss-nav-back {
+  background: #ffffff !important;
+  border: 1px solid var(--ss-raspberry) !important;
+  color: var(--ss-raspberry) !important;
+  border-radius: var(--ss-radius) !important;
+  font-weight: 700 !important;
+}
+
+.ss-nav-status:hover,
+.ss-nav-back:hover {
+  background: #f8edf3 !important;
+  color: var(--ss-raspberry) !important;
+}
+
+.ss-committee-corner {
+  background: #ffffff !important;
+  border: 1px solid var(--ss-blueberry) !important;
+  color: var(--ss-blueberry) !important;
+  box-shadow: none !important;
+}
+
+.ss-committee-corner:hover,
+.ss-committee-corner.active {
+  background: var(--ss-blueberry) !important;
+  color: #ffffff !important;
+}
+
+/* Accessibility tools — strong contrast without the old hazard-like black/yellow treatment. */
+.ss-accessibility-toolbar {
+  background: var(--ss-blueberry) !important;
+  color: #ffffff !important;
+  border: 0 !important;
+}
+
+.ss-accessibility-inner {
+  gap: 1rem !important;
+}
+
+.ss-accessibility-title {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
+}
+
+.ss-accessibility-actions {
+  gap: 0.5rem !important;
+}
+
+.ss-a11y-btn {
+  background: #ffffff !important;
+  color: var(--ss-blueberry) !important;
+  border: 1px solid #ffffff !important;
+  border-radius: var(--ss-radius) !important;
+  box-shadow: none !important;
+  font-weight: 700 !important;
+}
+
+.ss-a11y-btn:hover,
+.ss-a11y-btn.active {
+  background: var(--ss-yellow) !important;
+  border-color: var(--ss-yellow) !important;
+  color: #000000 !important;
+}
+
+.ss-a11y-btn.muted {
+  background: transparent !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.72) !important;
+}
+
+/* Landing page */
+.ss-hero {
+  min-height: auto !important;
+  padding: 5.25rem 0 4.5rem !important;
+  background: #ffffff !important;
+  background-image: none !important;
+}
+
+.ss-hero-kicker,
+.ss-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 0 0 0.5rem !important;
+  border: 0 !important;
+  border-bottom: 5px solid var(--ss-yellow) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: var(--ss-raspberry) !important;
+  box-shadow: none !important;
+  font-size: 0.95rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+.ss-title {
+  max-width: 780px;
+  margin-top: 1.5rem !important;
+  color: #000000 !important;
+  font-size: clamp(2.55rem, 5vw, 4.8rem) !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
+  line-height: 1.03 !important;
+}
+
+.ss-title span {
+  color: var(--ss-raspberry) !important;
+}
+
+.ss-subtitle {
+  max-width: 680px !important;
+  color: var(--ss-slate) !important;
+  font-size: 1.12rem !important;
+  line-height: 1.65 !important;
+}
+
+.ss-hero-panel {
+  position: relative;
+  min-height: 390px !important;
+  padding: 2rem !important;
+  overflow: hidden;
+  color: #ffffff !important;
+  background: var(--ss-blueberry) !important;
+  background-image: none !important;
+  border: 0 !important;
+  border-radius: var(--ss-radius-lg) !important;
+  box-shadow: var(--ss-shadow) !important;
+}
+
+.ss-ring-graphic {
+  display: none !important;
+}
+
+.ss-panel-content {
+  position: relative;
+  z-index: 1;
+  max-width: 100% !important;
+  padding: 0 0 1.5rem 1.25rem !important;
+  border: 0 !important;
+  border-left: 6px solid var(--ss-yellow) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+.ss-panel-content span,
+.ss-selected-card span {
+  color: rgba(255, 255, 255, 0.86) !important;
+  font-size: 0.9rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+.ss-panel-content strong {
+  max-width: 420px;
+  margin-top: 0.45rem !important;
+  color: #ffffff !important;
+  font-size: clamp(1.8rem, 3vw, 2.6rem) !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
+  line-height: 1.08 !important;
+}
+
+.ss-panel-content p {
+  max-width: 430px;
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-weight: 400 !important;
+  line-height: 1.55 !important;
+}
+
+.ss-metric-row {
+  left: 2rem !important;
+  right: 2rem !important;
+  bottom: 2rem !important;
+  gap: 0.65rem !important;
+}
+
+.ss-metric-row div {
+  padding: 0.9rem !important;
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+  border-radius: var(--ss-radius) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: none !important;
+}
+
+.ss-metric-row strong {
+  color: #ffffff !important;
+  font-size: 1.3rem !important;
+  font-weight: 700 !important;
+}
+
+.ss-metric-row span {
+  color: rgba(255, 255, 255, 0.82) !important;
+  font-weight: 400 !important;
+}
+
+.ss-before-apply-section,
+.ss-pathway-section {
+  background: var(--ss-website-grey) !important;
+}
+
+.ss-before-apply-card {
+  background: #ffffff !important;
+  border: 1px solid var(--ss-haze) !important;
+  border-radius: var(--ss-radius-lg) !important;
+  box-shadow: none !important;
+}
+
+.ss-before-apply-steps > div {
+  border-radius: var(--ss-radius) !important;
+}
+
+.ss-before-apply-steps > div > span {
+  background: var(--ss-blueberry) !important;
+  color: #ffffff !important;
+  border-radius: 50% !important;
+}
+
+.ss-small-label {
+  color: var(--ss-raspberry) !important;
+  font-weight: 700 !important;
+  font-size: 0.86rem !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+.ss-small-label.dark {
+  color: var(--ss-blueberry) !important;
+}
+
+.ss-small-label.light {
+  color: #ffffff !important;
+}
+
+.ss-section-title {
+  color: #000000 !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
+}
+
+.ss-section-caption {
+  color: var(--ss-slate) !important;
+}
+
+.ss-count-badge,
+.ss-step-pill {
+  background: #ffffff !important;
+  color: var(--ss-blueberry) !important;
+  border: 1px solid var(--ss-blueberry) !important;
+  border-radius: var(--ss-radius) !important;
+  font-weight: 700 !important;
+}
+
+.ss-pathway-card {
+  padding: 1.55rem !important;
+  overflow: hidden;
+  background: #ffffff !important;
+  border: 1px solid var(--ss-haze) !important;
+  border-radius: var(--ss-radius-lg) !important;
+  box-shadow: 0 3px 14px rgba(64, 58, 96, 0.06) !important;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease !important;
+}
+
+.ss-pathway-card:hover {
+  transform: none !important;
+  border-color: var(--ss-blueberry) !important;
+  box-shadow: 0 8px 24px rgba(64, 58, 96, 0.1) !important;
+}
+
+.ss-pathway-icon {
+  width: 54px !important;
+  height: 54px !important;
+  background: var(--ss-raspberry) !important;
+  color: #ffffff !important;
+  border-radius: var(--ss-radius) !important;
+  box-shadow: none !important;
+}
+
+.ss-status-badge {
+  border-radius: var(--ss-radius) !important;
+  font-weight: 700 !important;
+}
+
+.ss-status-badge.open {
+  background: #e8f2ef !important;
+  color: var(--ss-forest) !important;
+}
+
+.ss-status-badge.soon {
+  background: var(--ss-website-grey) !important;
+  color: var(--ss-slate) !important;
+}
+
+.ss-pathway-card h3 {
+  color: #000000 !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
+}
+
+.ss-pathway-card p {
+  color: var(--ss-slate) !important;
+}
+
+.ss-highlight-list li {
+  color: #000000 !important;
+  font-weight: 400 !important;
+}
+
+.ss-highlight-list i {
+  color: var(--ss-forest) !important;
+}
+
+/* Buttons */
+.ss-btn-primary,
+.ss-submit-btn {
+  background: var(--ss-raspberry) !important;
+  color: #ffffff !important;
+  border: 2px solid var(--ss-raspberry) !important;
+  border-radius: var(--ss-radius) !important;
+  box-shadow: none !important;
+  font-weight: 700 !important;
+  transition: background-color 0.18s ease, color 0.18s ease !important;
+}
+
+.ss-btn-primary:hover,
+.ss-submit-btn:hover:not(:disabled) {
+  background: #ffffff !important;
+  color: var(--ss-raspberry) !important;
+  border-color: var(--ss-raspberry) !important;
+  transform: none !important;
+}
+
+.ss-btn-outline {
+  background: #ffffff !important;
+  color: var(--ss-raspberry) !important;
+  border: 2px solid var(--ss-raspberry) !important;
+  border-radius: var(--ss-radius) !important;
+  box-shadow: none !important;
+  font-weight: 700 !important;
+}
+
+.ss-btn-outline:hover {
+  background: #f8edf3 !important;
+  color: var(--ss-raspberry) !important;
+}
+
+.ss-btn-muted {
+  background: var(--ss-haze) !important;
+  color: var(--ss-slate) !important;
+  border: 1px solid var(--ss-haze) !important;
+  border-radius: var(--ss-radius) !important;
+}
+
+/* Application, consent and eligibility */
+.ss-form-hero {
+  padding: 3.25rem 0 !important;
+  color: #ffffff !important;
+  background: var(--ss-blueberry) !important;
+  background-image: none !important;
+  border-top: 6px solid var(--ss-yellow) !important;
+}
+
+.ss-form-hero h1 {
+  max-width: 900px;
+  color: #ffffff !important;
+  font-size: clamp(2rem, 4vw, 3.5rem) !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
+  line-height: 1.08 !important;
+}
+
+.ss-form-hero p {
+  max-width: 760px;
+  color: rgba(255, 255, 255, 0.9) !important;
+  line-height: 1.6 !important;
+}
+
+.ss-form-hero .ss-btn-outline {
+  background: transparent !important;
+  color: #ffffff !important;
+  border-color: #ffffff !important;
+}
+
+.ss-form-hero .ss-btn-outline:hover {
+  background: #ffffff !important;
+  color: var(--ss-blueberry) !important;
+}
+
+.ss-selected-card {
+  padding: 1.35rem !important;
+  background: #ffffff !important;
+  border: 0 !important;
+  border-left: 6px solid var(--ss-yellow) !important;
+  border-radius: var(--ss-radius) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+.ss-selected-card span,
+.ss-selected-card small {
+  color: var(--ss-slate) !important;
+}
+
+.ss-selected-card strong {
+  margin-top: 0.3rem !important;
+  color: var(--ss-blueberry) !important;
+  font-size: 1.45rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
+  line-height: 1.15 !important;
+}
+
+.ss-form-shell,
+.ss-section-card,
+.ss-loading-card,
+.ss-help-card,
+.ss-progress-card,
+.ss-rights-panel {
+  background: #ffffff !important;
+  border: 1px solid var(--ss-haze) !important;
+  border-radius: var(--ss-radius-lg) !important;
+  box-shadow: var(--ss-shadow) !important;
+  backdrop-filter: none !important;
+}
+
+.ss-section-card {
+  padding: clamp(1.25rem, 3vw, 2rem) !important;
+}
+
+.ss-form-toolbar {
+  background: var(--ss-website-grey) !important;
+  background-image: none !important;
+  border-bottom: 1px solid var(--ss-haze) !important;
+}
+
+.form-label,
+legend {
+  color: #000000 !important;
+  font-weight: 700 !important;
+}
+
+.form-control,
+.form-select {
+  min-height: 50px;
+  padding: 0.8rem 0.9rem !important;
+  color: #000000 !important;
+  background: #ffffff !important;
+  border: 1px solid #999999 !important;
+  border-radius: var(--ss-radius) !important;
+  box-shadow: none !important;
+}
+
+.form-control::placeholder {
+  color: #666666 !important;
+  opacity: 1;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--ss-blueberry) !important;
+  box-shadow: 0 0 0 3px rgba(64, 58, 96, 0.16) !important;
+}
+
+.ss-section-header h2 {
+  color: #000000 !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
+}
+
+.ss-question-card {
+  padding: 1.15rem !important;
+  background: #ffffff !important;
+  border: 1px solid var(--ss-haze) !important;
+  border-radius: var(--ss-radius) !important;
+  box-shadow: none !important;
+}
+
+.ss-option-pill,
+.ss-option-card,
+.ss-choice-card {
+  border-radius: var(--ss-radius) !important;
+  box-shadow: none !important;
+}
+
+.ss-option-pill {
+  background: #ffffff !important;
+  color: #000000 !important;
+  border: 1px solid var(--ss-fog) !important;
+}
+
+.ss-option-pill.selected,
+.ss-option-pill:has(input:checked) {
+  background: #f5edf2 !important;
+  color: #000000 !important;
+  border-color: var(--ss-raspberry) !important;
+}
+
+.ss-option-pill input {
+  accent-color: var(--ss-raspberry);
+}
+
+.rounded-4,
+.rounded-5 {
+  border-radius: var(--ss-radius-lg) !important;
+}
+
+.bg-light {
+  background: var(--ss-website-grey) !important;
+}
+
+.border,
+.border-top,
+.border-bottom {
+  border-color: var(--ss-haze) !important;
+}
+
+.alert {
+  border-radius: var(--ss-radius) !important;
+  box-shadow: none !important;
+}
+
+.alert-info {
+  color: #000000 !important;
+  background: #efedf5 !important;
+  border-color: #b9b4cc !important;
+}
+
+.ss-alert-warning {
+  color: #000000 !important;
+  background: #fff4d0 !important;
+  border: 1px solid #d39f00 !important;
+}
+
+.ss-alert-error,
+.alert-danger {
+  color: #6d1118 !important;
+  background: #f8e9ea !important;
+  border: 1px solid var(--ss-danger) !important;
+}
+
+.text-muted {
+  color: var(--ss-slate) !important;
+}
+
+/* Progress and side panels */
+.ss-progress-bar,
+.progress-bar {
+  background: var(--ss-forest) !important;
+}
+
+.ss-progress-card strong,
+.ss-help-card strong {
+  color: #000000 !important;
+}
+
+.ss-rights-panel {
+  border-top: 5px solid var(--ss-yellow) !important;
+}
+
+.ss-rights-panel h2,
+.ss-rights-panel h3 {
+  color: var(--ss-blueberry) !important;
+}
+
+/* Tables and staff views */
+.table {
+  --bs-table-color: #000000;
+  --bs-table-bg: #ffffff;
+  --bs-table-border-color: var(--ss-haze);
+}
+
+.table thead th {
+  background: var(--ss-raspberry) !important;
+  color: #ffffff !important;
+  border-color: var(--ss-raspberry) !important;
+  font-weight: 700 !important;
+}
+
+.table-striped > tbody > tr:nth-of-type(odd) > * {
+  --bs-table-accent-bg: var(--ss-website-grey);
+}
+
+/* Remove legacy blur/frosting effects throughout the portal. */
+[class*="glass"],
+[class*="frost"] {
+  backdrop-filter: none !important;
+}
+
+/* Keep content comfortable to read. */
+.ss-section-card p,
+.ss-question-card p,
+.ss-help-card p,
+.ss-rights-panel p,
+.ss-before-apply-card p {
+  max-width: 72ch;
+}
+
+/* Responsive refinement */
+@media (max-width: 991.98px) {
+  .ss-hero {
+    padding: 3.5rem 0 3rem !important;
+  }
+
+  .ss-hero-panel {
+    min-height: 360px !important;
+  }
+
+  .ss-accessibility-inner {
+    align-items: flex-start !important;
+  }
+}
+
+@media (max-width: 575.98px) {
+  body {
+    font-size: 16px;
+  }
+
+  .ss-title {
+    font-size: 2.45rem !important;
+  }
+
+  .ss-hero-panel {
+    min-height: auto !important;
+    padding: 1.5rem !important;
+  }
+
+  .ss-metric-row {
+    position: static !important;
+    margin-top: 1.5rem;
+    grid-template-columns: 1fr !important;
+  }
+
+  .ss-panel-content {
+    padding-left: 1rem !important;
+  }
+
+  .ss-form-hero {
+    padding: 2.5rem 0 !important;
+  }
+}
+
+/* Accessibility preference classes keep precedence over the brand layer. */
+.ss-high-contrast body {
+  background: #ffffff !important;
+  color: #000000 !important;
+}
+
+.ss-high-contrast .ss-form-hero,
+.ss-high-contrast .ss-accessibility-toolbar,
+.ss-high-contrast .ss-hero-panel {
+  background: #000000 !important;
+  color: #ffffff !important;
+}
+
+.ss-high-contrast a {
+  color: #0000ee !important;
+}
+
+.ss-reduce-motion *,
+.ss-reduce-motion *::before,
+.ss-reduce-motion *::after {
+  scroll-behavior: auto !important;
+  transition-duration: 0.01ms !important;
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+}

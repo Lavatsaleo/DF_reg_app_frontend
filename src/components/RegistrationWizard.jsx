@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import DocumentUploadSection from "./DocumentUploadSection";
 import FormErrorSummary from "./FormErrorSummary";
 import ResultAlert from "./ResultAlert";
 import ReviewApplication from "./ReviewApplication";
@@ -41,7 +40,6 @@ function formatSavedTime(timestamp) {
   }
 }
 
-
 function getDraftStatusIcon(status) {
   if (status === "saving") return "bi-cloud-arrow-up";
   if (status === "saved") return "bi-cloud-check";
@@ -50,8 +48,8 @@ function getDraftStatusIcon(status) {
 }
 
 function getDraftStatusText({ status, message, lastSavedAt }) {
-  if (status === "saving") return message || "Saving draft to the portal...";
-  if (status === "saved") return `Draft saved to portal: ${formatSavedTime(lastSavedAt)}`;
+  if (status === "saving") return message || "Saving application draft to the portal...";
+  if (status === "saved") return `Application draft saved: ${formatSavedTime(lastSavedAt)}`;
   if (status === "error") return message || "Draft saved on this device only.";
   if (message) return message;
   return `Draft saved: ${formatSavedTime(lastSavedAt)}`;
@@ -62,7 +60,6 @@ function RegistrationWizard({
   groupedQuestions,
   answers,
   documents,
-  documentType,
   submitting,
   submitResult,
   errorMessage,
@@ -77,31 +74,33 @@ function RegistrationWizard({
   onMultiSelectChange,
   onSubmit,
   onValidateQuestions,
-  onDocumentsChange,
-  onDocumentTypeChange,
   onClearDraft,
   onStepChange,
 }) {
-  const sectionEntries = useMemo(() => Object.entries(groupedQuestions), [groupedQuestions]);
-  const documentStepIndex = sectionEntries.length;
-  const reviewStepIndex = sectionEntries.length + 1;
-  const totalSteps = sectionEntries.length + 2;
+  const sectionEntries = useMemo(
+    () => Object.entries(groupedQuestions).filter(([section]) => section !== "Jurat / Interpreter"),
+    [groupedQuestions]
+  );
+  const reviewStepIndex = sectionEntries.length;
+  const totalSteps = sectionEntries.length + 1;
+  const contactStepIndex = sectionEntries.findIndex(([, questions]) =>
+    questions.some((question) => question.questionCode === "CONTACT_NUMBER")
+  );
   const [activeStep, setActiveStep] = useState(() => Math.max(0, Number(currentStep) || 0));
-  const [announcement, setAnnouncement] = useState("Start with the first section of the registration form.");
+  const [announcement, setAnnouncement] = useState("Start with the first section of the application form.");
   const hasAppliedRestoredStep = useRef(false);
+  const finalSubmitIntentRef = useRef(false);
+  const pendingInvalidFocusRef = useRef(false);
+  const reviewErrorFocusRef = useRef(false);
 
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
-    if (activeStep > reviewStepIndex) {
-      setActiveStep(0);
-    }
+    if (activeStep > reviewStepIndex) setActiveStep(0);
   }, [activeStep, reviewStepIndex]);
 
   useEffect(() => {
     if (hasAppliedRestoredStep.current) return;
-
     const restoredStep = Math.max(0, Math.min(Number(currentStep) || 0, reviewStepIndex));
-
     if (restoredStep > 0) {
       hasAppliedRestoredStep.current = true;
       setActiveStep(restoredStep);
@@ -120,27 +119,60 @@ function RegistrationWizard({
       questions.some((question) => errorCodes.includes(question.questionCode))
     );
 
-    if (firstErrorSectionIndex >= 0) {
+    if (firstErrorSectionIndex >= 0 && activeStep === reviewStepIndex) {
+      reviewErrorFocusRef.current = true;
       setActiveStep(firstErrorSectionIndex);
       setAnnouncement("Some questions need attention. The first section with an error is now open.");
     }
+
+    if (pendingInvalidFocusRef.current) {
+      pendingInvalidFocusRef.current = false;
+      const frame = window.requestAnimationFrame(() => {
+        const activeQuestions = sectionEntries[activeStep]?.[1] || [];
+        const invalidQuestion = activeQuestions.find((question) => errorCodes.includes(question.questionCode));
+        const card = invalidQuestion && document.getElementById(invalidQuestion.questionCode + "-card");
+        const control = card?.querySelector('input:not([type="hidden"]), select, textarea, button');
+        control?.focus({ preventScroll: true });
+        control?.scrollIntoView({ block: "center" });
+      });
+      return () => window.cancelAnimationFrame(frame);
+    }
+    // Respond to validation result changes; do not recenter the user on every step selection.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fieldErrors, sectionEntries]);
   /* eslint-enable react-hooks/set-state-in-effect */
+
+  useEffect(() => {
+    if (!reviewErrorFocusRef.current || activeStep === reviewStepIndex) return undefined;
+    reviewErrorFocusRef.current = false;
+    const frame = window.requestAnimationFrame(() => {
+      const questions = sectionEntries[activeStep]?.[1] || [];
+      const firstInvalid = questions.find((question) => fieldErrors?.[question.questionCode]);
+      const card = firstInvalid && document.getElementById(firstInvalid.questionCode + "-card");
+      const control = card?.querySelector('input:not([type="hidden"]), select, textarea, button');
+      control?.focus({ preventScroll: true });
+      control?.scrollIntoView({ block: "center" });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [activeStep, reviewStepIndex, fieldErrors, sectionEntries]);
 
   function goToStep(stepIndex) {
     const nextStep = Math.max(0, Math.min(stepIndex, reviewStepIndex));
     setActiveStep(nextStep);
+    onStepChange?.(nextStep);
 
     window.requestAnimationFrame(() => {
-      const panel = document.querySelector(`#wizard-step-${nextStep}`) || document.querySelector(".ss-registration-wizard");
-      panel?.scrollIntoView({ behavior: "smooth", block: "start" });
+      const buttonId = nextStep === reviewStepIndex ? "wizard-review-button" : `wizard-section-button-${nextStep}`;
+      const headingButton = document.getElementById(buttonId);
+      headingButton?.focus({ preventScroll: true });
+      headingButton?.scrollIntoView({ block: "start" });
     });
   }
 
   function continueFromSection(index, questions) {
     const isValid = onValidateQuestions(questions);
-
     if (!isValid) {
+      pendingInvalidFocusRef.current = true;
       setAnnouncement("Please complete the highlighted questions before continuing.");
       return;
     }
@@ -150,8 +182,33 @@ function RegistrationWizard({
     goToStep(nextStep);
   }
 
-  function handleSubmit(event) {
+  function handleWizardSubmit(event) {
+    // An implicit Enter from a field must never submit the full questionnaire.
+    if (activeStep !== reviewStepIndex || !finalSubmitIntentRef.current) {
+      event.preventDefault();
+      finalSubmitIntentRef.current = false;
+      setAnnouncement("Your answers are unchanged. Use Continue to complete a section, or Submit Application at the final review.");
+      return;
+    }
+
+    finalSubmitIntentRef.current = false;
     onSubmit(event);
+  }
+
+  function handleFormKeyDown(event) {
+    if (event.key !== "Enter" || event.isComposing) return;
+    const target = event.target;
+    if (!(target instanceof HTMLInputElement)) return;
+
+    // Support Enter as an alternative to Space for radio buttons and checkboxes.
+    if (target.type === "radio" || target.type === "checkbox") {
+      event.preventDefault();
+      target.click();
+      return;
+    }
+
+    // Text-like inputs must not activate the form's default submit button.
+    if (!["submit", "button", "reset"].includes(target.type)) event.preventDefault();
   }
 
   if (sectionEntries.length === 0) {
@@ -160,39 +217,38 @@ function RegistrationWizard({
         <div className="ss-empty-state">
           <i className="bi bi-ui-checks" aria-hidden="true" />
           <h2>No questions are currently available</h2>
-          <p>The form loaded successfully, but no questions were returned by the backend.</p>
+          <p>The application loaded successfully, but no questions were returned by the backend.</p>
         </div>
       </section>
     );
   }
 
   return (
-    <form className="ss-form-shell ss-registration-wizard" onSubmit={handleSubmit} noValidate aria-describedby="registration-form-guidance">
+    <form className="ss-form-shell ss-registration-wizard" onSubmit={handleWizardSubmit} onKeyDown={handleFormKeyDown} noValidate aria-describedby="registration-form-guidance">
       <p id="registration-form-guidance" className="visually-hidden">
-        This is a guided step-by-step form. Fields marked with an asterisk are required. Use the Save and continue button to move through each section.
+        This is a guided step-by-step application. Fields marked with an asterisk are required. Use Continue to move through each section.
       </p>
 
-      <div className="ss-wizard-topper ss-executive-wizard-topper">
-        <div>
-          <span className="ss-small-label dark">Fast guided application</span>
-          <h2>{selectedPathway.title} Registration</h2>
-          <p>
-            A guided accessible application. Complete the required fields, review once, and submit.
-          </p>
-          <div className="ss-quick-facts" aria-label="Application summary">
-            <span><i className="bi bi-clock" aria-hidden="true" /> About 10–15 minutes</span>
-            <span><i className="bi bi-shield-check" aria-hidden="true" /> One application per person</span>
-            <span><i className="bi bi-envelope-check" aria-hidden="true" /> Test link sent if eligible</span>
-          </div>
+      <div className="ss-wizard-utility-bar">
+        <div className="ss-wizard-pathway-label">
+          <span className="ss-small-label dark">Current pathway</span>
+          <strong>{selectedPathway.title}</strong>
         </div>
 
-        <div className="ss-draft-status" aria-live="polite">
+        <div className="ss-draft-status ss-draft-status-compact" aria-live="polite">
           <i className={`bi ${getDraftStatusIcon(draftSaveStatus)}`} aria-hidden="true" />
           <span>{getDraftStatusText({ status: draftSaveStatus, message: draftSaveMessage, lastSavedAt: draftLastSavedAt })}</span>
           {draftReference && <small>Draft ref: {draftReference}</small>}
-          <button type="button" className="btn btn-sm ss-link-button" onClick={onClearDraft}>
-            Clear
-          </button>
+          {draftSaveStatus === "waiting_for_mobile" && contactStepIndex >= 0 && (
+            <button
+              type="button"
+              className="btn btn-sm ss-link-button"
+              onClick={() => goToStep(contactStepIndex)}
+            >
+              Add mobile number
+            </button>
+          )}
+          <button type="button" className="btn btn-sm ss-link-button" onClick={onClearDraft}>Clear</button>
         </div>
       </div>
 
@@ -207,7 +263,6 @@ function RegistrationWizard({
       </div>
 
       <div className="visually-hidden" aria-live="polite">{announcement}</div>
-
       <FormErrorSummary errors={fieldErrors} />
 
       {errorMessage && (
@@ -243,21 +298,6 @@ function RegistrationWizard({
           );
         })}
 
-        <div id={`wizard-step-${documentStepIndex}`}>
-          <DocumentUploadSection
-            stepNumber={documentStepIndex + 1}
-            totalSteps={totalSteps}
-            isActive={activeStep === documentStepIndex}
-            documents={documents}
-            documentType={documentType}
-            onToggle={() => goToStep(documentStepIndex)}
-            onPrevious={() => goToStep(documentStepIndex - 1)}
-            onContinue={() => goToStep(reviewStepIndex)}
-            onDocumentsChange={onDocumentsChange}
-            onDocumentTypeChange={onDocumentTypeChange}
-          />
-        </div>
-
         <div id={`wizard-step-${reviewStepIndex}`}>
           <ReviewApplication
             stepNumber={reviewStepIndex + 1}
@@ -265,12 +305,13 @@ function RegistrationWizard({
             isActive={activeStep === reviewStepIndex}
             sectionEntries={sectionEntries}
             answers={answers}
-            documents={documents}
-            documentType={documentType}
+            documents={documents || []}
+            documentType="OTHER"
             submitting={submitting}
             onToggle={() => goToStep(reviewStepIndex)}
             onPrevious={() => goToStep(reviewStepIndex - 1)}
             onEditSection={goToStep}
+            onFinalSubmitIntent={() => { finalSubmitIntentRef.current = true; }}
           />
         </div>
       </div>

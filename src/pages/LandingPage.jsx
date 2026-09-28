@@ -1,106 +1,93 @@
 import { pathways } from "../data/pathways";
 import PathwayCard from "../components/PathwayCard";
+import heroPerson from "../assets/hero-person.webp";
+// Approved secondary partnership lock-up. Keep the supplied PNG in public/ so Vite copies it to dist/.
+const secondaryLogoLockup = "/digital-futures-secondary-logo.png";
 
 function LandingPage({ pathwayMessage, onPathwaySelect, onCheckStatus }) {
+  const openPathways = pathways.filter((pathway) => pathway.status === "open");
+
   return (
-    <main id="main-content" tabIndex="-1">
-      <section className="ss-hero">
+    <main id="main-content" tabIndex="-1" className="df-home-page df-home-clean">
+      <section className="df-clean-hero" aria-labelledby="digital-futures-title">
         <div className="container">
-          <div className="row align-items-center g-5">
-            <div className="col-12 col-lg-7">
-              <span className="ss-hero-badge">
-                <i className="bi bi-stars" /> Sightsavers Digital Futures
-              </span>
-              <h1 className="ss-title mt-4">
-                Digital skills. <span>Inclusive futures.</span>
+          <div className="df-clean-hero-grid">
+            <div className="df-clean-hero-copy">
+              <span className="df-eyebrow">Digital Futures application portal</span>
+              <h1 id="digital-futures-title" className="df-clean-hero-title">
+                Digital skills.<br />
+                <span>Inclusive futures.</span>
               </h1>
-              <p className="ss-subtitle mt-4">
-                A streamlined registration portal for the Digital Futures Project, designed for fast application, accessible participation, and end-to-end participant tracking.
+              <p className="df-clean-hero-intro">
+                Apply for a Digital Futures training pathway through an accessible portal with clear eligibility checks, secure consent and guided next steps.
               </p>
-              <div className="d-flex flex-column flex-sm-row gap-3 mt-4">
+
+              <div className="df-clean-hero-actions">
                 <a href="#pathways" className="btn ss-btn-primary">
-                  Choose pathway <i className="bi bi-arrow-right-short" />
+                  Choose a pathway <i className="bi bi-arrow-right" aria-hidden="true" />
                 </a>
                 <button type="button" className="btn ss-btn-outline" onClick={onCheckStatus}>
                   <i className="bi bi-search" aria-hidden="true" /> Check application status
                 </button>
               </div>
+
             </div>
 
-            <div className="col-12 col-lg-5">
-              <div className="ss-hero-panel">
-                <div className="ss-ring-graphic" aria-hidden="true">
-                  <span />
-                  <span />
-                  <span />
-                </div>
-                <div className="ss-panel-content">
-                  <span>Registration</span>
-                  <strong>Open</strong>
-                  <p>Physical Academy intake</p>
-                </div>
-                <div className="ss-metric-row">
-                  <div>
-                    <strong>3</strong>
-                    <span>Pathways</span>
-                  </div>
-                  <div>
-                    <strong>1</strong>
-                    <span>Open now</span>
-                  </div>
-                  <div>
-                    <strong>~5m</strong>
-                    <span>To apply</span>
-                  </div>
-                </div>
+            <div className="df-clean-hero-media" aria-label="Digital Futures participant">
+              <div className="df-photo-shape df-photo-shape-teal" aria-hidden="true" />
+              <div className="df-photo-frame">
+                <img src={heroPerson} alt="Digital Futures participant wearing glasses and a pink shirt" />
+              </div>
+              <div className="df-photo-triangles" aria-hidden="true">
+                <span />
+                <span />
+                <span />
+              </div>
+              <div className="df-open-badge">
+                <span>Accepting applications</span>
+                <strong>Physical &amp; Virtual Academy</strong>
+                <small>{openPathways.length} pathways accepting applications</small>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="ss-before-apply-section py-5" aria-labelledby="before-apply-title">
+      <section id="pathways" className="df-clean-pathway-section" aria-labelledby="pathways-title">
         <div className="container">
-          <div className="ss-before-apply-card">
+          <div className="df-clean-pathway-heading">
             <div>
-              <span className="ss-small-label dark">Before you apply</span>
-              <h2 id="before-apply-title">Simple, accessible, and trackable</h2>
+              <span className="df-eyebrow">Choose your pathway</span>
+              <h2 id="pathways-title">Start with the pathway that fits you</h2>
               <p>
-                Applicants complete one short application. The system checks first-level eligibility in the background, prevents duplicates, and keeps the same participant identifier across testing and review.
+                Compare the options at a glance, then choose the pathway that best matches your qualifications, availability and preferred learning format.
               </p>
             </div>
-            <div className="ss-before-apply-steps" role="list">
-              <div role="listitem"><span>1</span><strong>Apply in minutes</strong><small>Only essential questions are required.</small></div>
-              <div role="listitem"><span>2</span><strong>Background screening</strong><small>Eligibility runs quietly after submission.</small></div>
-              <div role="listitem"><span>3</span><strong>Secure test link</strong><small>Eligible applicants receive the Basic IT skills test by email.</small></div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="pathways" className="ss-pathway-section py-5">
-        <div className="container">
-          <div className="d-flex flex-column flex-lg-row justify-content-between align-items-lg-end gap-3 mb-4">
-            <div>
-              <span className="ss-small-label dark">Choose your pathway</span>
-              <h2 className="ss-section-title display-6">Select a Digital Futures pathway</h2>
-            </div>
-            <span className="ss-count-badge">3 pathways</span>
           </div>
 
           {pathwayMessage && (
             <div className="alert ss-alert-warning" role="alert">
-              <i className="bi bi-info-circle" /> {pathwayMessage}
+              <i className="bi bi-info-circle" aria-hidden="true" /> {pathwayMessage}
             </div>
           )}
 
-          <div className="row g-4">
+          <div className="row g-4 df-open-pathways">
             {pathways.map((pathway) => (
-              <div key={pathway.id} className="col-12 col-lg-4">
+              <div key={pathway.id} className="col-12 col-md-6 col-xl-4">
                 <PathwayCard pathway={pathway} onSelect={onPathwaySelect} />
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section className="df-programme-partners df-programme-partners-footer" aria-label="Digital Futures partnership">
+        <div className="container">
+          <img
+            src={secondaryLogoLockup}
+            alt="In partnership with Mastercard Foundation, ACET, African Disability Forum, International Labour Organization and Sightsavers"
+            className="df-secondary-logo-lockup"
+          />
         </div>
       </section>
     </main>

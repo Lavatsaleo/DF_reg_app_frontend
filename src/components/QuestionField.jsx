@@ -1,5 +1,4 @@
 import AccessibleDateOfBirthPicker from "./AccessibleDateOfBirthPicker";
-import VoiceInputButton from "./VoiceInputButton";
 
 const COUNTRY_DIAL_CODES = {
   Kenya: "+254",
@@ -29,10 +28,6 @@ function getAutocomplete(question) {
   if (text.includes("county") || text.includes("location") || text.includes("address")) return "address-level2";
 
   return undefined;
-}
-
-function supportsVoiceInput(question) {
-  return ["TEXT", "LONG_TEXT", "PHONE", "EMAIL", "NUMBER"].includes(question.responseType) || !question.responseType;
 }
 
 function isPersonNameQuestion(question) {
@@ -161,12 +156,8 @@ function QuestionField({
     "aria-describedby": describedBy,
   };
 
-  const voiceButton = supportsVoiceInput(question) ? (
-    <VoiceInputButton
-      question={question}
-      onTranscript={(transcript) => onAnswerChange(question, sanitizeAnswerValue(question, transcript))}
-    />
-  ) : null;
+  // Disabled until the voice feature has passed cross-browser and accessibility testing.
+  const voiceButton = null;
 
   if (question.responseType === "LONG_TEXT") {
     return (
@@ -209,7 +200,6 @@ function QuestionField({
     if (isDateOfBirth) {
       return (
         <AccessibleDateOfBirthPicker
-          key={safeValue || "empty-date-of-birth"}
           id={question.questionCode}
           value={safeValue}
           error={error}

@@ -1,0 +1,477 @@
+/* Final landing-page refinement for Digital Futures CEO review. */
+
+.df-home-clean {
+  background: var(--df-bg);
+}
+
+.df-clean-hero {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(2.25rem, 5vw, 5rem) 0 clamp(3rem, 6vw, 5.5rem);
+  background: var(--df-bg);
+}
+
+.df-clean-hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 0.92fr);
+  align-items: center;
+  gap: clamp(2rem, 5vw, 5rem);
+}
+
+.df-clean-hero-copy,
+.df-clean-hero-media {
+  min-width: 0;
+}
+
+.df-clean-hero-title {
+  max-width: 720px;
+  margin: 0;
+  font-family: "Arial Black", Arial, Helvetica, sans-serif !important;
+  font-size: clamp(3.2rem, 6vw, 6.1rem) !important;
+  font-weight: 900 !important;
+  line-height: 0.96 !important;
+  letter-spacing: -0.025em !important;
+  color: var(--df-black) !important;
+}
+
+.df-clean-hero-title span {
+  color: var(--df-red);
+}
+
+.df-clean-hero-intro {
+  max-width: 650px;
+  margin: 1.5rem 0 0;
+  color: var(--df-muted);
+  font-size: clamp(1.05rem, 1.6vw, 1.22rem);
+  line-height: 1.6;
+}
+
+.df-clean-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  margin-top: 1.75rem;
+}
+
+.df-clean-hero-actions .btn {
+  min-height: 50px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+}
+
+.df-clean-partnership .df-partnership {
+  margin-top: 2rem;
+  padding-top: 1.25rem;
+  max-width: 470px;
+}
+
+.df-clean-hero-media {
+  position: relative;
+  min-height: 510px;
+  display: grid;
+  place-items: center;
+  isolation: isolate;
+}
+
+.df-photo-frame {
+  position: relative;
+  width: min(430px, 88%);
+  aspect-ratio: 0.88;
+  overflow: hidden;
+  border-radius: 48% 48% 46% 46% / 34% 34% 58% 58%;
+  background: #ffffff;
+  box-shadow: 0 18px 45px rgba(17, 17, 17, 0.12);
+  z-index: 2;
+}
+
+.df-photo-frame img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: center 44%;
+  transform: scale(1.04);
+}
+
+.df-photo-shape {
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.df-photo-shape-teal {
+  width: min(330px, 68%);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--df-teal);
+  top: -2%;
+  right: -2%;
+}
+
+.df-photo-triangles {
+  position: absolute;
+  right: 0;
+  bottom: 5%;
+  width: 92px;
+  display: grid;
+  gap: 7px;
+  z-index: 3;
+}
+
+.df-photo-triangles span {
+  display: block;
+  height: 42px;
+  background: var(--df-red);
+  clip-path: polygon(100% 0, 100% 100%, 0 100%);
+}
+
+.df-open-badge {
+  position: absolute;
+  left: -1%;
+  bottom: 3%;
+  z-index: 4;
+  width: min(285px, 68%);
+  padding: 1rem 1.1rem;
+  background: #ffffff;
+  border: 1px solid var(--df-border);
+  border-left: 7px solid var(--df-yellow);
+  border-radius: 10px;
+  box-shadow: 0 12px 30px rgba(17, 17, 17, 0.1);
+}
+
+.df-open-badge span,
+.df-open-badge strong,
+.df-open-badge small {
+  display: block;
+}
+
+.df-open-badge span {
+  color: var(--df-red);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.df-open-badge strong {
+  margin-top: 0.2rem;
+  color: var(--df-black);
+  font-size: 1.05rem;
+  line-height: 1.25;
+}
+
+.df-open-badge small {
+  margin-top: 0.25rem;
+  color: var(--df-muted);
+}
+
+/* Quiet programme-partner strip: branding is visible without competing with the main CTA. */
+.df-programme-partners {
+  padding: 1.5rem 0;
+  background: #ffffff;
+  border-top: 1px solid var(--df-border);
+  border-bottom: 1px solid var(--df-border);
+}
+
+.df-programme-partners-inner {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.36fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 2rem;
+}
+
+.df-programme-partners .df-eyebrow {
+  margin-bottom: 0.25rem;
+}
+
+.df-programme-partners h2 {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif !important;
+  font-size: 1.35rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
+}
+
+.df-programme-partner-strip {
+  display: block;
+  width: min(100%, 620px);
+  height: auto;
+  margin-left: auto;
+  object-fit: contain;
+}
+
+/* The landing page now focuses on the two pathways people can actually choose. */
+.df-clean-pathway-section {
+  padding: clamp(3.5rem, 6vw, 5.5rem) 0;
+  background: var(--df-bg);
+}
+
+.df-clean-pathway-heading {
+  max-width: 780px;
+  margin-bottom: 2rem;
+}
+
+.df-clean-pathway-heading h2 {
+  margin: 0;
+  font-size: clamp(2.35rem, 4vw, 4rem) !important;
+}
+
+.df-clean-pathway-heading p {
+  margin: 0.85rem 0 0;
+  color: var(--df-muted);
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+.df-open-pathways {
+  max-width: 1060px;
+}
+
+.df-clean-pathway-card {
+  padding: clamp(1.4rem, 2.2vw, 1.85rem) !important;
+  display: flex;
+  flex-direction: column;
+  min-height: 330px;
+  border-top: 7px solid var(--df-teal) !important;
+  box-shadow: 0 8px 24px rgba(17, 17, 17, 0.07) !important;
+}
+
+.df-clean-pathway-card:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 14px 32px rgba(17, 17, 17, 0.1) !important;
+}
+
+.df-clean-pathway-topline {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.2rem;
+}
+
+.df-clean-pathway-card .ss-pathway-icon {
+  margin: 0 !important;
+}
+
+.df-clean-pathway-card h3 {
+  margin-top: 0.45rem;
+  margin-bottom: 0.65rem;
+  font-size: clamp(1.55rem, 2.4vw, 2.05rem) !important;
+}
+
+.df-clean-pathway-description {
+  max-width: 55ch;
+  margin-bottom: 1.35rem;
+  color: var(--df-muted) !important;
+  line-height: 1.55;
+}
+
+.df-clean-pathway-card .btn {
+  min-height: 48px;
+  max-width: 230px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.df-coming-soon-bar {
+  max-width: 1060px;
+  margin-top: 1.25rem;
+  padding: 1rem 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  background: rgba(255, 255, 255, 0.62);
+  border: 1px dashed #bdb7b1;
+  border-radius: 10px;
+}
+
+.df-coming-soon-copy {
+  min-width: 0;
+}
+
+.df-coming-soon-copy span,
+.df-coming-soon-copy strong,
+.df-coming-soon-copy small {
+  display: block;
+}
+
+.df-coming-soon-kicker {
+  color: var(--df-red);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.df-coming-soon-copy strong {
+  margin-top: 0.1rem;
+  color: var(--df-black);
+  font-size: 1.12rem;
+}
+
+.df-coming-soon-copy small {
+  margin-top: 0.15rem;
+  color: var(--df-muted);
+}
+
+.df-coming-soon-status {
+  flex: 0 0 auto;
+  padding: 0.45rem 0.7rem;
+  color: var(--df-muted);
+  background: #ffffff;
+  border: 1px solid var(--df-border);
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+/* Make accessibility controls available without letting them dominate the landing page. */
+.df-home-clean ~ * .ss-accessibility-toolbar,
+.ss-accessibility-toolbar {
+  box-shadow: none !important;
+}
+
+.ss-accessibility-inner {
+  min-height: 54px;
+}
+
+.ss-a11y-btn {
+  min-height: 36px !important;
+  padding: 0.42rem 0.7rem !important;
+  font-size: 0.86rem !important;
+}
+
+@media (max-width: 991.98px) {
+  .df-clean-hero-grid {
+    grid-template-columns: 1fr;
+    gap: 2.25rem;
+  }
+
+  .df-clean-hero-media {
+    min-height: 470px;
+    grid-row: 1;
+  }
+
+  .df-clean-hero-copy {
+    grid-row: 2;
+  }
+
+  .df-photo-frame {
+    width: min(500px, 88%);
+    max-height: 440px;
+  }
+
+  .df-programme-partners-inner {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .df-programme-partner-strip {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .df-clean-hero {
+    padding-top: 1.5rem;
+  }
+
+  .df-clean-hero-media {
+    min-height: 385px;
+  }
+
+  .df-photo-frame {
+    width: min(100%, 430px);
+    height: 350px;
+    aspect-ratio: auto;
+    border-radius: 0 0 48% 48% / 0 0 28% 28%;
+  }
+
+  .df-photo-frame img {
+    object-position: center 42%;
+  }
+
+  .df-photo-shape-teal {
+    width: 235px;
+    top: -30px;
+    right: -55px;
+  }
+
+  .df-photo-triangles {
+    width: 70px;
+    right: -5px;
+    bottom: 0;
+  }
+
+  .df-photo-triangles span {
+    height: 32px;
+  }
+
+  .df-open-badge {
+    left: 0;
+    bottom: -1rem;
+    width: min(290px, 78%);
+  }
+
+  .df-clean-hero-title {
+    font-size: clamp(2.8rem, 13vw, 4.45rem) !important;
+  }
+
+  .df-clean-hero-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .df-clean-hero-actions .btn {
+    width: 100%;
+  }
+
+  .df-clean-partnership .df-partnership {
+    max-width: 100%;
+  }
+
+  .df-programme-partners {
+    padding: 1.25rem 0;
+  }
+
+  .df-programme-partner-strip {
+    width: 100%;
+  }
+
+  .df-clean-pathway-card {
+    min-height: auto;
+  }
+
+  .df-clean-pathway-card .btn {
+    max-width: none;
+  }
+
+  .df-coming-soon-bar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  .df-clean-hero-media {
+    min-height: 330px;
+  }
+
+  .df-photo-frame {
+    height: 300px;
+  }
+
+  .df-open-badge {
+    padding: 0.8rem 0.9rem;
+    width: 80%;
+  }
+
+  .df-clean-hero-title {
+    font-size: clamp(2.55rem, 14vw, 3.75rem) !important;
+  }
+
+  .df-programme-partners h2 {
+    font-size: 1.2rem !important;
+  }
+}
