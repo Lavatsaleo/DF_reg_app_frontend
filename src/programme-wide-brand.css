@@ -742,3 +742,18 @@ a:not(.btn):focus {
     aspect-ratio: 260 / 308 !important;
   }
 }
+
+
+/* The homepage availability callout is informational, not an interactive control. */
+.df-open-badge {
+  background: transparent !important;
+  border: 0 !important;
+  border-left: 4px solid #465C17 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 0.7rem 0 0.7rem 0.9rem !important;
+}
+
+.df-open-badge span {
+  color: #465C17 !important;
+}
