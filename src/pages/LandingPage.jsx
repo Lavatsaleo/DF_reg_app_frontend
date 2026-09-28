@@ -27,7 +27,7 @@ function LandingPage({ pathwayMessage, onPathwaySelect, onCheckStatus }) {
                   Choose a pathway <i className="bi bi-arrow-right" aria-hidden="true" />
                 </a>
                 <button type="button" className="btn ss-btn-outline" onClick={onCheckStatus}>
-                  <i className="bi bi-search" aria-hidden="true" /> Check application
+                  <i className="bi bi-search" aria-hidden="true" /> Check application status
                 </button>
               </div>
 
