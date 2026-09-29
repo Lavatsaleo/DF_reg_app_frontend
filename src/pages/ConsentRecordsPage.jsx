@@ -116,7 +116,38 @@ function ConsentRecord({ record, printOnlyId, onPrint }) {
           <strong>Application submitted:</strong> {formatDate(record.submittedAt)}
         </div>
 
-        {record.juratRequired && consent && (
+        {record.assistance?.assistantName && (
+          <section className="border rounded-4 p-4 my-4">
+            <h3 className="h5">{consent?.assistanceStepTitle || "Consent assistance"}</h3>
+            <dl className="row mb-3">
+              <dt className="col-sm-4">Person providing assistance</dt>
+              <dd className="col-sm-8">{record.assistance.assistantName}</dd>
+              <dt className="col-sm-4">Relationship to applicant</dt>
+              <dd className="col-sm-8">
+                {record.assistance.relationship || "Not available"}
+                {record.assistance.relationshipOther ? ` — ${record.assistance.relationshipOther}` : ""}
+              </dd>
+              <dt className="col-sm-4">Type of assistance</dt>
+              <dd className="col-sm-8">
+                {Array.isArray(record.assistance.assistanceTypes)
+                  ? record.assistance.assistanceTypes.join(", ")
+                  : record.assistance.assistanceTypes || "Not available"}
+                {record.assistance.assistanceTypeOther ? ` — ${record.assistance.assistanceTypeOther}` : ""}
+              </dd>
+              <dt className="col-sm-4">Language / communication method</dt>
+              <dd className="col-sm-8">{record.assistance.languageOrCommunicationMethod || "Not available"}</dd>
+              <dt className="col-sm-4">Date</dt>
+              <dd className="col-sm-8">{formatDate(record.assistance.date)}</dd>
+            </dl>
+            <SignatureDisplay
+              method={record.assistance.signatureMethod}
+              data={record.assistance.signatureData}
+              label="Signature of person providing assistance"
+            />
+          </section>
+        )}
+
+        {record.juratRequired && consent?.juratTitle && (
           <section className="border rounded-4 p-4 my-4">
             <h3 className="h5">{consent.juratTitle}</h3>
             <p>{consent.juratWhen}</p>
@@ -135,11 +166,23 @@ function ConsentRecord({ record, printOnlyId, onPrint }) {
 
         <section className="border-top pt-4 mt-4">
           <h3 className="h5">Your Consent</h3>
-          <p>☑ {record.informationRead ? "Yes" : "No"} — I have read and understood this information</p>
-          <p>☑ {record.agreedToParticipate ? "Yes" : "No"} — I agree to take part in this questionnaire</p>
+          {record.consentDecision ? (
+            <p><strong>{consent?.consentQuestion || "Consent decision"}</strong><br />{record.consentDecision}</p>
+          ) : (
+            <>
+              <p>☑ {record.informationRead ? "Yes" : "No"} — I have read and understood this information</p>
+              <p>☑ {record.agreedToParticipate ? "Yes" : "No"} — I agree to take part in this questionnaire</p>
+            </>
+          )}
           <dl className="row">
             <dt className="col-sm-4">Name</dt><dd className="col-sm-8">{record.nameOrIdCode || "Not available"}</dd>
             <dt className="col-sm-4">Date</dt><dd className="col-sm-8">{formatDate(record.signedDate)}</dd>
+            {record.completedConsentSelf && (
+              <>
+                <dt className="col-sm-4">Completed consent section</dt>
+                <dd className="col-sm-8">{record.completedConsentSelf}</dd>
+              </>
+            )}
           </dl>
           <SignatureDisplay method={record.signatureMethod} data={record.signatureData} label="Signature" />
         </section>
