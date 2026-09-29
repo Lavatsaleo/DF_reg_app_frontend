@@ -34,12 +34,17 @@ function FormSection({
           const helpText = resolveQuestionHelpText(question, answers);
           const helpId = helpText ? `${question.questionCode}-help` : undefined;
           const errorId = `${question.questionCode}-error`;
-          const isWideQuestion = question.questionCode === "DATE_OF_BIRTH";
+          const isWideQuestion =
+            question.questionCode === "DATE_OF_BIRTH" ||
+            ["LONG_TEXT", "MULTI_SELECT"].includes(question.responseType);
 
           return (
             <div key={question.questionCode} className={isWideQuestion ? "col-12" : "col-12 col-lg-6"}>
               <div className={`ss-question-card h-100 ${isWideQuestion ? "wide" : ""} ${error ? "has-error" : ""}`} id={`${question.questionCode}-card`}>
                 <label className="form-label" htmlFor={question.questionCode} id={labelId}>
+                  {question.questionNumber && (
+                    <small className="d-block text-muted mb-1">Q{question.questionNumber}</small>
+                  )}
                   <span>{questionText}</span>
                   {question.required ? (
                     <strong className="ss-required-chip" aria-label="Required field">Required</strong>
