@@ -82,6 +82,8 @@ const SUPPLEMENTAL_CONSENT_RESPONSES = [
   { questionCode: "CONSENT_SIGNED_DATE", questionText: "Consent date", section: "Consent", responseType: "DATE" },
   { questionCode: "CONSENT_SIGNATURE_METHOD", questionText: "Applicant signature method", section: "Consent", responseType: "TEXT" },
   { questionCode: "CONSENT_SIGNATURE_DATA", questionText: "Applicant electronic signature", section: "Consent", responseType: "LONG_TEXT" },
+  { questionCode: "CONSENT_CONTACT_CONTEXT", questionText: "Consent contact context", section: "Consent", responseType: "TEXT" },
+  { questionCode: "CONSENT_CONTACTS_AT_SIGNING", questionText: "Contacts displayed at consent", section: "Consent", responseType: "LONG_TEXT" },
   { questionCode: "CONSENT_SUPPORT_REQUEST_NAME", questionText: "Name for consent explanation request", section: "Consent", responseType: "TEXT" },
   { questionCode: "CONSENT_SUPPORT_REQUEST_PHONE", questionText: "Contact number for consent explanation request", section: "Consent", responseType: "PHONE" },
   { questionCode: "CONSENT_SUPPORT_REQUEST_ACCOMMODATION", questionText: "Reasonable accommodation required for consent explanation", section: "Consent", responseType: "LONG_TEXT" },
