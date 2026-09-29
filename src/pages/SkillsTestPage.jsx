@@ -18,10 +18,6 @@ function formatDate(value) {
   }
 }
 
-function normalizeReference(value) {
-  return String(value || "").trim().toUpperCase();
-}
-
 function cleanToken(value) {
   return String(value || "").trim();
 }
@@ -109,8 +105,7 @@ function SkillsTestQuestion({ question, value, onChange, hasError }) {
   );
 }
 
-function SkillsTestPage({ initialReference = "", initialToken = "", onBackHome, onCheckStatus }) {
-  const [reference, setReference] = useState(initialReference);
+function SkillsTestPage({ initialToken = "", onBackHome, onCheckStatus }) {
   const [token, setToken] = useState(initialToken);
   const [applicant, setApplicant] = useState(null);
   const [invitation, setInvitation] = useState(null);
@@ -133,34 +128,22 @@ function SkillsTestPage({ initialReference = "", initialToken = "", onBackHome, 
   const totalQuestions = test?.questions?.length || 0;
   const progressPercent = totalQuestions > 0 ? Math.round((answeredCount / totalQuestions) * 100) : 0;
 
-  function getQuestionsEndpoint(referenceToLoad, tokenToLoad) {
+  function getQuestionsEndpoint(tokenToLoad) {
     const cleanInvitationToken = cleanToken(tokenToLoad);
+    if (!cleanInvitationToken) return null;
 
-    if (cleanInvitationToken) {
-      return `${API_BASE_URL}/api/basic-skills-test/invite/${encodeURIComponent(cleanInvitationToken)}/questions`;
-    }
-
-    const cleanReference = normalizeReference(referenceToLoad);
-    if (!cleanReference) return null;
-
-    return `${API_BASE_URL}/api/basic-skills-test/${encodeURIComponent(cleanReference)}/questions`;
+    return `${API_BASE_URL}/api/basic-skills-test/invite/${encodeURIComponent(cleanInvitationToken)}/questions`;
   }
 
   function getSubmitEndpoint() {
     const cleanInvitationToken = cleanToken(token);
+    if (!cleanInvitationToken) return null;
 
-    if (cleanInvitationToken) {
-      return `${API_BASE_URL}/api/basic-skills-test/invite/${encodeURIComponent(cleanInvitationToken)}/submit`;
-    }
-
-    const cleanReference = normalizeReference(reference);
-    if (!cleanReference) return null;
-
-    return `${API_BASE_URL}/api/basic-skills-test/${encodeURIComponent(cleanReference)}/submit`;
+    return `${API_BASE_URL}/api/basic-skills-test/invite/${encodeURIComponent(cleanInvitationToken)}/submit`;
   }
 
-  async function loadTest({ referenceToLoad = reference, tokenToLoad = token } = {}) {
-    const endpoint = getQuestionsEndpoint(referenceToLoad, tokenToLoad);
+  async function loadTest({ tokenToLoad = token } = {}) {
+    const endpoint = getQuestionsEndpoint(tokenToLoad);
     setMessage("");
     setApplicant(null);
     setInvitation(null);
@@ -170,7 +153,7 @@ function SkillsTestPage({ initialReference = "", initialToken = "", onBackHome, 
     setFieldErrors({});
 
     if (!endpoint) {
-      setMessage("Please open the test using the invitation link sent to your email. If the project team has asked you to use an application reference, you can enter it below.");
+      setMessage("Please open the Basic IT Skills Test using the secure invitation link sent to your email address. If you cannot find the email, check your spam or junk folder or contact the programme team.");
       return;
     }
 
@@ -184,10 +167,6 @@ function SkillsTestPage({ initialReference = "", initialToken = "", onBackHome, 
       setTest(data.test || null);
       setAttempt(data.attempt || null);
       startTimeRef.current = Date.now();
-
-      if (data.applicant?.applicationReference) {
-        setReference(data.applicant.applicationReference);
-      }
 
       if (data.alreadySubmitted) {
         setMessage("A Basic IT skills test has already been submitted for this application.");
@@ -205,24 +184,16 @@ function SkillsTestPage({ initialReference = "", initialToken = "", onBackHome, 
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     const cleanInitialToken = cleanToken(initialToken);
-    const cleanInitialReference = normalizeReference(initialReference);
     setToken(cleanInitialToken);
-    setReference(cleanInitialReference);
 
-    if (cleanInitialToken || cleanInitialReference) {
-      loadTest({
-        tokenToLoad: cleanInitialToken,
-        referenceToLoad: cleanInitialReference,
-      });
+    if (cleanInitialToken) {
+      loadTest({ tokenToLoad: cleanInitialToken });
+    } else {
+      setMessage("Please open the Basic IT Skills Test using the secure invitation link sent to your email address. If you cannot find the email, check your spam or junk folder or contact the programme team.");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialReference, initialToken]);
+  }, [initialToken]);
   /* eslint-enable react-hooks/set-state-in-effect */
-
-  function handleLookupSubmit(event) {
-    event.preventDefault();
-    loadTest({ referenceToLoad: reference, tokenToLoad: "" });
-  }
 
   function handleAnswerChange(questionCode, answer) {
     setAnswers((previousAnswers) => ({
@@ -337,38 +308,8 @@ function SkillsTestPage({ initialReference = "", initialToken = "", onBackHome, 
               <p>
                 {hasInvitationToken
                   ? "This page was opened from your secure Basic IT skills test invitation link."
-                  : "Use the invitation link sent to your email. If the project team has asked you to use an application reference, you can enter it below."}
+                  : "Use the secure invitation link sent to your email address. For your privacy and security, the test cannot be opened using an application reference."}
               </p>
-
-              {!hasInvitationToken && (
-                <form onSubmit={handleLookupSubmit} noValidate>
-                  <label className="form-label" htmlFor="skills-reference">
-                    Application reference number
-                  </label>
-                  <div className="ss-status-search-row">
-                    <input
-                      id="skills-reference"
-                      className="form-control"
-                      type="text"
-                      value={reference}
-                      onChange={(event) => setReference(event.target.value)}
-                      placeholder="Example: SS-PHYS-20260525-ABCDE"
-                      autoComplete="off"
-                    />
-                    <button type="submit" className="btn ss-btn-primary" disabled={loading}>
-                      {loading ? (
-                        <>
-                          <span className="spinner-border spinner-border-sm" aria-hidden="true" /> Loading...
-                        </>
-                      ) : (
-                        <>
-                          <i className="bi bi-journal-check" aria-hidden="true" /> Load test
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </form>
-              )}
 
               {invitation && (
                 <div className="ss-status-summary-grid mt-4" role="list">
