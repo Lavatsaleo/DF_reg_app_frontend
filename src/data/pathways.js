@@ -36,7 +36,7 @@ export const pathways = [
   {
     id: "DIGITAL_ENTREPRENEURSHIP",
     title: "Digital Entrepreneurship",
-    mode: "VIRTUAL",
+    mode: "UNKNOWN",
     status: "open",
     tag: "Business pathway",
     icon: "bi-rocket-takeoff",
