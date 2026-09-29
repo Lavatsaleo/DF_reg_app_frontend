@@ -118,7 +118,7 @@ function WizardSection({
   )?.metadata || {};
   const sectionMeta = {
     ...fallbackMeta,
-    intro: sourceMetadata.sectionIntro ?? fallbackMeta.intro,
+    intro: sourceMetadata.sectionIntro ?? (title.startsWith("Section ") ? "" : fallbackMeta.intro),
     notice: sourceMetadata.sectionNotice || "",
   };
   const requiredCount = questions.filter((question) => question.required).length;
