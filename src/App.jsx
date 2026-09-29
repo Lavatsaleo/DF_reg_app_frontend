@@ -22,6 +22,7 @@ function getInitialSkillsTestToken() {
 const PATHWAY_SLUGS = {
   PHYSICAL_ACADEMY: "physical-academy",
   VIRTUAL_ACADEMY: "virtual-academy",
+  DIGITAL_ENTREPRENEURSHIP: "digital-entrepreneurship",
 };
 
 function getPathwayFromBrowserPath() {
