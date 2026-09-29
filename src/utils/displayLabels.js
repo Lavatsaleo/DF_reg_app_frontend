@@ -10,6 +10,8 @@ const STATUS_LABELS = {
   UNDER_REVIEW: "Under committee review",
   APPROVED: "Approved",
   APPROVED_FOR_ENROLLMENT: "Approved for enrollment",
+  PARTICIPANT_REGISTRATION_PENDING: "Selected — participant registration pending",
+  PARTICIPANT_REGISTRATION_COMPLETED_PENDING_VERIFICATION: "Participant registration completed — pending verification",
   REJECTED: "Rejected",
   REJECTED_BY_REVIEW_COMMITTEE: "Not selected",
   ENROLLED: "Enrolled",
