@@ -93,6 +93,7 @@ function downloadSelectedParticipantsCsv(rows, scope) {
     "Skills test percentage",
     "Selected by",
     "Reviewed at",
+    "Participant registration status",
     "Verification status",
   ];
 
@@ -116,6 +117,7 @@ function downloadSelectedParticipantsCsv(rows, scope) {
     row.skillsTest?.percentage ?? "",
     row.reviewedBy?.fullName || "",
     row.reviewedAt ? formatDate(row.reviewedAt) : "",
+    row.participantRegistration?.status || "Not applicable",
     row.verificationStatus || "Pending verification",
   ]);
 
@@ -618,7 +620,13 @@ function AssignmentCard({ assignment, members, canReassign, onSelect, onReassign
   );
 }
 
-function SelectedParticipantsReport({ rows, scope, generatedAt }) {
+function SelectedParticipantsReport({
+  rows,
+  scope,
+  generatedAt,
+  onResendRegistration,
+  resendingRegistrationId,
+}) {
   return (
     <section className="committee-section-card committee-selected-report-card">
       <div className="committee-section-header with-filters">
@@ -664,6 +672,7 @@ function SelectedParticipantsReport({ rows, scope, generatedAt }) {
                 <th>Pathway</th>
                 <th>Disability</th>
                 <th>Test</th>
+                <th>Participant registration</th>
                 <th>Verification</th>
               </tr>
             </thead>
@@ -692,7 +701,33 @@ function SelectedParticipantsReport({ rows, scope, generatedAt }) {
                     <strong>{formatYesNo(row.hasDisability)}</strong>
                     <small>{row.disabilityType || row.otherDisabilityType || "Not stated"}</small>
                   </td>
-                  <td>{row.skillsTest ? `${row.skillsTest.percentage}%` : "Not available"}</td>
+                  <td>{row.skillsTest ? `${row.skillsTest.percentage}%` : "Not applicable"}</td>
+                  <td>
+                    {row.participantRegistration?.applicable ? (
+                      <>
+                        <strong>{String(row.participantRegistration.status || "NOT_SENT").replace(/_/g, " ")}</strong>
+                        {row.participantRegistration.sentAt && (
+                          <small>Sent {formatDate(row.participantRegistration.sentAt)}</small>
+                        )}
+                        {row.participantRegistration.submittedAt && (
+                          <small>Submitted {formatDate(row.participantRegistration.submittedAt)}</small>
+                        )}
+                        {row.participantRegistration.status !== "SUBMITTED" && (
+                          <button
+                            type="button"
+                            className="btn committee-small-action mt-2"
+                            disabled={resendingRegistrationId === row.id}
+                            onClick={() => onResendRegistration(row)}
+                          >
+                            <i className="bi bi-envelope-arrow-up" aria-hidden="true" />
+                            {resendingRegistrationId === row.id ? " Sending..." : " Send / resend"}
+                          </button>
+                        )}
+                      </>
+                    ) : (
+                      <span>Not applicable</span>
+                    )}
+                  </td>
                   <td>
                     <strong>{row.verificationStatus || "Pending verification"}</strong>
                     <small>{row.reviewedAt ? `Selected ${formatDate(row.reviewedAt)}` : "Selection date not available"}</small>
@@ -836,6 +871,7 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
   const [reassigning, setReassigning] = useState(false);
   const [submittingReview, setSubmittingReview] = useState(false);
   const [creatingLoginForMemberId, setCreatingLoginForMemberId] = useState("");
+  const [resendingRegistrationId, setResendingRegistrationId] = useState("");
 
   const userRole = staffUser?.role || "";
   const isSuperAdmin = userRole === "ADMIN";
@@ -1086,6 +1122,27 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
     }
   }
 
+  async function handleResendParticipantRegistration(row) {
+    const reference = row.applicationReference || row.participantCode || row.id;
+    if (!reference) return;
+
+    setResendingRegistrationId(row.id);
+    setMessage("");
+    setError("");
+
+    try {
+      const response = await axios.post(
+        `${API_BASE_URL}/api/participant-registration/invitations/${encodeURIComponent(reference)}/send`
+      );
+      setMessage(response.data?.message || "Participant registration invitation sent.");
+      await loadCommitteeData();
+    } catch (sendError) {
+      handleApiError(sendError, "Failed to send the participant registration invitation.");
+    } finally {
+      setResendingRegistrationId("");
+    }
+  }
+
   return (
     <main id="main-content" className="page committee-page">
       <section className="committee-hero">
@@ -1159,6 +1216,8 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
             rows={selectedReport.rows}
             scope={selectedReport.reportScope}
             generatedAt={selectedReport.generatedAt}
+            onResendRegistration={handleResendParticipantRegistration}
+            resendingRegistrationId={resendingRegistrationId}
           />
         )}
 
