@@ -56,6 +56,10 @@ function getSafeValue(value) {
   return value ?? "";
 }
 
+function countWords(value) {
+  return String(value || "").trim().split(/\s+/).filter(Boolean).length;
+}
+
 function getCountryDialCode(answers) {
   return COUNTRY_DIAL_CODES[answers?.COUNTRY] || "";
 }
@@ -160,6 +164,10 @@ function QuestionField({
   const voiceButton = null;
 
   if (question.responseType === "LONG_TEXT") {
+    const maxWords = Number(question.metadata?.maxWords);
+    const wordCount = countWords(safeValue);
+    const hasWordLimit = Number.isFinite(maxWords) && maxWords > 0;
+
     return (
       <>
         <textarea
@@ -168,9 +176,17 @@ function QuestionField({
           value={safeValue}
           onChange={(event) => onAnswerChange(question, event.target.value)}
           placeholder="Type your response here"
-          rows={4}
+          rows={5}
           autoComplete={getAutocomplete(question)}
         />
+        {hasWordLimit && (
+          <p
+            className={`ss-question-help mb-0 mt-2 ${wordCount > maxWords ? "text-danger" : ""}`}
+            aria-live="polite"
+          >
+            {wordCount} of {maxWords} words
+          </p>
+        )}
         {voiceButton}
       </>
     );
