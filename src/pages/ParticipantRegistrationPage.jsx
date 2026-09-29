@@ -624,16 +624,21 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
               <p key={paragraph}>{paragraph}</p>
             ))}
 
+            <h3 className="h5 mt-4">{consentDefinition?.whyWeCollectTitle}</h3>
+
             <h3 className="h5 mt-4">{consentDefinition?.howWeProtectTitle}</h3>
             {(consentDefinition?.howWeProtect || []).map((paragraph) => (
               <p key={paragraph}>{paragraph}</p>
             ))}
 
-            {(consentDefinition?.dataProtectionLinks || []).map((item) => (
-              <p key={item.url}>
-                <a href={item.url} target="_blank" rel="noreferrer">{item.label}</a>
-              </p>
-            ))}
+            <p className="mb-1">For more detail, see:</p>
+            <ul>
+              {(consentDefinition?.dataProtectionLinks || []).map((item) => (
+                <li key={item.url}>
+                  <a href={item.url} target="_blank" rel="noreferrer">{item.label}</a>
+                </li>
+              ))}
+            </ul>
 
             <details className="df-consent-details mt-4">
               <summary>{consentDefinition?.rightsTitle}</summary>
