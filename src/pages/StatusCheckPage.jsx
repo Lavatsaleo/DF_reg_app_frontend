@@ -39,10 +39,19 @@ const STATUS_STEPS = [
     description: "A decision is recorded and the applicant is informed through the agreed communication channel.",
   },
   {
+    key: "participant-registration",
+    labels: [
+      "participant registration pending",
+      "participant registration completed pending verification",
+    ],
+    title: "Participant registration",
+    description: "Selected Physical and Virtual Academy participants complete the secure Participant Registration & Baseline Survey sent by email.",
+  },
+  {
     key: "dhis2",
     labels: ["synced to dhis2", "enrolled", "enrolled in dhis2", "enrolled in dhis2 program"],
     title: "Programme enrollment",
-    description: "Approved applicants are enrolled into the correct pathway/programme workflow.",
+    description: "Verified participants are enrolled into the correct pathway/programme workflow.",
   },
 ];
 
@@ -58,7 +67,8 @@ function getActiveStepIndex(status) {
   );
 
   if (exactIndex >= 0) return exactIndex;
-  if (normalizedStatus.includes("enrolled")) return 5;
+  if (normalizedStatus.includes("enrolled")) return 6;
+  if (normalizedStatus.includes("participant registration")) return 5;
   if (normalizedStatus.includes("approved") || normalizedStatus.includes("rejected")) return 4;
   if (normalizedStatus.includes("completed") || normalizedStatus.includes("committee") || normalizedStatus.includes("dhis2")) return 3;
   if (normalizedStatus.includes("skills")) return 2;
@@ -206,6 +216,31 @@ function StatusResultCard({ result, source }) {
               <p className="mb-0">Invitation expires: {formatDate(result.testInvitation.expiresAt)}.</p>
             )}
           </div>
+        </div>
+      )}
+
+      {status === "PARTICIPANT_REGISTRATION_PENDING" && (
+        <div className="ss-status-note" role="note">
+          <i className="bi bi-envelope-check" aria-hidden="true" />
+          <div>
+            <p className="mb-2">
+              You have been selected. Please check the email address used in your application for the secure Participant Registration &amp; Baseline Survey link. Also check your spam or junk folder.
+            </p>
+            {result?.participantRegistrationInvitation?.expiresAt && (
+              <p className="mb-0">
+                Registration invitation expires: {formatDate(result.participantRegistrationInvitation.expiresAt)}.
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {status === "PARTICIPANT_REGISTRATION_COMPLETED_PENDING_VERIFICATION" && (
+        <div className="ss-status-note" role="note">
+          <i className="bi bi-clipboard2-check" aria-hidden="true" />
+          <p>
+            Your Participant Registration &amp; Baseline Survey has been submitted. The programme team will now verify your details and supporting documents.
+          </p>
         </div>
       )}
 
@@ -364,8 +399,9 @@ function StatusCheckPage({ onBackHome, onStartApplication }) {
                   <li><strong>Submitted:</strong> your application was received.</li>
                   <li><strong>Pending Review:</strong> the project team needs to review eligibility details before sending a test invitation.</li>
                   <li><strong>Eligible Pending Skills Test:</strong> check your email for the secure test link.</li>
-                  <li><strong>Under Review:</strong> the committee checks registration details, documents, and test result.</li>
-                  <li><strong>Approved:</strong> the applicant can move to enrollment.</li>
+                  <li><strong>Under Review:</strong> the Selection Committee reviews the application and test result where applicable.</li>
+                  <li><strong>Participant Registration Pending:</strong> selected Physical and Virtual Academy participants should check their email for the secure registration link.</li>
+                  <li><strong>Registration Completed:</strong> the participant registration and supporting documents are awaiting verification.</li>
                 </ul>
               </div>
 
