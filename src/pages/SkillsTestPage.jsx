@@ -311,6 +311,13 @@ function SkillsTestPage({ initialToken = "", onBackHome, onCheckStatus }) {
                   : "Use the secure invitation link sent to your email address. For your privacy and security, the test cannot be opened using an application reference."}
               </p>
 
+              {loading && (
+                <div className="alert ss-alert-info mt-4" role="status" aria-live="polite">
+                  <span className="spinner-border spinner-border-sm me-2" aria-hidden="true" />
+                  Verifying your secure test invitation...
+                </div>
+              )}
+
               {invitation && (
                 <div className="ss-status-summary-grid mt-4" role="list">
                   <div role="listitem">
