@@ -9,9 +9,6 @@ function isEmpty(value) {
   );
 }
 
-const MIN_ELIGIBLE_AGE = 18;
-const MAX_ELIGIBLE_AGE = 33;
-
 function normalizeQuestionText(question, answers) {
   return resolveQuestionText(question, answers);
 }
@@ -28,7 +25,7 @@ function isLikelyPhoneQuestion(question) {
 
 function isPersonNameQuestion(question) {
   return question.validationType === "PERSON_NAME" ||
-    ["FIRST_NAME", "MIDDLE_NAME", "LAST_NAME", "NEXT_OF_KIN_NAME", "JURAT_INTERPRETER_NAME", "JURAT_INTERPRETER_SIGNATURE"].includes(question.questionCode);
+    ["FIRST_NAME", "MIDDLE_NAME", "LAST_NAME"].includes(question.questionCode);
 }
 
 function isValidPersonName(value) {
@@ -39,64 +36,46 @@ function isValidEmail(value) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value).trim());
 }
 
-function isValidPhone(value) {
-  return /^\d{7,15}$/.test(String(value || "").trim());
+function digitsOnly(value) {
+  return String(value || "").replace(/\D/g, "");
 }
 
-function isAffirmative(value) {
-  if (value === true) return true;
-  const normalized = String(value || "").trim().toLowerCase();
-  return ["yes", "true", "1", "y"].includes(normalized) || normalized.startsWith("yes -");
+function isValidCountryPhone(value, country) {
+  const digits = digitsOnly(value);
+  const rules = {
+    Kenya: [/^(?:01|07)\d{8}$/, /^(?:1|7)\d{8}$/, /^254(?:1|7)\d{8}$/],
+    Nigeria: [/^(?:070|080|081|090|091)\d{8}$/, /^(?:70|80|81|90|91)\d{8}$/, /^234(?:70|80|81|90|91)\d{8}$/],
+    Zambia: [/^09\d{8}$/, /^9\d{8}$/, /^2609\d{8}$/],
+    Ghana: [/^(?:02|03|05)\d{8}$/, /^(?:2|3|5)\d{8}$/, /^233(?:2|3|5)\d{8}$/],
+  };
+  const patterns = rules[country];
+  if (!patterns) return /^\d{7,15}$/.test(digits);
+  return patterns.some((pattern) => pattern.test(digits));
 }
 
-function isValidIdNumber(value) {
+function isValidIdentification(value) {
   const clean = String(value || "").trim();
-  return clean.length >= 3 && /^[0-9\s/_.()+#&-]+$/.test(clean);
+  return clean.length >= 3 && /^[\p{L}\p{N}\s/_.()+#&-]+$/u.test(clean);
 }
 
-function getAgeFromDate(value) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return null;
+function isValidCardIdentification(value, answers) {
+  const clean = String(value || "").trim();
+  const country = answers.COUNTRY;
+  const idType = String(answers.NATIONAL_ID_TYPE || "");
 
-  const today = new Date();
-  let age = today.getFullYear() - date.getFullYear();
-  const monthDifference = today.getMonth() - date.getMonth();
-
-  if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < date.getDate())) {
-    age -= 1;
+  if (country === "Ghana" && idType.startsWith("Ghana Card")) {
+    return /^GHA-[A-Za-z0-9-]{11}$/.test(clean) && clean.length === 15;
   }
 
-  return age;
+  if (country === "Nigeria" && idType.includes("National Identification Number")) {
+    return /^\d{11}$/.test(clean);
+  }
+
+  return isValidIdentification(clean);
 }
 
-function validateRankGroups(questions, answers, errors) {
-  const groups = new Map();
-
-  questions.forEach((question) => {
-    const groupName = question.metadata?.rankGroup;
-    if (!groupName) return;
-
-    const group = groups.get(groupName) || [];
-    group.push(question);
-    groups.set(groupName, group);
-  });
-
-  groups.forEach((groupQuestions) => {
-    const answered = groupQuestions
-      .map((question) => ({ question, value: answers[question.questionCode] }))
-      .filter(({ value }) => !isEmpty(value));
-
-    const valueCounts = answered.reduce((map, item) => {
-      map.set(item.value, (map.get(item.value) || 0) + 1);
-      return map;
-    }, new Map());
-
-    answered.forEach(({ question, value }) => {
-      if ((valueCounts.get(value) || 0) > 1) {
-        errors[question.questionCode] = "Each course must have a different rank. Use each rank from 1 to 4 only once.";
-      }
-    });
-  });
+function countWords(value) {
+  return String(value || "").trim().split(/\s+/).filter(Boolean).length;
 }
 
 function validateExclusiveOptions(question, value, errors) {
@@ -127,18 +106,18 @@ export function validateAnswers({ questions, answers, isQuestionVisible }) {
     validateExclusiveOptions(question, value, errors);
     if (errors[question.questionCode]) continue;
 
-    if (["REGISTRATION_CONSENT", "CONSENT_INFORMATION_READ"].includes(question.questionCode) && !isAffirmative(value)) {
-      errors[question.questionCode] = "You must answer Yes to continue with the application.";
-      continue;
-    }
-
     if (isPersonNameQuestion(question) && !isValidPersonName(value)) {
       errors[question.questionCode] = "Use letters only. Numbers are not allowed in a name.";
       continue;
     }
 
-    if (question.validationType === "ID_NUMBER" && !isValidIdNumber(value)) {
-      errors[question.questionCode] = "Use numbers and special characters only. Letters are not allowed.";
+    if (question.validationType === "IDENTIFICATION" && !isValidIdentification(value)) {
+      errors[question.questionCode] = "Enter a valid identification number using letters, numbers or the punctuation used on the identification document.";
+      continue;
+    }
+
+    if (question.validationType === "CARD_IDENTIFICATION" && !isValidCardIdentification(value, answers)) {
+      errors[question.questionCode] = "Enter the identification number in the format stated for the selected country and identification type.";
       continue;
     }
 
@@ -147,36 +126,31 @@ export function validateAnswers({ questions, answers, isQuestionVisible }) {
       continue;
     }
 
-    if (isLikelyPhoneQuestion(question) && !isValidPhone(value)) {
-      errors[question.questionCode] = "Enter a valid phone number using numbers only, for example 712345678. The country code is added from the country selected above.";
+    if (isLikelyPhoneQuestion(question) && !isValidCountryPhone(value, answers.COUNTRY)) {
+      errors[question.questionCode] =
+        `Enter a phone number in the format stated for ${answers.COUNTRY || "the selected country"}.`;
       continue;
     }
 
     if (question.responseType === "DATE") {
       const dateValue = new Date(value);
-
       if (Number.isNaN(dateValue.getTime())) {
         errors[question.questionCode] = "Enter a valid date.";
         continue;
       }
 
-      if (question.questionCode === "DATE_OF_BIRTH") {
-        const age = getAgeFromDate(value);
-
-        if (age === null || age < 0) {
-          errors[question.questionCode] = "Date of birth cannot be in the future.";
-          continue;
-        }
-
-        if (age < MIN_ELIGIBLE_AGE || age > MAX_ELIGIBLE_AGE) {
-          errors[question.questionCode] = `Applicants must be ${MIN_ELIGIBLE_AGE} to ${MAX_ELIGIBLE_AGE} years old.`;
-          continue;
-        }
+      if (question.questionCode === "DATE_OF_BIRTH" && dateValue > new Date()) {
+        errors[question.questionCode] = "Date of birth cannot be in the future.";
+        continue;
       }
+    }
+
+    const maxWords = Number(question.metadata?.maxWords);
+    if (Number.isFinite(maxWords) && maxWords > 0 && countWords(value) > maxWords) {
+      errors[question.questionCode] = `Keep your response to ${maxWords} words or fewer.`;
     }
   }
 
-  validateRankGroups(visibleQuestions, answers, errors);
   return errors;
 }
 
