@@ -6,6 +6,7 @@ import LandingPage from "./pages/LandingPage";
 import ContextualApplicationPage from "./pages/ContextualApplicationPage";
 import StatusCheckPage from "./pages/StatusCheckPage";
 import SkillsTestPage from "./pages/SkillsTestPage";
+import ParticipantRegistrationPage from "./pages/ParticipantRegistrationPage";
 import CommitteeDashboardPage from "./pages/CommitteeDashboardPage";
 import ConsentRecordsPage from "./pages/ConsentRecordsPage";
 import StaffLoginPage from "./pages/StaffLoginPage";
@@ -16,6 +17,11 @@ import { pathways } from "./data/pathways";
 
 function getInitialSkillsTestToken() {
   const match = window.location.pathname.match(/^\/basic-skills-test\/([^/]+)\/?$/);
+  return match ? decodeURIComponent(match[1]) : "";
+}
+
+function getInitialParticipantRegistrationToken() {
+  const match = window.location.pathname.match(/^\/participant-registration\/([^/]+)\/?$/);
   return match ? decodeURIComponent(match[1]) : "";
 }
 
@@ -32,6 +38,7 @@ function getPathwayFromBrowserPath() {
 }
 
 function getInitialView() {
+  if (getInitialParticipantRegistrationToken()) return "participant-registration";
   if (getInitialSkillsTestToken() || window.location.pathname === "/basic-skills-test") return "skills-test";
   if (window.location.pathname === "/status") return "status";
   if (getPathwayFromBrowserPath()) return "application";
@@ -52,9 +59,11 @@ function App() {
   const { selectedPathway: historySelectedPathway, handlePathwaySelect: historySelectPathway } = registration;
   const accessibility = useAccessibilityPreferences();
   const initialSkillsTestToken = getInitialSkillsTestToken();
+  const initialParticipantRegistrationToken = getInitialParticipantRegistrationToken();
   const [currentView, setCurrentView] = useState(getInitialView);
   const [skillsTestReference, setSkillsTestReference] = useState("");
   const [skillsTestToken, setSkillsTestToken] = useState(initialSkillsTestToken);
+  const [participantRegistrationToken, setParticipantRegistrationToken] = useState(initialParticipantRegistrationToken);
   const [staffSession, setStaffSession] = useState(() => loadStaffSession());
 
   useEffect(() => {
@@ -87,9 +96,13 @@ function App() {
 
   useEffect(() => {
     function handleBrowserNavigation() {
+      const participantRegistrationTokenFromPath = getInitialParticipantRegistrationToken();
       const invitedToken = getInitialSkillsTestToken();
       const pathway = getPathwayFromBrowserPath();
-      if (invitedToken || window.location.pathname === "/basic-skills-test") {
+      if (participantRegistrationTokenFromPath) {
+        setParticipantRegistrationToken(participantRegistrationTokenFromPath);
+        setCurrentView("participant-registration");
+      } else if (invitedToken || window.location.pathname === "/basic-skills-test") {
         setSkillsTestToken(invitedToken);
         setCurrentView("skills-test");
       } else if (pathway) {
@@ -121,6 +134,7 @@ function App() {
     setCurrentView("home");
     setSkillsTestReference("");
     setSkillsTestToken("");
+    setParticipantRegistrationToken("");
     // Keep the selected pathway and all draft answers while returning to the homepage.
   }
 
@@ -275,6 +289,12 @@ function App() {
         <SkillsTestPage
           initialReference={skillsTestReference}
           initialToken={skillsTestToken}
+          onBackHome={handleShowHome}
+          onCheckStatus={handleShowStatus}
+        />
+      ) : currentView === "participant-registration" ? (
+        <ParticipantRegistrationPage
+          initialToken={participantRegistrationToken}
           onBackHome={handleShowHome}
           onCheckStatus={handleShowStatus}
         />
