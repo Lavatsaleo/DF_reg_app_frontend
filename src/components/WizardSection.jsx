@@ -112,7 +112,15 @@ function WizardSection({
   const panelId = `wizard-section-panel-${index}`;
   const buttonId = `wizard-section-button-${index}`;
   const describedById = `wizard-section-desc-${index}`;
-  const sectionMeta = getSectionMeta(title);
+  const fallbackMeta = getSectionMeta(title);
+  const sourceMetadata = questions.find(
+    (question) => question.metadata?.sectionIntro || question.metadata?.sectionNotice
+  )?.metadata || {};
+  const sectionMeta = {
+    ...fallbackMeta,
+    intro: sourceMetadata.sectionIntro ?? (title.startsWith("Section ") ? "" : fallbackMeta.intro),
+    notice: sourceMetadata.sectionNotice || "",
+  };
   const requiredCount = questions.filter((question) => question.required).length;
 
   return (
@@ -150,6 +158,12 @@ function WizardSection({
         {sectionMeta.intro && (
           <div className="ss-wizard-section-intro">
             <p>{sectionMeta.intro}</p>
+          </div>
+        )}
+
+        {sectionMeta.notice && (
+          <div className="alert alert-info" role="note">
+            {sectionMeta.notice}
           </div>
         )}
 
