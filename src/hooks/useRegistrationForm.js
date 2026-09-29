@@ -78,11 +78,23 @@ const LOCATION_DEPENDENT_QUESTIONS = {
 
 const SUPPLEMENTAL_CONSENT_RESPONSES = [
   { questionCode: "CONSENT_VERSION", questionText: "Consent version", section: "Consent", responseType: "TEXT" },
-  { questionCode: "CONSENT_NAME_ID_CODE", questionText: "Name / ID code", section: "Consent", responseType: "TEXT" },
+  { questionCode: "CONSENT_NAME_ID_CODE", questionText: "Applicant full name", section: "Consent", responseType: "TEXT" },
   { questionCode: "CONSENT_SIGNED_DATE", questionText: "Consent date", section: "Consent", responseType: "DATE" },
-  { questionCode: "CONSENT_SIGNATURE_METHOD", questionText: "Electronic signature method", section: "Consent", responseType: "TEXT" },
-  { questionCode: "CONSENT_SIGNATURE_DATA", questionText: "Electronic signature", section: "Consent", responseType: "LONG_TEXT" },
-  { questionCode: "JURAT_SIGNATURE_METHOD", questionText: "Interpreter electronic signature method", section: "Jurat / Interpreter", responseType: "TEXT" },
+  { questionCode: "CONSENT_SIGNATURE_METHOD", questionText: "Applicant signature method", section: "Consent", responseType: "TEXT" },
+  { questionCode: "CONSENT_SIGNATURE_DATA", questionText: "Applicant electronic signature", section: "Consent", responseType: "LONG_TEXT" },
+  { questionCode: "CONSENT_SUPPORT_REQUEST_NAME", questionText: "Name for consent explanation request", section: "Consent", responseType: "TEXT" },
+  { questionCode: "CONSENT_SUPPORT_REQUEST_PHONE", questionText: "Contact number for consent explanation request", section: "Consent", responseType: "PHONE" },
+  { questionCode: "CONSENT_SUPPORT_REQUEST_ACCOMMODATION", questionText: "Reasonable accommodation required for consent explanation", section: "Consent", responseType: "LONG_TEXT" },
+  { questionCode: "CONSENT_COMPLETED_SELF", questionText: "Did you complete this consent section yourself?", section: "Consent assistance", responseType: "SINGLE_SELECT" },
+  { questionCode: "CONSENT_ASSISTANT_NAME", questionText: "Full name of person who provided assistance", section: "Consent assistance", responseType: "TEXT" },
+  { questionCode: "CONSENT_ASSISTANT_RELATIONSHIP", questionText: "Relationship to applicant", section: "Consent assistance", responseType: "SINGLE_SELECT" },
+  { questionCode: "CONSENT_ASSISTANT_RELATIONSHIP_OTHER", questionText: "Other relationship, please specify", section: "Consent assistance", responseType: "TEXT" },
+  { questionCode: "CONSENT_ASSISTANCE_TYPES", questionText: "Type of assistance provided", section: "Consent assistance", responseType: "MULTI_SELECT" },
+  { questionCode: "CONSENT_ASSISTANCE_TYPE_OTHER", questionText: "Other assistance, please specify", section: "Consent assistance", responseType: "TEXT" },
+  { questionCode: "CONSENT_ASSISTANCE_LANGUAGE", questionText: "Language or communication method used", section: "Consent assistance", responseType: "TEXT" },
+  { questionCode: "CONSENT_ASSISTANT_SIGNATURE_METHOD", questionText: "Assistant signature method", section: "Consent assistance", responseType: "TEXT" },
+  { questionCode: "CONSENT_ASSISTANT_SIGNATURE_DATA", questionText: "Assistant electronic signature", section: "Consent assistance", responseType: "LONG_TEXT" },
+  { questionCode: "CONSENT_ASSISTANCE_DATE", questionText: "Date assistance was provided", section: "Consent assistance", responseType: "DATE" },
 ];
 
 function clearDependentLocationAnswers(questionCode, nextAnswers) {
@@ -219,7 +231,9 @@ export function useRegistrationForm() {
         setErrorMessage("");
         setFieldErrors({});
 
-        const response = await axios.get(`${API_BASE_URL}/api/registrations/form/questions`);
+        const response = await axios.get(`${API_BASE_URL}/api/registrations/form/questions`, {
+          params: { pathway: selectedPathway.id },
+        });
         setQuestions(response.data.questions || []);
       } catch (error) {
         console.error(error);
@@ -260,7 +274,7 @@ export function useRegistrationForm() {
     setCurrentStep(0);
 
     if (pathway.status !== "open") {
-      setPathwayMessage(`${pathway.title} is not yet open for applications. For now, please use the Physical Academy workflow.`);
+      setPathwayMessage(`${pathway.title} is not yet open for applications.`);
       return;
     }
 
