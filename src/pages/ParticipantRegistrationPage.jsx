@@ -98,9 +98,14 @@ function AssistanceMultiSelect({ options, value, onChange }) {
   );
 }
 
+const MISSING_INVITATION_MESSAGE =
+  "Please open the Participant Registration form using the secure link sent to your email address.";
+
 function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckStatus }) {
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
+  const [loading, setLoading] = useState(Boolean(initialToken));
+  const [loadError, setLoadError] = useState(() =>
+    initialToken ? "" : MISSING_INVITATION_MESSAGE
+  );
   const [formData, setFormData] = useState(null);
   const [applicant, setApplicant] = useState(null);
   const [invitation, setInvitation] = useState(null);
@@ -180,13 +185,13 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
       }
     }
 
-    if (initialToken) load();
-    else {
-      setLoadError(
-        "Please open the Participant Registration form using the secure link sent to your email address."
-      );
-      setLoading(false);
+    if (!initialToken) {
+      return () => {
+        active = false;
+      };
     }
+
+    load();
 
     return () => {
       active = false;
@@ -201,8 +206,8 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
     return () => window.cancelAnimationFrame(frame);
   }, [stage, activeModule]);
 
-  const modules = formData?.modules || [];
-  const questions = formData?.questions || [];
+  const modules = useMemo(() => formData?.modules || [], [formData]);
+  const questions = useMemo(() => formData?.questions || [], [formData]);
   const currentModule = modules[activeModule] || null;
 
   const currentQuestions = useMemo(() => {
