@@ -554,14 +554,15 @@ function ContextualApplicationPage({
 
                         <div className="col-12 col-md-6">
                           <label className="form-label fw-semibold" htmlFor="consent-assistance-date">
-                            Date
+                            Date (automatically generated)
                           </label>
                           <input
                             id="consent-assistance-date"
                             className="form-control"
                             type="date"
                             value={answers.CONSENT_ASSISTANCE_DATE || localDateString()}
-                            onChange={(event) => setHiddenAnswer("CONSENT_ASSISTANCE_DATE", event.target.value)}
+                            readOnly
+                            aria-readonly="true"
                           />
                         </div>
                       </div>
@@ -654,9 +655,10 @@ function ContextualApplicationPage({
                       <p>{consentDocument.supportRequestInstruction}</p>
                       <div className="row g-3">
                         <div className="col-12">
-                          <label className="form-label fw-semibold" htmlFor="consent-support-name">Full name</label>
+                          <label className="form-label fw-semibold" htmlFor="consent-support-name">Full name (required field)</label>
                           <input
                             id="consent-support-name"
+                            aria-required="true"
                             className="form-control"
                             type="text"
                             value={answers.CONSENT_SUPPORT_REQUEST_NAME || ""}
@@ -664,9 +666,10 @@ function ContextualApplicationPage({
                           />
                         </div>
                         <div className="col-12 col-md-6">
-                          <label className="form-label fw-semibold" htmlFor="consent-support-phone">Contact number</label>
+                          <label className="form-label fw-semibold" htmlFor="consent-support-phone">Contact number (required field)</label>
                           <input
                             id="consent-support-phone"
+                            aria-required="true"
                             className="form-control"
                             type="tel"
                             inputMode="numeric"
@@ -707,13 +710,14 @@ function ContextualApplicationPage({
                           />
                         </div>
                         <div className="col-12 col-md-4">
-                          <label className="form-label fw-semibold" htmlFor="consent-date">Date</label>
+                          <label className="form-label fw-semibold" htmlFor="consent-date">Date (automatically generated)</label>
                           <input
                             type="date"
                             id="consent-date"
                             className="form-control"
                             value={answers.CONSENT_SIGNED_DATE || localDateString()}
-                            onChange={(event) => setHiddenAnswer("CONSENT_SIGNED_DATE", event.target.value)}
+                            readOnly
+                            aria-readonly="true"
                           />
                         </div>
                       </div>
