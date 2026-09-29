@@ -38,17 +38,39 @@ function formatSubmittedAt(value) {
   }
 }
 
-function getOutcomeLabel(result) {
+function requiresBasicSkillsTest(result, selectedPathway) {
+  if (typeof result?.requiresBasicSkillsTest === "boolean") {
+    return result.requiresBasicSkillsTest;
+  }
+
+  const pathway = result?.pathway || selectedPathway?.id || "";
+  return ["PHYSICAL_ACADEMY", "VIRTUAL_ACADEMY"].includes(pathway);
+}
+
+function getOutcomeLabel(result, selectedPathway) {
   const screeningStatus = getScreeningStatus(result);
 
-  if (screeningStatus === "ELIGIBLE") return "Eligible - Pending Basic IT Skills Test";
-  if (screeningStatus === "PENDING_REVIEW") return "Pending manual review";
+  if (screeningStatus === "ELIGIBLE") {
+    return requiresBasicSkillsTest(result, selectedPathway)
+      ? "Eligible - Pending Basic IT Skills Test"
+      : "Eligible - Pending Selection Committee Review";
+  }
+  if (screeningStatus === "PENDING_REVIEW") {
+    if (
+      (result?.pathway || selectedPathway?.id) === "DIGITAL_ENTREPRENEURSHIP" &&
+      result?.isEligible === true
+    ) {
+      return "Eligible - Pending Selection Committee Review";
+    }
+    return "Pending manual review";
+  }
   if (screeningStatus === "NOT_ELIGIBLE") return "Not eligible";
   return "Existing application";
 }
 
-function getNextStepCopy(result) {
+function getNextStepCopy(result, selectedPathway) {
   const screeningStatus = getScreeningStatus(result);
+  const testRequired = requiresBasicSkillsTest(result, selectedPathway);
 
   if (screeningStatus === "EXISTING_APPLICATION") {
     return result?.existingApplicationOpened === false
@@ -62,10 +84,24 @@ function getNextStepCopy(result) {
         };
   }
 
-  if (screeningStatus === "ELIGIBLE") {
+  if (screeningStatus === "ELIGIBLE" && testRequired) {
     return {
-      title: "Complete the Basic IT Skills Test",
-      body: "A secure Basic IT Skills Test invitation link has been sent to the email address used in your Application.",
+      title: "Check your email for the Basic IT Skills Test",
+      body:
+        result?.testInvitationEmailSent === false
+          ? "Your Basic IT Skills Test invitation is being prepared for email delivery. Please check your email again shortly, including your spam or junk folder."
+          : "A secure Basic IT Skills Test invitation has been sent to the email address used in your Application. Please check your inbox and spam or junk folder.",
+    };
+  }
+
+  if (
+    !testRequired &&
+    (result?.pathway || selectedPathway?.id) === "DIGITAL_ENTREPRENEURSHIP" &&
+    result?.isEligible === true
+  ) {
+    return {
+      title: "Selection Committee review",
+      body: "The Basic IT Skills Test is not required for Digital Entrepreneurship. Your Application will move to the Selection Committee for review.",
     };
   }
 
@@ -144,7 +180,8 @@ function ApplicationConfirmation({ result, selectedPathway, onStartNewApplicatio
     result?.hideApplicationReference === true;
   const reference = getReference(result);
   const canCheckStatus = Boolean(reference) && result?.allowStatusCheck !== false;
-  const nextStep = getNextStepCopy(result);
+  const testRequired = requiresBasicSkillsTest(result, selectedPathway);
+  const nextStep = getNextStepCopy(result, selectedPathway);
 
   if (isIneligible && !isDuplicate) {
     return (
@@ -206,7 +243,7 @@ function ApplicationConfirmation({ result, selectedPathway, onStartNewApplicatio
                   )}
                   <div className="ss-confirmation-detail" role="listitem">
                     <span>Application outcome</span>
-                    <strong>{getOutcomeLabel(result)}</strong>
+                    <strong>{getOutcomeLabel(result, selectedPathway)}</strong>
                   </div>
                   <div className="ss-confirmation-detail" role="listitem">
                     <span>Pathway</span>
@@ -221,10 +258,10 @@ function ApplicationConfirmation({ result, selectedPathway, onStartNewApplicatio
                   </div>
                 )}
 
-                {isEligible && (
+                {isEligible && testRequired && (
                   <div className="ss-eligibility-note" role="note">
                     <i className="bi bi-envelope-check" aria-hidden="true" />
-                    <p>Please check the email address used in the Application. The secure test link is tied to this participant ID and can only be used for this Application.</p>
+                    <p>Please check the email address used in the Application, including the spam or junk folder. The Basic IT Skills Test can only be opened using the secure invitation sent by email.</p>
                   </div>
                 )}
 
@@ -243,11 +280,6 @@ function ApplicationConfirmation({ result, selectedPathway, onStartNewApplicatio
                       <div>
                         <strong>{nextStep.title}</strong>
                         <p>{nextStep.body}</p>
-                        {isEligible && result?.skillsTestInviteUrl && result?.testInvitationEmailSent === false && (
-                          <a className="btn ss-btn-primary btn-sm mt-2" href={result.skillsTestInviteUrl}>
-                            Complete Basic IT Skills Test <i className="bi bi-arrow-right" aria-hidden="true" />
-                          </a>
-                        )}
                       </div>
                     </div>
                     <div className="ss-timeline-item">
