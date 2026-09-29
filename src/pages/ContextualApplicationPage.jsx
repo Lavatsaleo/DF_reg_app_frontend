@@ -232,8 +232,7 @@ function ContextualApplicationPage({
     assistanceRelationshipComplete &&
     assistanceTypeComplete &&
     answers.CONSENT_ASSISTANCE_LANGUAGE?.trim() &&
-    assistantSignatureComplete &&
-    answers.CONSENT_ASSISTANCE_DATE
+    assistantSignatureComplete
   );
   const assistanceComplete = assistanceSelf || (assistanceRequired && assistanceDetailsComplete);
   const consentComplete = consentSignedComplete && assistanceComplete;
