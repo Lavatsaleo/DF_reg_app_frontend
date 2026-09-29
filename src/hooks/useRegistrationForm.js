@@ -130,7 +130,7 @@ export function useRegistrationForm() {
   const [currentStep, setCurrentStep] = useState(0);
 
   const draftStorageKey = selectedPathway
-    ? `sightsavers-registration-draft-${selectedPathway.id}`
+    ? `sightsavers-registration-draft-v4-${selectedPathway.id}`
     : "";
 
   const restoreDraft = useCallback((draft) => {
@@ -237,6 +237,11 @@ export function useRegistrationForm() {
           params: { pathway: selectedPathway.id },
         });
         setQuestions(response.data.questions || []);
+        setAnswers((previousAnswers) => ({
+          ...previousAnswers,
+          COURSE_APPLIED_FOR: selectedPathway.title,
+          APPLICATION_FORM_VERSION: response.data.formVersion || "",
+        }));
       } catch (error) {
         console.error(error);
         setErrorMessage("Unable to load the Application form. Please try again.");
