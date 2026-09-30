@@ -215,7 +215,7 @@ function RegistrationWizard({
       </div>
 
       <nav className="ss-survey-stepper" aria-label="Application sections">
-        <ol>
+        <ol style={{ "--df-step-count": totalSteps }}>
           {sectionEntries.map(([section], index) => {
             const status = sectionStatuses[index];
             const isCurrent = activeStep === index;
