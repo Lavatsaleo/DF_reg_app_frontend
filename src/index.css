@@ -3950,3 +3950,203 @@ html.ss-high-contrast .ss-committee-corner.active {
     padding-right: 1rem;
   }
 }
+
+
+/* V6.1: simplified country selector and compact application chrome */
+.ss-country-page {
+  min-height: calc(100vh - 120px);
+  background: #f6f7f3;
+}
+
+.ss-country-panel {
+  max-width: 680px;
+  margin-top: clamp(1.5rem, 7vh, 5rem);
+  padding: clamp(1.5rem, 4vw, 2.75rem);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 24px;
+  background: #ffffff;
+  box-shadow: 0 20px 55px rgba(15, 23, 42, 0.07);
+}
+
+.ss-simple-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #465c17;
+  font-weight: 850;
+  text-decoration: none;
+}
+
+.ss-simple-back:hover,
+.ss-simple-back:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.ss-country-copy {
+  margin-top: 2rem;
+}
+
+.ss-country-copy h1 {
+  max-width: 600px;
+  margin: 0.45rem 0 0.8rem;
+  font-size: clamp(2rem, 5vw, 3.35rem);
+  line-height: 1.02;
+  letter-spacing: -0.05em;
+  font-weight: 950;
+}
+
+.ss-country-copy p {
+  max-width: 580px;
+  margin: 0;
+  color: #5b6169;
+  line-height: 1.65;
+  font-size: 1.02rem;
+}
+
+.ss-country-select-wrap {
+  margin-top: 2rem;
+}
+
+.ss-country-select-wrap .form-label {
+  margin-bottom: 0.55rem;
+  color: #20242a;
+}
+
+.ss-country-select-wrap .form-select {
+  min-height: 58px;
+  border: 1px solid #b9bec5;
+  border-radius: 14px;
+  background-color: #ffffff;
+  font-size: 1rem;
+  font-weight: 750;
+  box-shadow: none;
+}
+
+.ss-country-select-wrap .form-select:focus {
+  border-color: #465c17;
+  box-shadow: 0 0 0 4px rgba(70, 92, 23, 0.12);
+}
+
+.ss-country-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+}
+
+.ss-country-actions .btn {
+  min-width: 150px;
+}
+
+.df-application-compact-header {
+  padding: 1.25rem 0 1rem;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+  background: #ffffff;
+}
+
+.df-application-compact-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.df-application-compact-row h1 {
+  margin: 0.25rem 0 0.3rem;
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  line-height: 1;
+  letter-spacing: -0.045em;
+  font-weight: 950;
+}
+
+.df-application-compact-row p {
+  margin: 0;
+  color: #5b6169;
+}
+
+.df-application-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.df-application-main-clean {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.df-application-tools {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.8rem;
+}
+
+.df-application-tools .df-support-details {
+  width: min(100%, 360px);
+}
+
+.ss-survey-toolbar {
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+  margin-bottom: 1.15rem;
+}
+
+.ss-survey-page {
+  max-width: 980px;
+}
+
+.ss-survey-section {
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 14px 42px rgba(15, 23, 42, 0.06);
+}
+
+.ss-survey-section .ss-question-card {
+  border-color: rgba(15, 23, 42, 0.10);
+  border-radius: 16px;
+}
+
+@media (max-width: 768px) {
+  .ss-country-panel {
+    margin-top: 0.5rem;
+    padding: 1.25rem;
+    border-radius: 18px;
+  }
+
+  .ss-country-copy {
+    margin-top: 1.5rem;
+  }
+
+  .ss-country-actions {
+    justify-content: stretch;
+  }
+
+  .ss-country-actions .btn {
+    width: 100%;
+  }
+
+  .df-application-compact-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .df-application-header-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .df-application-header-actions .btn {
+    flex: 1 1 auto;
+  }
+
+  .df-application-tools {
+    justify-content: stretch;
+  }
+
+  .df-application-tools .df-support-details {
+    width: 100%;
+  }
+}
