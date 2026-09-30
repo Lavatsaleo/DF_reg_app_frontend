@@ -70,7 +70,6 @@ function RegistrationWizard({
       reviewErrorFocusRef.current = true;
       if (onNavigateStep) onNavigateStep(firstErrorSectionIndex);
       else onStepChange?.(firstErrorSectionIndex);
-      setAnnouncement("Some questions need attention. The first section with an error is now open.");
     }
 
     if (pendingInvalidFocusRef.current) {
