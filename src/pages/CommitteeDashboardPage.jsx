@@ -707,7 +707,12 @@ function SelectedParticipantsReport({
                       <>
                         <strong>{String(row.participantRegistration.status || "NOT_SENT").replace(/_/g, " ")}</strong>
                         {row.participantRegistration.sentAt && (
-                          <small>Sent {formatDate(row.participantRegistration.sentAt)}</small>
+                          <small>SMTP accepted {formatDate(row.participantRegistration.sentAt)}</small>
+                        )}
+                        {row.participantRegistration.emailError && (
+                          <small className="committee-email-error">
+                            {row.participantRegistration.emailError}
+                          </small>
                         )}
                         {row.participantRegistration.submittedAt && (
                           <small>Submitted {formatDate(row.participantRegistration.submittedAt)}</small>
