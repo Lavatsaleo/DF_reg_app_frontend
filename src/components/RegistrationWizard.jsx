@@ -26,6 +26,24 @@ function getSectionStatus(questions, answers, errors, isActive) {
   return "not_started";
 }
 
+function getStepperLabel(section) {
+  const normalized = String(section || "").replace(/^Section\s+\d+\s*:\s*/i, "").trim();
+  const labels = {
+    "Training pathway selection": "Training",
+    "Personal & contact details": "Personal details",
+    "Personal and contact details": "Personal details",
+    "Education": "Education",
+    "Disability, accessibility & health": "Disability & support",
+    "Disability, accessibility and health": "Disability & support",
+    "Prior engagement with Sightsavers": "Prior engagement",
+    "Motivation & training readiness": "Motivation",
+    "Motivation and training readiness": "Motivation",
+    "Access to device, internet and electricity": "Digital access",
+  };
+
+  return labels[normalized] || normalized;
+}
+
 function RegistrationWizard({
   selectedPathway,
   groupedQuestions,
@@ -215,7 +233,7 @@ function RegistrationWizard({
                   <span className="ss-survey-step-dot" aria-hidden="true">
                     {status === "complete" ? <i className="bi bi-check2" /> : index + 1}
                   </span>
-                  <span>{section}</span>
+                  <span title={section}>{getStepperLabel(section)}</span>
                 </button>
               </li>
             );
