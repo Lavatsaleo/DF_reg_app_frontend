@@ -30,6 +30,31 @@ function containsOther(value) {
   return String(value || "").toLowerCase().startsWith("other");
 }
 
+function getApplicationFlowState() {
+  return window.history.state?.digitalFuturesApplicationFlow || null;
+}
+
+function writeApplicationFlowState(pathwayId, phase, step = 0, mode = "push") {
+  const currentState = window.history.state && typeof window.history.state === "object"
+    ? window.history.state
+    : {};
+  const nextState = {
+    ...currentState,
+    digitalFutures: true,
+    digitalFuturesApplicationFlow: {
+      pathwayId,
+      phase,
+      step: Math.max(0, Number(step) || 0),
+    },
+  };
+
+  if (mode === "replace") {
+    window.history.replaceState(nextState, "", window.location.href);
+  } else {
+    window.history.pushState(nextState, "", window.location.href);
+  }
+}
+
 function ConsentOption({ questionCode, questionText, options, value, onChange }) {
   return (
     <fieldset className="border-0 p-0 mb-4">
@@ -163,6 +188,75 @@ function ContextualApplicationPage({
   const [consentLoadError, setConsentLoadError] = useState("");
   const [entryError, setEntryError] = useState("");
   const focusedStageRef = useRef(null);
+
+  function moveToFlowStage(phase, step = 0, { replace = false } = {}) {
+    if (phase === "application") {
+      onStepChange?.(Math.max(0, Number(step) || 0));
+    }
+
+    setEditingConsent(false);
+    setEntryStage(phase);
+    setEntryError("");
+    writeApplicationFlowState(
+      selectedPathway.id,
+      phase,
+      step,
+      replace ? "replace" : "push"
+    );
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function moveToApplicationStep(step) {
+    const nextStep = Math.max(0, Number(step) || 0);
+    onStepChange?.(nextStep);
+    writeApplicationFlowState(selectedPathway.id, "application", nextStep, "push");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function moveBackOneFlowStep() {
+    window.history.back();
+  }
+
+  useEffect(() => {
+    function handleApplicationHistory(event) {
+      const flow = event.state?.digitalFuturesApplicationFlow;
+      if (!flow || flow.pathwayId !== selectedPathway.id) return;
+
+      setEditingConsent(false);
+      setEntryError("");
+
+      if (flow.phase === "application") {
+        setEntryStage("application");
+        onStepChange?.(Math.max(0, Number(flow.step) || 0));
+      } else if (["country", "consent", "assistance"].includes(flow.phase)) {
+        setEntryStage(flow.phase);
+      }
+
+      window.scrollTo({ top: 0, behavior: "auto" });
+    }
+
+    window.addEventListener("popstate", handleApplicationHistory);
+    return () => window.removeEventListener("popstate", handleApplicationHistory);
+  }, [onStepChange, selectedPathway.id]);
+
+  useEffect(() => {
+    const flow = getApplicationFlowState();
+    const expectedStep = entryStage === "application" ? Math.max(0, Number(currentStep) || 0) : 0;
+
+    if (
+      !flow ||
+      flow.pathwayId !== selectedPathway.id ||
+      flow.phase !== entryStage ||
+      Number(flow.step || 0) !== expectedStep
+    ) {
+      writeApplicationFlowState(
+        selectedPathway.id,
+        entryStage,
+        expectedStep,
+        "replace"
+      );
+    }
+  }, [currentStep, entryStage, selectedPathway.id]);
 
   useEffect(() => {
     let active = true;
@@ -306,9 +400,7 @@ function ContextualApplicationPage({
       return;
     }
 
-    setEntryStage("consent");
-    setEntryError("");
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    moveToFlowStage("consent");
   }
 
   function continueFromConsent() {
@@ -334,9 +426,7 @@ function ContextualApplicationPage({
     onAnswerChange({ questionCode: "CONSENT_CONTACT_CONTEXT" }, residenceCountry || "ALL");
     onAnswerChange({ questionCode: "CONSENT_CONTACTS_AT_SIGNING" }, JSON.stringify(snapshot));
     onAnswerChange({ questionCode: "ENTRY_STAGE" }, "assistance");
-    setEntryStage("assistance");
-    setEntryError("");
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    moveToFlowStage("assistance");
   }
 
   function continueFromAssistance() {
@@ -355,10 +445,7 @@ function ContextualApplicationPage({
     }
 
     onAnswerChange({ questionCode: "ENTRY_STAGE" }, "application");
-    setEntryStage("application");
-    setEditingConsent(false);
-    setEntryError("");
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    moveToFlowStage("application", 0);
   }
 
   function handleSupportPhoneChange(value) {
@@ -412,71 +499,60 @@ function ContextualApplicationPage({
 
     if (showCountry) {
       return (
-        <main id="main-content" tabIndex="-1">
-          <section className="ss-country-gate">
-            <div className="container py-5">
-              <div className="ss-country-gate-card mx-auto">
-                <a
-                  href="/"
-                  className="df-back-link d-inline-flex align-items-center gap-2 mb-4"
-                  onClick={(event) => {
-                    event.preventDefault();
-                    onBackToPathways();
-                  }}
-                >
-                  <i className="bi bi-arrow-left" aria-hidden="true" /> Back to pathways
-                </a>
+        <main id="main-content" tabIndex="-1" className="ss-country-page">
+          <section className="container py-5">
+            <div className="ss-country-panel mx-auto">
+              <button
+                type="button"
+                className="ss-simple-back"
+                onClick={onBackToPathways}
+              >
+                <i className="bi bi-arrow-left" aria-hidden="true" /> Back to pathways
+              </button>
 
-                <span className="ss-small-label dark">Before you begin</span>
+              <div className="ss-country-copy">
+                <span className="ss-small-label dark">Digital Futures · {selectedPathway.title}</span>
                 <h1 id="df-country-step-title" tabIndex="-1">Select your country of residence</h1>
-                <p className="ss-country-gate-intro">
-                  We use your country to show the correct programme, safeguarding and support contacts throughout the application.
+                <p>
+                  We’ll use this to show the correct safeguarding and programme support contacts throughout your application.
                 </p>
+              </div>
 
-                <fieldset className="border-0 p-0 mt-4">
-                  <legend className="visually-hidden">Country of residence</legend>
-                  <div className="ss-country-choice-grid">
-                    {PROGRAMME_COUNTRIES.map((country) => {
-                      const id = `country-gate-${country.toLowerCase()}`;
-                      const selected = residenceCountry === country;
-                      return (
-                        <label
-                          key={country}
-                          htmlFor={id}
-                          className={`ss-country-choice ${selected ? "selected" : ""}`}
-                        >
-                          <input
-                            id={id}
-                            type="radio"
-                            name="country-of-residence"
-                            value={country}
-                            checked={selected}
-                            onChange={() => {
-                              onAnswerChange({ questionCode: "COUNTRY" }, country);
-                              setEntryError("");
-                            }}
-                          />
-                          <span>{country}</span>
-                          {selected && <i className="bi bi-check-circle-fill" aria-hidden="true" />}
-                        </label>
-                      );
-                    })}
-                  </div>
-                </fieldset>
+              <div className="ss-country-select-wrap">
+                <label className="form-label fw-semibold" htmlFor="country-of-residence">
+                  Country of residence
+                </label>
+                <select
+                  id="country-of-residence"
+                  className="form-select form-select-lg"
+                  value={residenceCountry}
+                  onChange={(event) => {
+                    onAnswerChange({ questionCode: "COUNTRY" }, event.target.value);
+                    setEntryError("");
+                  }}
+                  autoFocus
+                >
+                  <option value="">Select your country</option>
+                  {PROGRAMME_COUNTRIES.map((country) => (
+                    <option key={country} value={country}>{country}</option>
+                  ))}
+                </select>
+              </div>
 
-                {entryError && (
-                  <div className="alert ss-alert-error mt-4" role="alert">
-                    <i className="bi bi-exclamation-triangle" aria-hidden="true" /> {entryError}
-                  </div>
-                )}
+              {entryError && (
+                <div className="alert ss-alert-error mt-3" role="alert">
+                  <i className="bi bi-exclamation-triangle" aria-hidden="true" /> {entryError}
+                </div>
+              )}
 
+              <div className="ss-country-actions">
                 <button
                   type="button"
-                  className="btn ss-btn-primary ss-country-continue mt-4"
+                  className="btn ss-btn-primary"
                   onClick={continueFromCountry}
                   disabled={!residenceCountry}
                 >
-                  Continue to consent <i className="bi bi-arrow-right" aria-hidden="true" />
+                  Continue <i className="bi bi-arrow-right" aria-hidden="true" />
                 </button>
               </div>
             </div>
@@ -538,10 +614,7 @@ function ContextualApplicationPage({
                     <button
                       type="button"
                       className="btn btn-sm ss-btn-outline"
-                      onClick={() => {
-                        setEntryStage("consent");
-                        setEntryError("");
-                      }}
+                      onClick={moveBackOneFlowStep}
                     >
                       Back to consent
                     </button>
@@ -914,6 +987,8 @@ function ContextualApplicationPage({
               onClick={() => {
                 setEditingConsent(true);
                 setEntryStage("consent");
+                writeApplicationFlowState(selectedPathway.id, "consent", 0, "push");
+                window.scrollTo({ top: 0, behavior: "smooth" });
               }}
             >
               <i className="bi bi-pencil" aria-hidden="true" /> Review consent &amp; assistance
@@ -923,11 +998,11 @@ function ContextualApplicationPage({
       </section>
 
       <section className="container py-4 py-lg-5">
-        <div className="df-application-layout">
-          <aside className="df-application-support-rail">
+        <div className="df-application-main-clean">
+          <div className="df-application-tools">
             <details className="df-support-details">
               <summary>
-                <span><i className="bi bi-shield-check" aria-hidden="true" /> Rights &amp; support contacts</span>
+                <span><i className="bi bi-life-preserver" aria-hidden="true" /> Help &amp; support</span>
                 <i className="bi bi-chevron-down" aria-hidden="true" />
               </summary>
               <div className="df-support-details-body">
@@ -938,15 +1013,9 @@ function ContextualApplicationPage({
                 />
               </div>
             </details>
+          </div>
 
-            <div className="df-application-note">
-              <strong>Submit only once</strong>
-              <span>Use the same application rather than starting again with the same email address or phone number.</span>
-            </div>
-          </aside>
-
-          <div className="df-application-main">
-            <RegistrationWizard
+          <RegistrationWizard
               selectedPathway={selectedPathway}
               groupedQuestions={groupedQuestions}
               answers={answers}
@@ -970,8 +1039,9 @@ function ContextualApplicationPage({
               onDocumentTypeChange={onDocumentTypeChange}
               onClearDraft={onClearDraft}
               onStepChange={onStepChange}
+              onNavigateStep={moveToApplicationStep}
+              onBackStep={moveBackOneFlowStep}
             />
-          </div>
         </div>
       </section>
     </main>
