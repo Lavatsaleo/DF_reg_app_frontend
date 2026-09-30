@@ -43,6 +43,8 @@ function RegistrationWizard({
   onValidateQuestions,
   onClearDraft,
   onStepChange,
+  onNavigateStep,
+  onBackStep,
 }) {
   const sectionEntries = useMemo(
     () => Object.entries(groupedQuestions).filter(([section]) => section !== "Jurat / Interpreter"),
@@ -50,30 +52,11 @@ function RegistrationWizard({
   );
   const reviewStepIndex = sectionEntries.length;
   const totalSteps = sectionEntries.length + 1;
-  const [activeStep, setActiveStep] = useState(() => Math.max(0, Number(currentStep) || 0));
+  const activeStep = Math.max(0, Math.min(Number(currentStep) || 0, reviewStepIndex));
   const [announcement, setAnnouncement] = useState("Start with the first section of the application form.");
-  const hasAppliedRestoredStep = useRef(false);
   const finalSubmitIntentRef = useRef(false);
   const pendingInvalidFocusRef = useRef(false);
   const reviewErrorFocusRef = useRef(false);
-
-  /* eslint-disable react-hooks/set-state-in-effect */
-  useEffect(() => {
-    if (activeStep > reviewStepIndex) setActiveStep(0);
-  }, [activeStep, reviewStepIndex]);
-
-  useEffect(() => {
-    if (hasAppliedRestoredStep.current) return;
-    const restoredStep = Math.max(0, Math.min(Number(currentStep) || 0, reviewStepIndex));
-    if (restoredStep > 0) {
-      hasAppliedRestoredStep.current = true;
-      setActiveStep(restoredStep);
-    }
-  }, [currentStep, reviewStepIndex]);
-
-  useEffect(() => {
-    onStepChange?.(activeStep);
-  }, [activeStep, onStepChange]);
 
   useEffect(() => {
     const errorCodes = Object.keys(fieldErrors || {});
@@ -85,7 +68,8 @@ function RegistrationWizard({
 
     if (firstErrorSectionIndex >= 0 && activeStep === reviewStepIndex) {
       reviewErrorFocusRef.current = true;
-      setActiveStep(firstErrorSectionIndex);
+      if (onNavigateStep) onNavigateStep(firstErrorSectionIndex);
+      else onStepChange?.(firstErrorSectionIndex);
       setAnnouncement("Some questions need attention. The first section with an error is now open.");
     }
 
@@ -103,8 +87,7 @@ function RegistrationWizard({
     }
     // Respond to validation result changes; do not recenter the user on every step selection.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fieldErrors, sectionEntries]);
-  /* eslint-enable react-hooks/set-state-in-effect */
+  }, [activeStep, fieldErrors, onNavigateStep, onStepChange, reviewStepIndex, sectionEntries]);
 
   useEffect(() => {
     if (!reviewErrorFocusRef.current || activeStep === reviewStepIndex) return undefined;
@@ -122,8 +105,8 @@ function RegistrationWizard({
 
   function goToStep(stepIndex) {
     const nextStep = Math.max(0, Math.min(stepIndex, reviewStepIndex));
-    setActiveStep(nextStep);
-    onStepChange?.(nextStep);
+    if (onNavigateStep) onNavigateStep(nextStep);
+    else onStepChange?.(nextStep);
 
     window.requestAnimationFrame(() => {
       const buttonId = nextStep === reviewStepIndex ? "wizard-review-button" : `wizard-section-button-${nextStep}`;
@@ -283,8 +266,7 @@ function RegistrationWizard({
             isActive
             answers={answers}
             errors={fieldErrors}
-            onToggle={() => {}}
-            onPrevious={() => goToStep(activeStep - 1)}
+            onPrevious={() => onBackStep ? onBackStep() : goToStep(activeStep - 1)}
             onContinue={() => continueFromSection(activeStep, currentSectionEntry[1])}
             onAnswerChange={onAnswerChange}
             onMultiSelectChange={onMultiSelectChange}
@@ -300,7 +282,7 @@ function RegistrationWizard({
             documentType="OTHER"
             submitting={submitting}
             onToggle={() => {}}
-            onPrevious={() => goToStep(reviewStepIndex - 1)}
+            onPrevious={() => onBackStep ? onBackStep() : goToStep(reviewStepIndex - 1)}
             onEditSection={goToStep}
             onFinalSubmitIntent={() => { finalSubmitIntentRef.current = true; }}
           />
