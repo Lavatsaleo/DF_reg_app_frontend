@@ -4433,3 +4433,92 @@ html.ss-high-contrast .ss-committee-corner.active {
     margin-left: 0;
   }
 }
+
+
+/* V6.3: simple applicant-facing Info guidance and immediate screening feedback */
+.ss-question-instructions {
+  margin: 0.35rem 0 0.9rem;
+}
+
+.ss-question-instructions summary {
+  color: #465c17;
+  font-size: 0.875rem;
+  font-weight: 750;
+  text-decoration: none;
+  line-height: 1.4;
+}
+
+.ss-question-instructions summary:hover,
+.ss-question-instructions summary:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.ss-question-instructions p {
+  max-width: 70ch;
+  margin: 0.55rem 0 0;
+  padding: 0.75rem 0.85rem;
+  border-left: 3px solid #465c17;
+  border-radius: 0 10px 10px 0;
+  background: #f8faf6;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  font-weight: 450;
+}
+
+.ss-early-eligibility {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+  margin-bottom: 1.25rem;
+  padding: 0.95rem 1.15rem;
+  border: 1px solid #d5dfc5;
+  border-left: 4px solid #465c17;
+  border-radius: 14px;
+  background: #ffffff;
+  color: #263521;
+}
+
+.ss-early-eligibility > i {
+  flex: 0 0 auto;
+  margin-top: 0.1rem;
+  font-size: 1.25rem;
+}
+
+.ss-early-eligibility strong {
+  display: block;
+  margin: 0;
+  font-weight: 850;
+  line-height: 1.45;
+}
+
+.ss-early-eligibility p {
+  margin: 0.25rem 0 0;
+  line-height: 1.55;
+}
+
+.ss-early-eligibility.not-eligible {
+  border-color: #e9c9c6;
+  border-left-color: #a12622;
+  color: #83231f;
+}
+
+.ss-early-eligibility.review {
+  border-color: #e0d5b6;
+  border-left-color: #a07818;
+  color: #624b0f;
+}
+
+.ss-survey-stepper button > span:last-child {
+  max-width: 145px;
+}
+
+.ss-survey-section-header h2 {
+  text-wrap: pretty;
+}
+
+@media (max-width: 768px) {
+  .ss-early-eligibility {
+    padding: 0.85rem;
+  }
+}
