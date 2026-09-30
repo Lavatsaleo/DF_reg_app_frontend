@@ -151,9 +151,8 @@ function WizardSection({
             type="button"
             className="btn ss-btn-outline"
             onClick={onPrevious}
-            disabled={index === 0}
           >
-            <i className="bi bi-arrow-left" aria-hidden="true" /> Previous
+            <i className="bi bi-arrow-left" aria-hidden="true" /> {index === 0 ? "Back" : "Previous"}
           </button>
 
           <button type="button" className="btn ss-btn-primary" onClick={onContinue}>
