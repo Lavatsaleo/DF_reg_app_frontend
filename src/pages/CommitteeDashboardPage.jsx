@@ -1146,6 +1146,29 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
         setSelectedAssignment(null);
         setApplicationDetail(null);
       }
+
+      if (event.key === "Tab") {
+        const dialog = document.querySelector(".committee-review-dialog");
+        const focusable = Array.from(
+          dialog?.querySelectorAll(
+            'a[href], button:not([disabled]), select:not([disabled]), input:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+          ) || []
+        ).filter((element) => element.getClientRects().length > 0);
+
+        if (focusable.length === 0) return;
+
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        const active = document.activeElement;
+
+        if (event.shiftKey && (active === first || !dialog?.contains(active))) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && (active === last || !dialog?.contains(active))) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
     }
 
     window.addEventListener("keydown", handleModalKeys);
