@@ -1690,3 +1690,37 @@
     display: none;
   }
 }
+
+/* Admin-only email delivery follow-up */
+.committee-email-delivery-card {
+  margin-bottom: 1.5rem;
+  border-top: 5px solid #465c17;
+}
+
+.committee-email-delivery-table {
+  min-width: 920px;
+}
+
+.committee-email-delivery-table td {
+  vertical-align: middle;
+  font-weight: 630;
+}
+
+.committee-email-delivery-table td small {
+  max-width: 340px;
+  color: #9c3b30;
+  font-weight: 530;
+  overflow-wrap: anywhere;
+}
+
+.committee-delivery-help {
+  margin: 0.9rem 0 0;
+  color: #515963;
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+.committee-email-delivery-table .committee-small-action {
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
