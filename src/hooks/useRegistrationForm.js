@@ -47,6 +47,7 @@ function normalizeSubmissionResult(apiResult, selectedPathway, contactNumber) {
 }
 
 function shouldIncludeQuestionInApplicantView(question, answers) {
+  if (question.questionCode === "COUNTRY") return false;
   if (question.hiddenFromApplicant) return false;
   if (question.section === "Jurat / Interpreter") return false;
   return isQuestionVisible(question, answers);
