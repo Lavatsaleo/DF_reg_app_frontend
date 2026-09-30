@@ -42,9 +42,6 @@ function FormSection({
             <div key={question.questionCode} className={isWideQuestion ? "col-12" : "col-12 col-lg-6"}>
               <div className={`ss-question-card h-100 ${isWideQuestion ? "wide" : ""} ${error ? "has-error" : ""}`} id={`${question.questionCode}-card`}>
                 <label className="form-label" htmlFor={question.questionCode} id={labelId}>
-                  {question.questionNumber && (
-                    <small className="d-block text-muted mb-1">Q{question.questionNumber}</small>
-                  )}
                   <span>{questionText}</span>
                   {question.required ? (
                     <strong className="ss-required-chip" aria-label="Required field">Required</strong>
@@ -56,7 +53,7 @@ function FormSection({
                 {helpText && (
                   <details className="ss-question-instructions">
                     <summary>
-                      <i className="bi bi-info-circle" aria-hidden="true" /> Instructions
+                      <i className="bi bi-info-circle" aria-hidden="true" /> Info
                     </summary>
                     <p id={helpId}>{helpText}</p>
                   </details>
