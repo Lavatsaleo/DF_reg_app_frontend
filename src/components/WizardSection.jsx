@@ -20,7 +20,7 @@ const SECTION_META = {
   "Personal Details": {
     icon: "bi-person-badge",
     caption: "Identity, contact, age and household details",
-    intro: "Provide your identity, contact, age and demographic details. Applicants must be 18 to 33 years old at the point of registration.",
+    intro: "Provide your identity, contact and demographic details. The age range is shown alongside the date-of-birth question.",
   },
   "Training Commitment": {
     icon: "bi-calendar-check",
@@ -30,12 +30,12 @@ const SECTION_META = {
   "Age and Demographics": {
     icon: "bi-person-lines-fill",
     caption: "Age and household profile",
-    intro: "Applicants must be 18 to 33 years old at the point of registration. If you know your birth year, only eligible years are shown; if you are not sure, enter your age at last birthday.",
+    intro: "Enter your date of birth as accurately as possible. The pathway's age range is shown beside the question.",
   },
   "Education and Training": {
     icon: "bi-mortarboard",
     caption: "Education background and training availability",
-    intro: "Confirm your availability for the expected training period, then tell us about your education and any training you are currently undertaking. For the Physical Academy pathway, applicants must have completed at least a Bachelor’s degree and be available for the full training period.",
+    intro: "Tell us about the education and training you have completed.",
   },
   "Disability and Support": {
     icon: "bi-universal-access-circle",
@@ -122,7 +122,7 @@ function WizardSection({
         </span>
         <div>
           <span className="ss-small-label dark">Application section</span>
-          <h2 id={headingId}>{title}</h2>
+          <h2 id={headingId}>{title.replace(/^Section\s+\d+\s*:\s*/i, "")}</h2>
           {sectionMeta.caption && <p>{sectionMeta.caption}</p>}
         </div>
       </header>
