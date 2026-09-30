@@ -744,7 +744,15 @@ function SelectedParticipantsReport({
   );
 }
 
-function ReviewPanel({ assignment, onStartReview, onSubmitReview, submittingReview }) {
+function ReviewPanel({
+  assignment,
+  applicationDetail,
+  applicationLoading,
+  applicationError,
+  onStartReview,
+  onSubmitReview,
+  submittingReview,
+}) {
   const [decision, setDecision] = useState("SELECTED");
   const [comments, setComments] = useState("");
 
@@ -762,7 +770,7 @@ function ReviewPanel({ assignment, onStartReview, onSubmitReview, submittingRevi
   const review = assignment.review;
 
   return (
-    <aside className="committee-review-panel">
+    <section className="committee-review-panel">
       <div className="committee-panel-header">
         <div>
           <span className="ss-small-label dark">Review workspace</span>
@@ -785,6 +793,80 @@ function ReviewPanel({ assignment, onStartReview, onSubmitReview, submittingRevi
       )}
 
       <ApplicantMiniProfile applicant={applicant} />
+
+      <section className="committee-full-application" aria-labelledby="committee-full-application-title">
+        <div className="committee-full-application-heading">
+          <div>
+            <span className="ss-small-label dark">Submitted application</span>
+            <h3 id="committee-full-application-title">Full application answers</h3>
+            <p>All submitted answers relevant to review, with identifying details hidden.</p>
+          </div>
+          {applicationDetail && (
+            <span className="committee-full-application-count">
+              {applicationDetail.questions?.length || 0} answers
+            </span>
+          )}
+        </div>
+
+        {applicationLoading && (
+          <div className="committee-full-application-loading" role="status">
+            <i className="bi bi-hourglass-split" aria-hidden="true" />
+            Loading the submitted application...
+          </div>
+        )}
+
+        {applicationError && (
+          <div className="alert alert-warning" role="alert">{applicationError}</div>
+        )}
+
+        {applicationDetail && (
+          <>
+            <div className="committee-full-application-privacy" role="note">
+              <i className="bi bi-shield-lock" aria-hidden="true" />
+              <p>{applicationDetail.note}</p>
+            </div>
+            <div className="committee-full-application-facts">
+              <span><strong>Country:</strong> {applicationDetail.country || "Not available"}</span>
+              <span><strong>Age at application:</strong> {applicationDetail.ageAtApplication ?? "Not available"}</span>
+              <span><strong>Supporting documents:</strong> {applicationDetail.documentCount ?? 0} received (not displayed in blind review)</span>
+            </div>
+            {(applicationDetail.questions || []).length === 0 ? (
+              <p className="committee-empty-text">
+                There are no application responses saved for this participant.
+              </p>
+            ) : (
+              Object.entries(
+                (applicationDetail.questions || []).reduce((sections, item) => {
+                  const section = item.section || "Other application questions";
+                  if (!sections[section]) sections[section] = [];
+                  sections[section].push(item);
+                  return sections;
+                }, {})
+              ).map(([section, questions]) => (
+                <section key={section} className="committee-answers-section">
+                  <h4>{section.replace(/^Section\s+\d+\s*:\s*/i, "")}</h4>
+                  <dl>
+                    {questions.map((item) => (
+                      <div className="committee-answer-row" key={item.questionCode}>
+                        <dt>{item.questionText}</dt>
+                        <dd>
+                          {Array.isArray(item.answer)
+                            ? item.answer.length > 0
+                              ? item.answer.join("; ")
+                              : "Not answered"
+                            : item.answer === "" || item.answer === null || item.answer === undefined
+                              ? "Not answered"
+                              : String(item.answer)}
+                        </dd>
+                      </div>
+                    ))}
+                  </dl>
+                </section>
+              ))
+            )}
+          </>
+        )}
+      </section>
 
       {review ? (
         <div className="committee-existing-review">
@@ -844,7 +926,7 @@ function ReviewPanel({ assignment, onStartReview, onSubmitReview, submittingRevi
           </button>
         </form>
       )}
-    </aside>
+    </section>
   );
 }
 
@@ -854,6 +936,9 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
   const [assignments, setAssignments] = useState([]);
   const [unassignedApplicants, setUnassignedApplicants] = useState([]);
   const [selectedAssignment, setSelectedAssignment] = useState(null);
+  const [applicationDetail, setApplicationDetail] = useState(null);
+  const [loadingApplicationDetail, setLoadingApplicationDetail] = useState(false);
+  const [applicationDetailError, setApplicationDetailError] = useState("");
   const [memberForm, setMemberForm] = useState(EMPTY_MEMBER_FORM);
   const [countryAdminForm, setCountryAdminForm] = useState(EMPTY_COUNTRY_ADMIN_FORM);
   const [countryAdmins, setCountryAdmins] = useState([]);
@@ -955,6 +1040,32 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
     loadCommitteeData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  useEffect(() => {
+    if (!selectedAssignment?.id) return undefined;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const focusFrame = window.requestAnimationFrame(() => {
+      document.getElementById("committee-review-close-button")?.focus();
+    });
+
+    function handleModalKeys(event) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setSelectedAssignment(null);
+        setApplicationDetail(null);
+      }
+    }
+
+    window.addEventListener("keydown", handleModalKeys);
+    return () => {
+      window.cancelAnimationFrame(focusFrame);
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleModalKeys);
+    };
+  }, [selectedAssignment?.id]);
+
+
 
   useEffect(() => {
     if (!isSuperAdmin && currentUserCountry && memberForm.country !== currentUserCountry) {
@@ -1119,6 +1230,33 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
       handleApiError(reviewError, "Failed to submit committee review.");
     } finally {
       setSubmittingReview(false);
+    }
+  }
+
+  function closeReviewModal() {
+    setSelectedAssignment(null);
+    setApplicationDetail(null);
+    setApplicationDetailError("");
+  }
+
+  async function openReviewModal(assignment) {
+    setSelectedAssignment(assignment);
+    setApplicationDetail(null);
+    setApplicationDetailError("");
+    setLoadingApplicationDetail(true);
+
+    try {
+      const response = await axios.get(
+        `${API_BASE_URL}/api/committee/assignments/${encodeURIComponent(assignment.id)}/application`
+      );
+      setApplicationDetail(response.data);
+    } catch (loadError) {
+      setApplicationDetailError(
+        loadError.response?.data?.message ||
+          "Unable to load the full application. Please close and try again."
+      );
+    } finally {
+      setLoadingApplicationDetail(false);
     }
   }
 
@@ -1307,7 +1445,7 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
               </div>
             </div>
 
-            <div className={`committee-board-grid ${selectedAssignmentFromList ? "has-review" : ""}`}>
+            <div className="committee-board-grid">
               <div className="committee-assignment-list">
                 {assignments.length === 0 ? (
                   <div className="committee-empty-state">
@@ -1324,24 +1462,63 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
                       canReassign={canReassignApplicants}
                       activeAssignmentId={selectedAssignmentFromList?.id}
                       reassigning={reassigning}
-                      onSelect={setSelectedAssignment}
+                      onSelect={openReviewModal}
                       onReassign={handleReassign}
                     />
                   ))
                 )}
               </div>
 
-              {selectedAssignmentFromList && (
+
+            </div>
+          </section>
+        </div>
+
+        {selectedAssignmentFromList && (
+          <div
+            className="committee-review-backdrop"
+            onMouseDown={(event) => {
+              if (event.target === event.currentTarget) closeReviewModal();
+            }}
+          >
+            <div
+              className="committee-review-dialog"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="committee-review-dialog-title"
+            >
+              <div className="committee-review-dialog-toolbar">
+                <div>
+                  <span className="ss-small-label dark">Selection Committee</span>
+                  <h2 id="committee-review-dialog-title">Review application</h2>
+                </div>
+                <button
+                  id="committee-review-close-button"
+                  type="button"
+                  className="committee-review-dialog-close"
+                  onClick={closeReviewModal}
+                  aria-label="Close application review"
+                >
+                  <i className="bi bi-x-lg" aria-hidden="true" />
+                  <span>Close</span>
+                </button>
+              </div>
+
+              <div className="committee-review-dialog-body">
                 <ReviewPanel
+                  key={selectedAssignmentFromList.id}
                   assignment={selectedAssignmentFromList}
+                  applicationDetail={applicationDetail}
+                  applicationLoading={loadingApplicationDetail}
+                  applicationError={applicationDetailError}
                   onStartReview={handleStartReview}
                   onSubmitReview={handleSubmitReview}
                   submittingReview={submittingReview}
                 />
-              )}
+              </div>
             </div>
-          </section>
-        </div>
+          </div>
+        )}
       </section>
     </main>
   );
