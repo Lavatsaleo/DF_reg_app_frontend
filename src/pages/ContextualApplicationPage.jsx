@@ -133,24 +133,6 @@ function ConsentCountryContacts({ consent, residenceCountry, type }) {
   );
 }
 
-function getPathwayEligibilityBlock(answers, selectedPathway) {
-  if (
-    selectedPathway?.id === "DIGITAL_ENTREPRENEURSHIP" &&
-    answers.TRAINING_AVAILABILITY === "No"
-  ) {
-    return {
-      title: "Digital Entrepreneurship eligibility requirement",
-      message:
-        "The final application form requires applicants to be available to commit on average 5 hours per week for a minimum period of 3 months to study.",
-      recommendation:
-        "You selected No. The final application form says not to continue when this requirement is not met.",
-      editQuestionCode: "TRAINING_AVAILABILITY",
-    };
-  }
-
-  return null;
-}
-
 function ContextualApplicationPage({
   selectedPathway,
   groupedQuestions,
@@ -337,15 +319,12 @@ function ContextualApplicationPage({
   const entryComplete = entryStage === "application" && consentComplete;
 
   const residenceCountry = answers.COUNTRY || "";
-  const eligibilityBlock = entryComplete
-    ? getPathwayEligibilityBlock(answers, selectedPathway)
-    : null;
 
   const accessibleStage = submitResult || consentLoading || !consentDocument
     ? null
     : (!entryComplete || editingConsent)
       ? entryStage
-      : eligibilityBlock ? "eligibility" : "application";
+      : "application";
 
   useEffect(() => {
     if (!accessibleStage || focusedStageRef.current === accessibleStage) return undefined;
@@ -355,9 +334,7 @@ function ContextualApplicationPage({
         ? "df-country-step-title"
         : accessibleStage === "consent" || accessibleStage === "assistance"
           ? "df-preapplication-step-title"
-          : accessibleStage === "eligibility"
-            ? "df-eligibility-title"
-            : "application-title";
+          : "application-title";
 
     const frame = window.requestAnimationFrame(() => {
       const heading = document.getElementById(headingId);
@@ -927,34 +904,6 @@ function ContextualApplicationPage({
                 </article>
               )}
             </div>
-          </div>
-        </section>
-      </main>
-    );
-  }
-
-  if (eligibilityBlock) {
-    return (
-      <main id="main-content" tabIndex="-1" className="container py-5">
-        <section className="ss-section-card mx-auto" style={{ maxWidth: "760px" }}>
-          <span className="ss-small-label dark">{selectedPathway.title} eligibility</span>
-          <h1 id="df-eligibility-title" tabIndex="-1">{eligibilityBlock.title}</h1>
-          <p>{eligibilityBlock.message}</p>
-          <div className="alert alert-info">{eligibilityBlock.recommendation}</div>
-          <div className="d-flex flex-wrap gap-3">
-            <button type="button" className="btn ss-btn-primary" onClick={onBackToPathways}>
-              Choose another pathway
-            </button>
-            <button
-              type="button"
-              className="btn ss-btn-outline"
-              onClick={() => {
-                setHiddenAnswer(eligibilityBlock.editQuestionCode, "");
-                window.scrollTo({ top: 0, behavior: "smooth" });
-              }}
-            >
-              Edit my answer
-            </button>
           </div>
         </section>
       </main>
