@@ -479,7 +479,7 @@ function ContextualApplicationPage({
     );
   }
 
-  if (consentLoadError || !consentDocument) {
+  if (entryStage !== "country" && (consentLoadError || !consentDocument)) {
     return (
       <main id="main-content" tabIndex="-1" className="container py-5">
         <section className="ss-section-card mx-auto" style={{ maxWidth: "800px" }}>
@@ -963,36 +963,42 @@ function ContextualApplicationPage({
 
   return (
     <main id="main-content" tabIndex="-1" className="df-application-page">
-      <section className="ss-form-hero df-application-hero" aria-labelledby="application-title">
+      <section className="df-application-compact-header" aria-labelledby="application-title">
         <div className="container">
-          <div className="df-application-hero-row">
+          <div className="df-application-compact-row">
             <div>
-              <a
-                href="/"
-                className="df-back-link d-inline-flex align-items-center gap-2 mb-3"
-                onClick={(event) => {
-                  event.preventDefault();
-                  onBackToPathways();
-                }}
+              <button
+                type="button"
+                className="ss-simple-back mb-2"
+                onClick={onBackToPathways}
               >
                 <i className="bi bi-arrow-left" aria-hidden="true" /> Back to pathways
-              </a>
-              <span className="ss-small-label light">Digital Futures Participant Application</span>
-              <h1 id="application-title" tabIndex="-1">{selectedPathway.title} application</h1>
-              <p>Complete one section at a time. Your progress is saved as you go.</p>
+              </button>
+              <span className="ss-small-label dark">Digital Futures Participant Application</span>
+              <h1 id="application-title" tabIndex="-1">{selectedPathway.title}</h1>
+              <p>Complete one page at a time. Each page is checked before you continue.</p>
             </div>
-            <button
-              type="button"
-              className="btn btn-sm ss-btn-outline df-review-consent-button"
-              onClick={() => {
-                setEditingConsent(true);
-                setEntryStage("consent");
-                writeApplicationFlowState(selectedPathway.id, "consent", 0, "push");
-                window.scrollTo({ top: 0, behavior: "smooth" });
-              }}
-            >
-              <i className="bi bi-pencil" aria-hidden="true" /> Review consent &amp; assistance
-            </button>
+            <div className="df-application-header-actions">
+              <button
+                type="button"
+                className="btn btn-sm ss-btn-outline"
+                onClick={() => moveToFlowStage("country")}
+              >
+                <i className="bi bi-geo-alt" aria-hidden="true" /> {residenceCountry} · Change
+              </button>
+              <button
+                type="button"
+                className="btn btn-sm ss-btn-outline"
+                onClick={() => {
+                  setEditingConsent(true);
+                  setEntryStage("consent");
+                  writeApplicationFlowState(selectedPathway.id, "consent", 0, "push");
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+              >
+                <i className="bi bi-shield-check" aria-hidden="true" /> Consent
+              </button>
+            </div>
           </div>
         </div>
       </section>
