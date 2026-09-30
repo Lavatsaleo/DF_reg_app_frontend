@@ -44,6 +44,104 @@ function getStepperLabel(section) {
   return labels[normalized] || normalized;
 }
 
+// Source question codes and source sections remain unchanged for API submissions.
+// Only the visual survey journey groups the initial checks into a single first page.
+const INITIAL_ELIGIBILITY_CODES = [
+  "TRAINING_AVAILABILITY",
+  "DATE_OF_BIRTH",
+  "EDUCATION_LEVEL",
+  "EDUCATION_LEVEL_OTHER",
+  "HAS_DISABILITY",
+  "DISABILITY_TYPE",
+  "OTHER_DISABILITY_TYPE",
+];
+
+function groupSurveyPages(groupedQuestions) {
+  const allQuestions = Object.values(groupedQuestions).flat();
+  const byCode = new Map(allQuestions.map((question) => [question.questionCode, question]));
+  const firstPageQuestions = INITIAL_ELIGIBILITY_CODES
+    .map((code) => byCode.get(code))
+    .filter(Boolean);
+  const firstPageCodes = new Set(firstPageQuestions.map((question) => question.questionCode));
+  const remainingPages = Object.entries(groupedQuestions)
+    .filter(([section]) => section !== "Jurat / Interpreter")
+    .map(([section, questions]) => [
+      section,
+      questions.filter((question) => !firstPageCodes.has(question.questionCode)),
+    ])
+    .filter(([, questions]) => questions.length > 0);
+
+  return firstPageQuestions.length > 0
+    ? [["Eligibility check", firstPageQuestions], ...remainingPages]
+    : remainingPages;
+}
+
+function calculateAge(dateOfBirth) {
+  const match = String(dateOfBirth || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) return null;
+
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const date = new Date(year, month - 1, day);
+  if (
+    date.getFullYear() !== year ||
+    date.getMonth() !== month - 1 ||
+    date.getDate() !== day ||
+    date > new Date()
+  ) return null;
+
+  const today = new Date();
+  let age = today.getFullYear() - year;
+  if (
+    today.getMonth() + 1 < month ||
+    (today.getMonth() + 1 === month && today.getDate() < day)
+  ) age -= 1;
+
+  return age;
+}
+
+function getEarlyEligibilityFeedback(answers, selectedPathway, questions) {
+  const availability = answers.TRAINING_AVAILABILITY;
+  const isEntrepreneurship = selectedPathway?.id === "DIGITAL_ENTREPRENEURSHIP";
+
+  if (isEntrepreneurship && availability === "No") {
+    return {
+      type: "not-eligible",
+      title: "You do not meet this pathway's availability requirement.",
+      message:
+        "Digital Entrepreneurship requires at least 5 hours of study per week for 3 months. You can change your answer if it was entered incorrectly.",
+    };
+  }
+
+  const birthDateQuestion = questions.find((question) => question.questionCode === "DATE_OF_BIRTH");
+  const age = calculateAge(answers.DATE_OF_BIRTH);
+
+  if (birthDateQuestion && age !== null) {
+    const min = Number(birthDateQuestion.metadata?.minEligibleAge || 18);
+    const max = Number(birthDateQuestion.metadata?.maxEligibleAge || 35);
+
+    if (age < min || age > max) {
+      return {
+        type: "review",
+        title: "Your age needs programme review.",
+        message: `This pathway lists ages ${min}–${max}. You may continue, but your application will be flagged for programme review rather than automatically rejected.`,
+      };
+    }
+  }
+
+  if (!isEntrepreneurship && availability === "No") {
+    return {
+      type: "information",
+      title: "Please confirm your training availability.",
+      message:
+        "This pathway involves nine months of residential training. Check your availability answer before continuing.",
+    };
+  }
+
+  return null;
+}
+
 function RegistrationWizard({
   selectedPathway,
   groupedQuestions,
@@ -65,7 +163,7 @@ function RegistrationWizard({
   onBackStep,
 }) {
   const sectionEntries = useMemo(
-    () => Object.entries(groupedQuestions).filter(([section]) => section !== "Jurat / Interpreter"),
+    () => groupSurveyPages(groupedQuestions),
     [groupedQuestions]
   );
   const reviewStepIndex = sectionEntries.length;
@@ -191,6 +289,10 @@ function RegistrationWizard({
   );
 
   const currentSectionEntry = sectionEntries[activeStep] || null;
+  const earlyEligibilityFeedback =
+    activeStep === 0 && currentSectionEntry?.[0] === "Eligibility check"
+      ? getEarlyEligibilityFeedback(answers, selectedPathway, currentSectionEntry[1])
+      : null;
 
   return (
     <form
@@ -273,6 +375,22 @@ function RegistrationWizard({
       <ResultAlert result={submitResult} />
 
       <div className="ss-survey-page">
+        {earlyEligibilityFeedback && (
+          <div
+            className={`ss-early-eligibility ${earlyEligibilityFeedback.type}`}
+            role={earlyEligibilityFeedback.type === "not-eligible" ? "alert" : "status"}
+            aria-live="polite"
+          >
+            <i
+              className={`bi ${earlyEligibilityFeedback.type === "not-eligible" ? "bi-exclamation-circle" : "bi-info-circle"}`}
+              aria-hidden="true"
+            />
+            <div>
+              <strong>{earlyEligibilityFeedback.title}</strong>
+              <p>{earlyEligibilityFeedback.message}</p>
+            </div>
+          </div>
+        )}
         {activeStep < reviewStepIndex && currentSectionEntry ? (
           <WizardSection
             index={activeStep}
@@ -284,6 +402,7 @@ function RegistrationWizard({
             errors={fieldErrors}
             onPrevious={() => onBackStep ? onBackStep() : goToStep(activeStep - 1)}
             onContinue={() => continueFromSection(activeStep, currentSectionEntry[1])}
+            disableContinue={earlyEligibilityFeedback?.type === "not-eligible"}
             onAnswerChange={onAnswerChange}
             onMultiSelectChange={onMultiSelectChange}
           />
