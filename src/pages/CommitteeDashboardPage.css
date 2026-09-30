@@ -1447,3 +1447,246 @@
     width: 100%;
   }
 }
+
+
+/* Full-screen blind review dialog — does not shift the assignment board. */
+.committee-review-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1800;
+  display: grid;
+  place-items: center;
+  padding: clamp(0.65rem, 2vw, 2rem);
+  background: rgba(18, 25, 32, 0.64);
+  backdrop-filter: blur(5px);
+}
+
+.committee-review-dialog {
+  display: flex;
+  flex-direction: column;
+  width: min(1140px, 100%);
+  height: min(92vh, 980px);
+  min-height: 300px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 22px;
+  background: #ffffff;
+  box-shadow: 0 25px 85px rgba(0, 0, 0, 0.23);
+}
+
+.committee-review-dialog-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1rem 1.65rem;
+  border-bottom: 1px solid #e5e7eb;
+  background: #ffffff;
+}
+
+.committee-review-dialog-toolbar h2 {
+  margin: 0.1rem 0 0;
+  font-size: clamp(1.3rem, 2.5vw, 1.85rem);
+  font-weight: 920;
+  letter-spacing: -0.03em;
+}
+
+.committee-review-dialog-close {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 44px;
+  padding: 0.5rem 0.85rem;
+  border: 1px solid #d8dee4;
+  border-radius: 12px;
+  background: white;
+  color: #20242a;
+  font-weight: 820;
+  cursor: pointer;
+}
+
+.committee-review-dialog-close:hover,
+.committee-review-dialog-close:focus-visible {
+  border-color: #465c17;
+  box-shadow: 0 0 0 4px rgba(70, 92, 23, 0.1);
+}
+
+.committee-review-dialog-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 1.5rem 1.65rem 2rem;
+}
+
+.committee-review-dialog .committee-review-panel {
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  box-shadow: none;
+  background: transparent;
+}
+
+.committee-review-dialog .committee-panel-header {
+  padding: 1.2rem 1.35rem;
+  border: 1px solid #dce6d6;
+  border-radius: 16px;
+  background: #f8faf6;
+}
+
+.committee-full-application {
+  margin: 1.5rem 0;
+  padding: 1.5rem;
+  border: 1px solid #e1e6e0;
+  border-radius: 18px;
+  background: white;
+}
+
+.committee-full-application-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.committee-full-application-heading h3 {
+  margin: 0.2rem 0 0.3rem;
+  font-size: clamp(1.15rem, 2vw, 1.5rem);
+  font-weight: 900;
+}
+
+.committee-full-application-heading p {
+  margin: 0;
+  max-width: 65ch;
+  color: #5b6169;
+  line-height: 1.5;
+}
+
+.committee-full-application-count {
+  flex: 0 0 auto;
+  padding: 0.5rem 0.7rem;
+  border-radius: 999px;
+  background: #eef3e7;
+  color: #465c17;
+  font-weight: 850;
+  font-size: 0.85rem;
+}
+
+.committee-full-application-privacy,
+.committee-full-application-facts {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  margin: 0.75rem 0;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  background: #eef8f6;
+  color: #1f453f;
+  line-height: 1.5;
+}
+
+.committee-full-application-privacy p {
+  margin: 0;
+}
+
+.committee-full-application-facts {
+  flex-wrap: wrap;
+  gap: 0.6rem 1.5rem;
+  background: #f8faf9;
+  color: #27352b;
+}
+
+.committee-answers-section {
+  padding: 1rem 0 0.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.committee-answers-section:last-child {
+  border-bottom: 0;
+}
+
+.committee-answers-section h4 {
+  margin: 0 0 0.9rem;
+  font-size: 1.04rem;
+  font-weight: 880;
+  color: #465c17;
+  line-height: 1.4;
+}
+
+.committee-answers-section dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+  margin: 0 0 0.75rem;
+}
+
+.committee-answer-row {
+  min-width: 0;
+  padding: 0.9rem 1rem;
+  border: 1px solid #e1e6e0;
+  border-radius: 12px;
+  background: #fcfdfb;
+}
+
+.committee-answer-row dt {
+  margin: 0 0 0.45rem;
+  font-weight: 720;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: #545d65;
+}
+
+.committee-answer-row dd {
+  margin: 0;
+  font-weight: 840;
+  line-height: 1.55;
+  color: #1c2524;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.committee-review-dialog .committee-decision-form {
+  max-width: none;
+  border-top: 1px solid #e4e8e4;
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+}
+
+@media (max-width: 760px) {
+  .committee-review-backdrop {
+    padding: 0;
+  }
+
+  .committee-review-dialog {
+    height: 100dvh;
+    width: 100vw;
+    border: none;
+    border-radius: 0;
+  }
+
+  .committee-review-dialog-toolbar,
+  .committee-review-dialog-body {
+    padding: 1rem;
+  }
+
+  .committee-full-application {
+    padding: 0.9rem;
+  }
+
+  .committee-answers-section dl {
+    grid-template-columns: 1fr;
+  }
+
+  .committee-full-application-heading {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .committee-review-dialog-close span {
+    display: none;
+  }
+}
