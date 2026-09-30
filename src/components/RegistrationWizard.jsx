@@ -308,7 +308,6 @@ function RegistrationWizard({
       </div>
     </form>
   );
-  );
 }
 
 export default RegistrationWizard;
