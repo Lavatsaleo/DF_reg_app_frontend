@@ -1003,24 +1003,29 @@ function ContextualApplicationPage({
         </div>
       </section>
 
-      <section className="container py-4 py-lg-5">
-        <div className="df-application-main-clean">
-          <div className="df-application-tools">
-            <details className="df-support-details">
-              <summary>
-                <span><i className="bi bi-life-preserver" aria-hidden="true" /> Help &amp; support</span>
-                <i className="bi bi-chevron-down" aria-hidden="true" />
-              </summary>
-              <div className="df-support-details-body">
-                <RightsContactsPanel
-                  consent={consentDocument}
-                  residenceCountry={residenceCountry}
-                  compact
-                />
-              </div>
-            </details>
+      <details className="df-floating-support">
+        <summary>
+          <i className="bi bi-life-preserver" aria-hidden="true" />
+          <span>Help &amp; support</span>
+          <i className="bi bi-chevron-left df-floating-support-chevron" aria-hidden="true" />
+        </summary>
+        <div className="df-floating-support-panel">
+          <div className="df-floating-support-heading">
+            <div>
+              <span className="ss-small-label dark">{residenceCountry}</span>
+              <h2>Help &amp; support</h2>
+            </div>
           </div>
+          <RightsContactsPanel
+            consent={consentDocument}
+            residenceCountry={residenceCountry}
+            compact
+          />
+        </div>
+      </details>
 
+      <section className="container-fluid px-3 px-lg-4 py-4 py-lg-5">
+        <div className="df-application-main-clean">
           <RegistrationWizard
               selectedPathway={selectedPathway}
               groupedQuestions={groupedQuestions}
