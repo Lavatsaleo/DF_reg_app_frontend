@@ -1069,9 +1069,6 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
                         className={`ss-question-card h-100 ${wide ? "wide" : ""} ${error ? "has-error" : ""}`}
                       >
                         <label className="form-label" id={labelId} htmlFor={question.questionCode}>
-                          {question.displayNumber && (
-                            <small className="d-block text-muted mb-1">{question.displayNumber}</small>
-                          )}
                           <span>{questionText}</span>
                           {question.required ? (
                             <strong className="ss-required-chip">Required</strong>
