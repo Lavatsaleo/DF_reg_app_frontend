@@ -73,20 +73,6 @@ const SECTION_META = {
   },
 };
 
-function statusLabel(status) {
-  if (status === "complete") return "Done";
-  if (status === "needs_attention") return "Check";
-  if (status === "in_progress") return "Open";
-  return "Next";
-}
-
-function statusIcon(status) {
-  if (status === "complete") return "bi-check2";
-  if (status === "needs_attention") return "bi-exclamation-triangle";
-  if (status === "in_progress") return "bi-pencil";
-  return "bi-arrow-right";
-}
-
 function getSectionMeta(title) {
   return SECTION_META[title] || {
     icon: "bi-ui-checks-grid",
@@ -103,15 +89,13 @@ function WizardSection({
   isActive,
   answers,
   errors,
-  onToggle,
   onPrevious,
   onContinue,
   onAnswerChange,
   onMultiSelectChange,
 }) {
   const panelId = `wizard-section-panel-${index}`;
-  const buttonId = `wizard-section-button-${index}`;
-  const describedById = `wizard-section-desc-${index}`;
+  const headingId = `wizard-section-heading-${index}`;
   const fallbackMeta = getSectionMeta(title);
   const sourceMetadata = questions.find(
     (question) => question.metadata?.sectionIntro || question.metadata?.sectionNotice
@@ -121,39 +105,24 @@ function WizardSection({
     intro: sourceMetadata.sectionIntro ?? (title.startsWith("Section ") ? "" : fallbackMeta.intro),
     notice: sourceMetadata.sectionNotice || "",
   };
-  const requiredCount = questions.filter((question) => question.required).length;
-
   return (
-    <section className={`ss-wizard-section ${isActive ? "active" : ""} ${status}`}>
-      <h2 className="ss-wizard-section-title">
-        <button
-          id={buttonId}
-          type="button"
-          className="ss-wizard-section-trigger"
-          aria-expanded={isActive}
-          aria-controls={panelId}
-          onClick={onToggle}
-        >
-          <span className="ss-wizard-step-number" aria-hidden="true">
-            <i className={`bi ${sectionMeta.icon}`} />
-          </span>
-          <span className="ss-wizard-step-copy">
-            <span>{title}</span>
-            <small id={describedById}>{sectionMeta.caption} · {requiredCount} required</small>
-          </span>
-          <span className={`ss-wizard-status-badge ${status}`}>
-            <i className={`bi ${statusIcon(status)}`} aria-hidden="true" />
-            {statusLabel(status)}
-          </span>
-        </button>
-      </h2>
+    <section className={`ss-wizard-section ss-survey-section ${isActive ? "active" : ""} ${status}`}>
+      <header className="ss-survey-section-header">
+        <span className="ss-wizard-step-number" aria-hidden="true">
+          <i className={`bi ${sectionMeta.icon}`} />
+        </span>
+        <div>
+          <span className="ss-small-label dark">Application section</span>
+          <h2 id={headingId}>{title}</h2>
+          {sectionMeta.caption && <p>{sectionMeta.caption}</p>}
+        </div>
+      </header>
 
       <div
         id={panelId}
         role="region"
-        aria-labelledby={buttonId}
-        className={`ss-wizard-section-panel ${isActive ? "show" : ""}`}
-        hidden={!isActive}
+        aria-labelledby={headingId}
+        className="ss-wizard-section-panel show"
       >
         {sectionMeta.intro && (
           <div className="ss-wizard-section-intro">
@@ -188,7 +157,7 @@ function WizardSection({
           </button>
 
           <button type="button" className="btn ss-btn-primary" onClick={onContinue}>
-            Continue <i className="bi bi-arrow-right" aria-hidden="true" />
+            Save &amp; continue <i className="bi bi-arrow-right" aria-hidden="true" />
           </button>
         </div>
       </div>
