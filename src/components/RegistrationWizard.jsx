@@ -122,6 +122,14 @@ function getEarlyEligibilityFeedback(answers, selectedPathway, questions) {
     const max = Number(birthDateQuestion.metadata?.maxEligibleAge || 35);
 
     if (age < min || age > max) {
+      if (!isEntrepreneurship) {
+        return {
+          type: "not-eligible",
+          title: "You do not meet the age requirement for this academy.",
+          message: `Applicants must be ${min}–${max} years old when applying. Based on your date of birth, you are ${age}. You can correct your date of birth if it was entered incorrectly.`,
+        };
+      }
+
       return {
         type: "review",
         title: "Your age needs programme review.",
