@@ -40,21 +40,6 @@ function formatSavedTime(timestamp) {
   }
 }
 
-function getDraftStatusIcon(status) {
-  if (status === "saving") return "bi-cloud-arrow-up";
-  if (status === "saved") return "bi-cloud-check";
-  if (status === "error") return "bi-cloud-slash";
-  return "bi-device-hdd";
-}
-
-function getDraftStatusText({ status, message, lastSavedAt }) {
-  if (status === "saving") return message || "Saving application draft to the portal...";
-  if (status === "saved") return `Application draft saved: ${formatSavedTime(lastSavedAt)}`;
-  if (status === "error") return message || "Draft saved on this device only.";
-  if (message) return message;
-  return `Draft saved: ${formatSavedTime(lastSavedAt)}`;
-}
-
 function RegistrationWizard({
   selectedPathway,
   groupedQuestions,
@@ -83,9 +68,6 @@ function RegistrationWizard({
   );
   const reviewStepIndex = sectionEntries.length;
   const totalSteps = sectionEntries.length + 1;
-  const contactStepIndex = sectionEntries.findIndex(([, questions]) =>
-    questions.some((question) => question.questionCode === "CONTACT_NUMBER")
-  );
   const [activeStep, setActiveStep] = useState(() => Math.max(0, Number(currentStep) || 0));
   const [announcement, setAnnouncement] = useState("Start with the first section of the application form.");
   const hasAppliedRestoredStep = useRef(false);
@@ -223,47 +205,83 @@ function RegistrationWizard({
     );
   }
 
+  const sectionStatuses = sectionEntries.map(([, questions], index) =>
+    getSectionStatus(questions, answers, fieldErrors, activeStep === index)
+  );
+
+  const currentSectionEntry = sectionEntries[activeStep] || null;
+
   return (
-    <form className="ss-form-shell ss-registration-wizard" onSubmit={handleWizardSubmit} onKeyDown={handleFormKeyDown} noValidate aria-describedby="registration-form-guidance">
+    <form
+      className="ss-form-shell ss-registration-wizard"
+      onSubmit={handleWizardSubmit}
+      onKeyDown={handleFormKeyDown}
+      noValidate
+      aria-describedby="registration-form-guidance"
+    >
       <p id="registration-form-guidance" className="visually-hidden">
-        This is a guided step-by-step application. Fields marked with an asterisk are required. Use Continue to move through each section.
+        This is a guided step-by-step application. Complete the current page and use Save and continue to move forward.
       </p>
 
-      <div className="ss-wizard-utility-bar">
-        <div className="ss-wizard-pathway-label">
-          <span className="ss-small-label dark">Current pathway</span>
-          <strong>{selectedPathway.title}</strong>
+      <div className="ss-survey-toolbar">
+        <div>
+          <span className="ss-small-label dark">{selectedPathway.title}</span>
+          <strong>{draftSaveStatus === "saving" ? "Saving..." : "Progress saved"}</strong>
         </div>
-
-        <div className="ss-draft-status ss-draft-status-compact" aria-live="polite">
-          <i className={`bi ${getDraftStatusIcon(draftSaveStatus)}`} aria-hidden="true" />
-          <span>{getDraftStatusText({ status: draftSaveStatus, message: draftSaveMessage, lastSavedAt: draftLastSavedAt })}</span>
-          {draftReference && <small>Draft ref: {draftReference}</small>}
-          {draftSaveStatus === "waiting_for_mobile" && contactStepIndex >= 0 && (
-            <button
-              type="button"
-              className="btn btn-sm ss-link-button"
-              onClick={() => goToStep(contactStepIndex)}
-            >
-              Add mobile number
-            </button>
-          )}
-          <button type="button" className="btn btn-sm ss-link-button" onClick={onClearDraft}>Clear</button>
-        </div>
+        <button type="button" className="btn btn-sm ss-link-button" onClick={onClearDraft}>
+          Clear draft
+        </button>
       </div>
 
-      <div className="ss-wizard-progress" aria-label={`Step ${activeStep + 1} of ${totalSteps}`}>
-        <div className="ss-wizard-progress-meta">
-          <span>Step {activeStep + 1} of {totalSteps}</span>
-          <span>{formProgress.completedRequired}/{formProgress.totalRequired} required fields completed</span>
-        </div>
-        <div className="progress ss-progress-bar" role="progressbar" aria-valuenow={formProgress.percentage} aria-valuemin="0" aria-valuemax="100">
-          <div className="progress-bar" style={{ width: `${formProgress.percentage}%` }} />
-        </div>
+      <nav className="ss-survey-stepper" aria-label="Application sections">
+        <ol>
+          {sectionEntries.map(([section], index) => {
+            const status = sectionStatuses[index];
+            const isCurrent = activeStep === index;
+            const canOpen = index <= activeStep || status === "complete" || status === "needs_attention";
+
+            return (
+              <li key={section} className={`${status} ${isCurrent ? "current" : ""}`}>
+                <button
+                  id={`wizard-section-button-${index}`}
+                  type="button"
+                  onClick={() => canOpen && goToStep(index)}
+                  disabled={!canOpen}
+                  aria-current={isCurrent ? "step" : undefined}
+                >
+                  <span className="ss-survey-step-dot" aria-hidden="true">
+                    {status === "complete" ? <i className="bi bi-check2" /> : index + 1}
+                  </span>
+                  <span>{section}</span>
+                </button>
+              </li>
+            );
+          })}
+          <li className={activeStep === reviewStepIndex ? "current" : ""}>
+            <button
+              id="wizard-review-button"
+              type="button"
+              onClick={() => activeStep === reviewStepIndex && goToStep(reviewStepIndex)}
+              disabled={activeStep !== reviewStepIndex}
+              aria-current={activeStep === reviewStepIndex ? "step" : undefined}
+            >
+              <span className="ss-survey-step-dot" aria-hidden="true">{reviewStepIndex + 1}</span>
+              <span>Review</span>
+            </button>
+          </li>
+        </ol>
+      </nav>
+
+      <div className="ss-survey-mobile-progress" aria-live="polite">
+        <span>Step {activeStep + 1} of {totalSteps}</span>
+        <strong>
+          {activeStep === reviewStepIndex
+            ? "Review and submit"
+            : currentSectionEntry?.[0] || "Application"}
+        </strong>
       </div>
 
       <div className="visually-hidden" aria-live="polite">{announcement}</div>
-      <FormErrorSummary errors={fieldErrors} />
 
       {errorMessage && (
         <div className="alert ss-alert-error" role="alert">
@@ -273,49 +291,41 @@ function RegistrationWizard({
 
       <ResultAlert result={submitResult} />
 
-      <div className="ss-wizard-stack">
-        {sectionEntries.map(([section, sectionQuestions], index) => {
-          const isActive = activeStep === index;
-          const status = getSectionStatus(sectionQuestions, answers, fieldErrors, isActive);
-
-          return (
-            <div id={`wizard-step-${index}`} key={section}>
-              <WizardSection
-                index={index}
-                title={section}
-                questions={sectionQuestions}
-                status={status}
-                isActive={isActive}
-                answers={answers}
-                errors={fieldErrors}
-                onToggle={() => goToStep(index)}
-                onPrevious={() => goToStep(index - 1)}
-                onContinue={() => continueFromSection(index, sectionQuestions)}
-                onAnswerChange={onAnswerChange}
-                onMultiSelectChange={onMultiSelectChange}
-              />
-            </div>
-          );
-        })}
-
-        <div id={`wizard-step-${reviewStepIndex}`}>
+      <div className="ss-survey-page">
+        {activeStep < reviewStepIndex && currentSectionEntry ? (
+          <WizardSection
+            index={activeStep}
+            title={currentSectionEntry[0]}
+            questions={currentSectionEntry[1]}
+            status={sectionStatuses[activeStep]}
+            isActive
+            answers={answers}
+            errors={fieldErrors}
+            onToggle={() => {}}
+            onPrevious={() => goToStep(activeStep - 1)}
+            onContinue={() => continueFromSection(activeStep, currentSectionEntry[1])}
+            onAnswerChange={onAnswerChange}
+            onMultiSelectChange={onMultiSelectChange}
+          />
+        ) : (
           <ReviewApplication
             stepNumber={reviewStepIndex + 1}
             totalSteps={totalSteps}
-            isActive={activeStep === reviewStepIndex}
+            isActive
             sectionEntries={sectionEntries}
             answers={answers}
             documents={documents || []}
             documentType="OTHER"
             submitting={submitting}
-            onToggle={() => goToStep(reviewStepIndex)}
+            onToggle={() => {}}
             onPrevious={() => goToStep(reviewStepIndex - 1)}
             onEditSection={goToStep}
             onFinalSubmitIntent={() => { finalSubmitIntentRef.current = true; }}
           />
-        </div>
+        )}
       </div>
     </form>
+  );
   );
 }
 
