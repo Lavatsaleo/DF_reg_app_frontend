@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import FormErrorSummary from "./FormErrorSummary";
 import ResultAlert from "./ResultAlert";
 import ReviewApplication from "./ReviewApplication";
 import WizardSection from "./WizardSection";
@@ -27,19 +26,6 @@ function getSectionStatus(questions, answers, errors, isActive) {
   return "not_started";
 }
 
-function formatSavedTime(timestamp) {
-  if (!timestamp) return "Not saved yet";
-
-  try {
-    return new Intl.DateTimeFormat(undefined, {
-      hour: "2-digit",
-      minute: "2-digit",
-    }).format(new Date(timestamp));
-  } catch {
-    return "Saved";
-  }
-}
-
 function RegistrationWizard({
   selectedPathway,
   groupedQuestions,
@@ -49,11 +35,7 @@ function RegistrationWizard({
   submitResult,
   errorMessage,
   fieldErrors,
-  formProgress,
-  draftLastSavedAt,
-  draftReference,
   draftSaveStatus,
-  draftSaveMessage,
   currentStep = 0,
   onAnswerChange,
   onMultiSelectChange,
