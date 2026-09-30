@@ -54,9 +54,12 @@ function FormSection({
                 </label>
 
                 {helpText && (
-                  <p id={helpId} className="ss-question-help">
-                    {helpText}
-                  </p>
+                  <details className="ss-question-instructions">
+                    <summary>
+                      <i className="bi bi-info-circle" aria-hidden="true" /> Instructions
+                    </summary>
+                    <p id={helpId}>{helpText}</p>
+                  </details>
                 )}
 
                 <QuestionField
