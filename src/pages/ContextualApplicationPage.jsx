@@ -5,7 +5,11 @@ import ElectronicSignature from "../components/ElectronicSignature";
 import RegistrationWizard from "../components/RegistrationWizard";
 import RightsContactsPanel from "../components/RightsContactsPanel";
 import { API_BASE_URL } from "../config/api";
-import { buildContactSnapshot, getConsentContactCountries } from "../utils/countryContext";
+import {
+  PROGRAMME_COUNTRIES,
+  buildContactSnapshot,
+  getConsentContactCountries,
+} from "../utils/countryContext";
 
 function localDateString() {
   const now = new Date();
@@ -152,7 +156,7 @@ function ContextualApplicationPage({
   onClearDraft,
   onStepChange,
 }) {
-  const [entryStage, setEntryStage] = useState("consent");
+  const [entryStage, setEntryStage] = useState(() => answers.COUNTRY ? "consent" : "country");
   const [editingConsent, setEditingConsent] = useState(false);
   const [consentDocument, setConsentDocument] = useState(null);
   const [consentLoading, setConsentLoading] = useState(true);
@@ -253,11 +257,13 @@ function ContextualApplicationPage({
     if (!accessibleStage || focusedStageRef.current === accessibleStage) return undefined;
     focusedStageRef.current = accessibleStage;
     const headingId =
-      accessibleStage === "consent" || accessibleStage === "assistance"
-        ? "df-preapplication-step-title"
-        : accessibleStage === "eligibility"
-          ? "df-eligibility-title"
-          : "application-title";
+      accessibleStage === "country"
+        ? "df-country-step-title"
+        : accessibleStage === "consent" || accessibleStage === "assistance"
+          ? "df-preapplication-step-title"
+          : accessibleStage === "eligibility"
+            ? "df-eligibility-title"
+            : "application-title";
 
     const frame = window.requestAnimationFrame(() => {
       const heading = document.getElementById(headingId);
@@ -270,6 +276,11 @@ function ContextualApplicationPage({
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (editingConsent || !consentDocument) return;
+
+    if (!answers.COUNTRY) {
+      setEntryStage("country");
+      return;
+    }
 
     if (answers.ENTRY_STAGE === "application" && consentComplete) {
       setEntryStage("application");
@@ -287,6 +298,17 @@ function ContextualApplicationPage({
     editingConsent,
   ]);
   /* eslint-enable react-hooks/set-state-in-effect */
+
+  function continueFromCountry() {
+    if (!PROGRAMME_COUNTRIES.includes(residenceCountry)) {
+      setEntryError("Please select your country of residence before continuing.");
+      return;
+    }
+
+    setEntryStage("consent");
+    setEntryError("");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
 
   function continueFromConsent() {
     if (!consentDocument?.version || !consentGranted) {
@@ -384,7 +406,83 @@ function ContextualApplicationPage({
   }
 
   if (!entryComplete || editingConsent) {
+    const showCountry = entryStage === "country";
     const showAssistance = entryStage === "assistance";
+
+    if (showCountry) {
+      return (
+        <main id="main-content" tabIndex="-1">
+          <section className="ss-country-gate">
+            <div className="container py-5">
+              <div className="ss-country-gate-card mx-auto">
+                <a
+                  href="/"
+                  className="df-back-link d-inline-flex align-items-center gap-2 mb-4"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    onBackToPathways();
+                  }}
+                >
+                  <i className="bi bi-arrow-left" aria-hidden="true" /> Back to pathways
+                </a>
+
+                <span className="ss-small-label dark">Before you begin</span>
+                <h1 id="df-country-step-title" tabIndex="-1">Select your country of residence</h1>
+                <p className="ss-country-gate-intro">
+                  We use your country to show the correct programme, safeguarding and support contacts throughout the application.
+                </p>
+
+                <fieldset className="border-0 p-0 mt-4">
+                  <legend className="visually-hidden">Country of residence</legend>
+                  <div className="ss-country-choice-grid">
+                    {PROGRAMME_COUNTRIES.map((country) => {
+                      const id = `country-gate-${country.toLowerCase()}`;
+                      const selected = residenceCountry === country;
+                      return (
+                        <label
+                          key={country}
+                          htmlFor={id}
+                          className={`ss-country-choice ${selected ? "selected" : ""}`}
+                        >
+                          <input
+                            id={id}
+                            type="radio"
+                            name="country-of-residence"
+                            value={country}
+                            checked={selected}
+                            onChange={() => {
+                              onAnswerChange({ questionCode: "COUNTRY" }, country);
+                              setEntryError("");
+                            }}
+                          />
+                          <span>{country}</span>
+                          {selected && <i className="bi bi-check-circle-fill" aria-hidden="true" />}
+                        </label>
+                      );
+                    })}
+                  </div>
+                </fieldset>
+
+                {entryError && (
+                  <div className="alert ss-alert-error mt-4" role="alert">
+                    <i className="bi bi-exclamation-triangle" aria-hidden="true" /> {entryError}
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  className="btn ss-btn-primary ss-country-continue mt-4"
+                  onClick={continueFromCountry}
+                  disabled={!residenceCountry}
+                >
+                  Continue to consent <i className="bi bi-arrow-right" aria-hidden="true" />
+                </button>
+              </div>
+            </div>
+          </section>
+        </main>
+      );
+    }
 
     return (
       <main id="main-content" tabIndex="-1">
@@ -400,7 +498,21 @@ function ContextualApplicationPage({
             >
               <i className="bi bi-arrow-left" aria-hidden="true" /> Back to pathways
             </a>
-            <span className="ss-small-label light">Digital Futures</span>
+            <div className="d-flex flex-wrap align-items-center gap-2 mb-2">
+              <span className="ss-small-label light">Digital Futures</span>
+              {residenceCountry && (
+                <button
+                  type="button"
+                  className="btn btn-sm ss-country-context-button"
+                  onClick={() => {
+                    setEntryStage("country");
+                    setEntryError("");
+                  }}
+                >
+                  <i className="bi bi-geo-alt" aria-hidden="true" /> {residenceCountry} · Change
+                </button>
+              )}
+            </div>
             <h1>{selectedPathway.title} application</h1>
             <p>
               {showAssistance
