@@ -85,7 +85,6 @@ function RegistrationWizard({
       return () => window.cancelAnimationFrame(frame);
     }
     // Respond to validation result changes; do not recenter the user on every step selection.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeStep, fieldErrors, onNavigateStep, onStepChange, reviewStepIndex, sectionEntries]);
 
   useEffect(() => {
