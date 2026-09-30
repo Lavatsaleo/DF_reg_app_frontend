@@ -1724,3 +1724,23 @@
   font-size: 0.82rem;
   white-space: nowrap;
 }
+
+/* Assignment board now occupies the available page instead of reserving a review column. */
+.committee-layout {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.committee-board-card,
+.committee-board-grid,
+.committee-assignment-list {
+  min-width: 0;
+  width: 100%;
+}
+
+.committee-board-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.committee-review-dialog .committee-panel-header h2 {
+  overflow-wrap: anywhere;
+}
