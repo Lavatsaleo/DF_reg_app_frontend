@@ -744,6 +744,84 @@ function SelectedParticipantsReport({
   );
 }
 
+function SkillsTestDeliveryPanel({ delivery, onResend, sendingReference }) {
+  const records = (delivery?.records || []).filter(
+    (row) => row.status !== "TEST_COMPLETED"
+  );
+  const failures = records.filter((row) =>
+    ["EMAIL_FAILED", "NOT_CREATED", "PENDING", "EXPIRED"].includes(row.status)
+  );
+
+  return (
+    <section className="committee-section-card committee-email-delivery-card">
+      <div className="committee-section-header">
+        <div>
+          <span className="ss-small-label dark">Email delivery</span>
+          <h2>Basic IT Skills Test invitations</h2>
+          <p>
+            {failures.length} invitation{failures.length === 1 ? "" : "s"} need attention.
+            An SMTP-accepted email may still go to spam or be delayed.
+          </p>
+        </div>
+      </div>
+      {records.length === 0 ? (
+        <p className="committee-empty-text">
+          There are no pending Basic IT Skills Test invitations in the latest results.
+        </p>
+      ) : (
+        <div className="committee-report-table-wrap">
+          <table className="committee-report-table committee-email-delivery-table">
+            <thead>
+              <tr>
+                <th>Application reference</th>
+                <th>Country</th>
+                <th>Recipient</th>
+                <th>Email status</th>
+                <th>Last sent</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {records.slice(0, 60).map((row) => (
+                <tr key={row.applicantId}>
+                  <td>{row.applicationReference}</td>
+                  <td>{row.country}</td>
+                  <td>{row.emailTo || "Email missing"}</td>
+                  <td>
+                    <strong>{String(row.status || "Unknown").replace(/_/g, " ")}</strong>
+                    {row.emailError && (
+                      <small>{row.emailError}</small>
+                    )}
+                  </td>
+                  <td>{row.sentAt ? formatDate(row.sentAt) : "Not sent"}</td>
+                  <td>
+                    {row.canResend && row.status !== "OPENED" && (
+                      <button
+                        type="button"
+                        className="btn committee-small-action"
+                        onClick={() => onResend(row)}
+                        disabled={!row.emailTo || sendingReference === row.applicationReference}
+                      >
+                        <i className="bi bi-envelope-arrow-up" aria-hidden="true" />
+                        {sendingReference === row.applicationReference ? " Sending..." : " Resend test email"}
+                      </button>
+                    )}
+                    {row.status === "OPENED" && <small>Link already opened</small>}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      <p className="committee-delivery-help">
+        {delivery?.note ||
+          "SENT confirms SMTP acceptance only. Ask applicants to check spam or junk and verify their application email address."}
+      </p>
+    </section>
+  );
+}
+
 function ReviewPanel({
   assignment,
   applicationDetail,
@@ -957,6 +1035,9 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
   const [submittingReview, setSubmittingReview] = useState(false);
   const [creatingLoginForMemberId, setCreatingLoginForMemberId] = useState("");
   const [resendingRegistrationId, setResendingRegistrationId] = useState("");
+  const [skillsEmailDelivery, setSkillsEmailDelivery] = useState({ records: [], totals: {}, note: "" });
+  const [sendingTestEmailReference, setSendingTestEmailReference] = useState("");
+
 
   const userRole = staffUser?.role || "";
   const isSuperAdmin = userRole === "ADMIN";
@@ -1024,6 +1105,16 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
       setAssignments(assignmentsResponse.data?.assignments || []);
       setUnassignedApplicants(canViewUnassignedApplicants ? (unassignedResponse?.data?.applicants || []) : []);
       setCountryAdmins(staffUsers.filter((user) => user.role === "COUNTRY_ADMIN"));
+      if (["ADMIN", "COUNTRY_ADMIN"].includes(userRole)) {
+        try {
+          const deliveryResponse = await axios.get(
+            `${API_BASE_URL}/api/basic-skills-test/invitations/delivery-report`
+          );
+          setSkillsEmailDelivery(deliveryResponse.data || { records: [], totals: {}, note: "" });
+        } catch (deliveryError) {
+          console.warn("Unable to load test-invitation delivery report", deliveryError.response?.status);
+        }
+      }
       setSelectedReport(canViewSelectedReport ? {
         rows: selectedReportResponse?.data?.rows || [],
         reportScope: selectedReportResponse?.data?.reportScope || currentUserCountry || "",
@@ -1260,6 +1351,26 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
     }
   }
 
+  async function handleResendSkillsTestInvitation(row) {
+    if (!row.applicationReference) return;
+
+    setSendingTestEmailReference(row.applicationReference);
+    setMessage("");
+    setError("");
+
+    try {
+      const response = await axios.post(
+        `${API_BASE_URL}/api/basic-skills-test/invitations/${encodeURIComponent(row.applicationReference)}/send`
+      );
+      setMessage(response.data?.message || "Test invitation request processed.");
+      await loadCommitteeData();
+    } catch (sendError) {
+      handleApiError(sendError, "Unable to resend the Basic IT Skills Test invitation.");
+    } finally {
+      setSendingTestEmailReference("");
+    }
+  }
+
   async function handleResendParticipantRegistration(row) {
     const reference = row.applicationReference || row.participantCode || row.id;
     if (!reference) return;
@@ -1348,6 +1459,14 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
           onAutoAssignAll={handleAutoAssign}
           assigningAll={assigning}
         />
+
+        {["ADMIN", "COUNTRY_ADMIN"].includes(userRole) && (
+          <SkillsTestDeliveryPanel
+            delivery={skillsEmailDelivery}
+            onResend={handleResendSkillsTestInvitation}
+            sendingReference={sendingTestEmailReference}
+          />
+        )}
 
         {canViewSelectedReport && (
           <SelectedParticipantsReport
