@@ -291,6 +291,7 @@ function ContextualApplicationPage({
       setEntryStage("assistance");
     }
   }, [
+    answers.COUNTRY,
     answers.ENTRY_STAGE,
     consentComplete,
     consentSignedComplete,
@@ -379,7 +380,7 @@ function ContextualApplicationPage({
     );
   }
 
-  if (loadingQuestions || consentLoading) {
+  if (entryStage !== "country" && (loadingQuestions || consentLoading)) {
     return (
       <main id="main-content" tabIndex="-1" className="container py-5">
         <section className="ss-loading-card text-center" aria-live="polite">
