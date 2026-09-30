@@ -1,6 +1,12 @@
 import FormSection from "./FormSection";
 
 const SECTION_META = {
+  "Eligibility check": {
+    icon: "bi-person-check",
+    caption: "Check your eligibility before completing the full form",
+    intro:
+      "Answer these questions first. We will check any explicit eligibility requirements before you move on.",
+  },
   "Eligibility Check": {
     icon: "bi-person-check",
     caption: "Quick eligibility check",
@@ -91,6 +97,7 @@ function WizardSection({
   errors,
   onPrevious,
   onContinue,
+  disableContinue = false,
   onAnswerChange,
   onMultiSelectChange,
 }) {
@@ -102,7 +109,9 @@ function WizardSection({
   )?.metadata || {};
   const sectionMeta = {
     ...fallbackMeta,
-    intro: sourceMetadata.sectionIntro ?? (title.startsWith("Section ") ? "" : fallbackMeta.intro),
+    intro: title === "Eligibility check"
+      ? fallbackMeta.intro
+      : sourceMetadata.sectionIntro ?? (title.startsWith("Section ") ? "" : fallbackMeta.intro),
     notice: sourceMetadata.sectionNotice || "",
   };
   return (
@@ -155,7 +164,12 @@ function WizardSection({
             <i className="bi bi-arrow-left" aria-hidden="true" /> {index === 0 ? "Back" : "Previous"}
           </button>
 
-          <button type="button" className="btn ss-btn-primary" onClick={onContinue}>
+          <button
+            type="button"
+            className="btn ss-btn-primary"
+            onClick={onContinue}
+            disabled={disableContinue}
+          >
             Save &amp; continue <i className="bi bi-arrow-right" aria-hidden="true" />
           </button>
         </div>
