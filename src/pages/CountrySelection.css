@@ -1,0 +1,45 @@
+/* Scoped country entry layout; existing brand colours are inherited. */
+.ss-country-page.df-country-simple .ss-country-panel {
+  max-width: 1100px;
+  margin-top: 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+.ss-country-page.df-country-simple .ss-country-copy {
+  margin-top: 2rem;
+  text-align: center;
+}
+.ss-country-page.df-country-simple .ss-country-copy h1 {
+  max-width: none;
+  margin: 0;
+  font-size: clamp(1.25rem, 3vw, 1.6rem);
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: normal;
+}
+.ss-country-page.df-country-simple .ss-country-select-wrap {
+  width: min(100%, 465px);
+  margin: clamp(3rem, 12vh, 7rem) auto 0;
+}
+.ss-country-page.df-country-simple .ss-country-select-wrap .form-select {
+  min-height: 60px;
+  border-radius: 8px;
+  font-size: 1.125rem;
+  padding-left: 1rem;
+}
+.ss-country-page.df-country-simple .ss-country-actions {
+  width: min(100%, 465px);
+  margin: 1.5rem auto 0;
+  justify-content: center;
+}
+.ss-country-page.df-country-simple .ss-country-actions .btn {
+  width: auto;
+  min-width: 150px;
+}
+.ss-country-page.df-country-simple .ss-alert-error {
+  max-width: 465px;
+  margin-inline: auto;
+}

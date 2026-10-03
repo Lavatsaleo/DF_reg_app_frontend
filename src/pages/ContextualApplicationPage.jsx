@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
+import "./CountrySelection.css";
 import ApplicationConfirmation from "../components/ApplicationConfirmation";
 import ElectronicSignature from "../components/ElectronicSignature";
 import RegistrationWizard from "../components/RegistrationWizard";
@@ -476,7 +477,7 @@ function ContextualApplicationPage({
 
     if (showCountry) {
       return (
-        <main id="main-content" tabIndex="-1" className="ss-country-page">
+        <main id="main-content" tabIndex="-1" className="ss-country-page df-country-simple">
           <section className="container py-5">
             <div className="ss-country-panel mx-auto">
               <button
@@ -488,15 +489,11 @@ function ContextualApplicationPage({
               </button>
 
               <div className="ss-country-copy">
-                <span className="ss-small-label dark">Digital Futures · {selectedPathway.title}</span>
                 <h1 id="df-country-step-title" tabIndex="-1">Select your country of residence</h1>
-                <p>
-                  We’ll use this to show the correct safeguarding and programme support contacts throughout your application.
-                </p>
               </div>
 
               <div className="ss-country-select-wrap">
-                <label className="form-label fw-semibold" htmlFor="country-of-residence">
+                <label className="visually-hidden" htmlFor="country-of-residence">
                   Country of residence
                 </label>
                 <select
@@ -507,9 +504,9 @@ function ContextualApplicationPage({
                     onAnswerChange({ questionCode: "COUNTRY" }, event.target.value);
                     setEntryError("");
                   }}
-                  autoFocus
+                  aria-required="true"
                 >
-                  <option value="">Select your country</option>
+                  <option value="">Country of residence</option>
                   {PROGRAMME_COUNTRIES.map((country) => (
                     <option key={country} value={country}>{country}</option>
                   ))}
@@ -1009,3 +1006,4 @@ function ContextualApplicationPage({
 }
 
 export default ContextualApplicationPage;
+
