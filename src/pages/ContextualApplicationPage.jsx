@@ -480,16 +480,8 @@ function ContextualApplicationPage({
         <main id="main-content" tabIndex="-1" className="ss-country-page df-country-simple">
           <section className="container py-5">
             <div className="ss-country-panel mx-auto">
-              <button
-                type="button"
-                className="ss-simple-back"
-                onClick={onBackToPathways}
-              >
-                <i className="bi bi-arrow-left" aria-hidden="true" /> Back to pathways
-              </button>
-
               <div className="ss-country-copy">
-                <h1 id="df-country-step-title" tabIndex="-1">Select your country of residence</h1>
+                <h1 id="df-country-step-title" tabIndex="-1">SELECT YOUR COUNTRY OF RESIDENCE</h1>
               </div>
 
               <div className="ss-country-select-wrap">

@@ -25,10 +25,15 @@ function AppNavbar({
         </button>
 
         <div className="df-nav-actions ms-auto">
-          <span className="ss-nav-chip df-portal-chip">
+          <button
+            type="button"
+            className="ss-nav-chip df-portal-chip"
+            onClick={onBackToPathways}
+            aria-label="Application Portal — back to pathways"
+          >
             <i className="bi bi-shield-check" aria-hidden="true" />
             <span>Application Portal</span>
-          </span>
+          </button>
 
           {showStatusButton && (
             <button
