@@ -4,6 +4,8 @@ function AppNavbar({
   onBackToPathways,
   onCheckStatus,
   onShowCommittee,
+  onShowDashboard,
+  showDashboardButton = false,
   onShowConsents,
   showConsentsButton = false,
   showStatusButton = true,
@@ -62,6 +64,12 @@ function AppNavbar({
           {(selectedPathway || isStatusPage || isCommitteePage || isConsentsPage) && (
             <button type="button" className="btn df-nav-icon" onClick={onBackToPathways} aria-label="Home" title="Home">
               <i className="bi bi-house" aria-hidden="true" />
+            </button>
+          )}
+
+          {showDashboardButton && (
+            <button type="button" className={`btn df-nav-status ${currentView === "dashboard" ? "active" : ""}`} onClick={onShowDashboard} aria-current={currentView === "dashboard" ? "page" : undefined}>
+              <i className="bi bi-bar-chart" aria-hidden="true" /> Dashboard
             </button>
           )}
 

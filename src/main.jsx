@@ -14,6 +14,7 @@ import "./landing-cleanup.css";
 import "./application-cleanup.css";
 import "./programme-wide-brand.css";
 import "./pages/CommitteeDashboardBrand.css";
+import "./pages/SkillsTestBrand.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>

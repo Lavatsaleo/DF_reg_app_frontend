@@ -1,0 +1,33 @@
+/* Match the application portal palette on the actual ss-skills-* components. */
+.ss-skills-page { background: var(--df-bg) !important; color: var(--df-black) !important; }
+.ss-skills-page .ss-skills-hero { background: var(--df-bg) !important; color: var(--df-black) !important; border-bottom: 1px solid var(--df-border); padding: 2.5rem 0; }
+.ss-skills-page .ss-skills-hero::after { background: var(--df-teal) !important; }
+.ss-skills-page .ss-skills-hero h1 { color: var(--df-black) !important; }
+.ss-skills-page .ss-skills-hero p { color: var(--df-muted) !important; }
+.ss-skills-page .ss-skills-hero .ss-small-label.light { color: var(--df-red) !important; }
+.ss-skills-page .ss-selected-card,
+.ss-skills-page .ss-skills-card,
+.ss-skills-page .ss-skills-result-card,
+.ss-skills-page .ss-help-card,
+.ss-skills-page .ss-skills-question { background: var(--df-white) !important; color: var(--df-black) !important; border: 1px solid var(--df-border) !important; box-shadow: none !important; }
+.ss-skills-page .ss-selected-card { border-top: 4px solid var(--df-yellow) !important; }
+.ss-skills-page .ss-selected-card *,
+.ss-skills-page .ss-skills-card h2,
+.ss-skills-page .ss-skills-result-card h2,
+.ss-skills-page .ss-skills-question legend { color: var(--df-black) !important; }
+.ss-skills-page .ss-skills-question legend span { background: var(--df-yellow) !important; color: #111 !important; }
+.ss-skills-page .ss-skills-option { background: var(--df-white) !important; border-color: var(--df-border) !important; color: var(--df-black) !important; transform: none !important; }
+.ss-skills-page .ss-skills-option:hover,
+.ss-skills-page .ss-skills-option:has(input:checked) { background: var(--df-soft-yellow) !important; border-color: #8c6500 !important; }
+.ss-skills-page .ss-skills-option input { accent-color: #785600; }
+.ss-skills-page .ss-skills-option:focus-within { outline: 3px solid var(--df-black); outline-offset: 3px; }
+.ss-skills-page .ss-skills-progress { background: var(--df-border) !important; }
+.ss-skills-page .ss-skills-progress > span { background: var(--df-teal) !important; }
+.ss-skills-page .ss-skills-applicant-strip { background: var(--df-soft-yellow) !important; border-color: var(--df-yellow) !important; color: var(--df-black) !important; }
+.ss-skills-page .ss-skills-score-card { background: var(--df-soft-teal) !important; color: var(--df-black) !important; border: 1px solid var(--df-teal); box-shadow: none !important; }
+.ss-skills-page .ss-skills-score-card strong,
+.ss-skills-page .ss-skills-score-card span,
+.ss-skills-page .ss-skills-score-card small { color: var(--df-black) !important; }
+.ss-skills-page .ss-skills-question.has-error { border-color: var(--df-red) !important; }
+html.ss-high-contrast .ss-skills-page { --df-bg: #000; --df-white: #000; --df-black: #fff; --df-muted: #fff; --df-border: #fff; --df-soft-yellow: #000; --df-soft-teal: #000; }
+html.ss-high-contrast .ss-skills-page .ss-skills-option span { color: #fff !important; }

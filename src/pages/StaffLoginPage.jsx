@@ -42,17 +42,17 @@ function StaffLoginPage({ onLogin, onBackHome }) {
             <i className="bi bi-arrow-left" aria-hidden="true" /> Back to portal
           </button>
 
-          <p className="eyebrow">Internal committee access</p>
-          <h1 id="committee-sign-in-title">Review dashboard sign in</h1>
+          <p className="eyebrow">Staff access</p>
+          <h1 id="committee-sign-in-title">Staff sign in</h1>
           <p className="staff-login-lead">
-            Secure access for authorised staff to assign applicants, manage reviewers, and record selection decisions.
+            Sign in to your workspace. Your account determines whether you can access programme insights or committee review.
           </p>
 
-          <div className="staff-login-feature-grid" aria-label="Committee dashboard capabilities">
+          <div className="staff-login-feature-grid" aria-label="Staff workspace capabilities">
             <div>
               <i className="bi bi-people-fill" aria-hidden="true" />
-              <strong>Reviewer management</strong>
-              <span>View committee members and workloads.</span>
+              <strong>Programme insights</strong>
+              <span>Explore applications by age, country, month and region.</span>
             </div>
             <div>
               <i className="bi bi-person-check-fill" aria-hidden="true" />
@@ -67,14 +67,14 @@ function StaffLoginPage({ onLogin, onBackHome }) {
           </div>
         </div>
 
-        <div className="staff-login-card" aria-label="Committee sign in form">
+        <div className="staff-login-card" aria-label="Staff sign in form">
           <div className="staff-login-card-header">
             <div className="staff-login-lock">
               <i className="bi bi-shield-check" aria-hidden="true" />
             </div>
             <div>
               <span>Authorised users only</span>
-              <h2>Committee sign in</h2>
+              <h2>Staff sign in</h2>
             </div>
           </div>
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import AccessibilityToolbar from "./components/AccessibilityToolbar";
 import AppNavbar from "./components/AppNavbar";
@@ -8,6 +8,7 @@ import StatusCheckPage from "./pages/StatusCheckPage";
 import SkillsTestPage from "./pages/SkillsTestPage";
 import ParticipantRegistrationPage from "./pages/ParticipantRegistrationPage";
 import CommitteeDashboardPage from "./pages/CommitteeDashboardPage";
+import ApplicationDashboardPage from "./pages/ApplicationDashboardPage";
 import ConsentRecordsPage from "./pages/ConsentRecordsPage";
 import StaffLoginPage from "./pages/StaffLoginPage";
 import { useAccessibilityPreferences } from "./hooks/useAccessibilityPreferences";
@@ -37,7 +38,14 @@ function getPathwayFromBrowserPath() {
   return pathways.find((pathway) => PATHWAY_SLUGS[pathway.id] === match[1] && pathway.status === "open") || null;
 }
 
+function staffView(session, requested = "committee") {
+  if (!session?.token) return "staff-login";
+  if (session.user?.role === "VIEWER") return "dashboard";
+  return requested === "dashboard" && session.user?.role === "ADMIN" ? "dashboard" : "committee";
+}
+
 function getInitialView() {
+  if (window.location.pathname.startsWith("/staff/")) return staffView(loadStaffSession(), window.location.pathname.endsWith("dashboard") ? "dashboard" : "committee");
   if (getInitialParticipantRegistrationToken()) return "participant-registration";
   if (getInitialSkillsTestToken() || window.location.pathname === "/basic-skills-test") return "skills-test";
   if (window.location.pathname === "/status") return "status";
@@ -108,6 +116,8 @@ function App() {
       } else if (pathway) {
         if (historySelectedPathway?.id !== pathway.id) historySelectPathway(pathway);
         setCurrentView("application");
+      } else if (window.location.pathname.startsWith("/staff/")) {
+        setCurrentView(staffView(loadStaffSession(), window.location.pathname.endsWith("dashboard") ? "dashboard" : "committee"));
       } else if (window.location.pathname === "/status") {
         setCurrentView("status");
       } else {
@@ -151,10 +161,16 @@ function App() {
   }
 
   function handleShowCommittee() {
-    navigateTo("/");
-    setCurrentView(staffSession?.token ? "committee" : "staff-login");
+    const next = staffView(staffSession);
+    navigateTo(next === "dashboard" ? "/staff/dashboard" : "/staff/committee");
+    setCurrentView(next);
     setSkillsTestReference("");
     setSkillsTestToken("");
+  }
+
+  function handleShowDashboard() {
+    navigateTo("/staff/dashboard");
+    setCurrentView(staffView(staffSession, "dashboard"));
   }
 
   function handleShowConsents() {
@@ -174,7 +190,9 @@ function App() {
     saveStaffSession(session);
     configureAxiosAuth(session.token);
     setStaffSession(session);
-    setCurrentView("committee");
+    const next = staffView(session);
+    navigateTo(next === "dashboard" ? "/staff/dashboard" : "/staff/committee");
+    setCurrentView(next);
   }
 
   function handleStaffLogout() {
@@ -184,12 +202,12 @@ function App() {
     setCurrentView("staff-login");
   }
 
-  function handleSessionExpired() {
+  const handleSessionExpired = useCallback(() => {
     clearStaffSession();
     configureAxiosAuth("");
     setStaffSession(null);
     setCurrentView("staff-login");
-  }
+  }, []);
 
   function handleShowSkillsTest(reference = "") {
     navigateTo("/basic-skills-test");
@@ -254,7 +272,9 @@ function App() {
         onBackToPathways={handleShowHome}
         onCheckStatus={handleShowStatus}
         showStatusButton={showStatusButton}
-        onShowCommittee={handleShowCommittee}
+        onShowCommittee={staffSession?.user?.role === "VIEWER" ? undefined : handleShowCommittee}
+        onShowDashboard={handleShowDashboard}
+        showDashboardButton={Boolean(staffSession?.token && ["ADMIN", "VIEWER"].includes(staffSession?.user?.role))}
         onShowConsents={handleShowConsents}
         showConsentsButton={canViewConsentArchive}
       />
@@ -267,6 +287,14 @@ function App() {
 
       {currentView === "staff-login" ? (
         <StaffLoginPage onLogin={handleStaffLogin} onBackHome={handleShowHome} />
+      ) : currentView === "dashboard" ? (
+        <ApplicationDashboardPage
+          staffUser={staffSession?.user}
+          token={staffSession?.token}
+          onStaffLogout={handleStaffLogout}
+          onSessionExpired={handleSessionExpired}
+          onShowCommittee={handleShowCommittee}
+        />
       ) : currentView === "committee" ? (
         <CommitteeDashboardPage
           staffUser={staffSession?.user}
