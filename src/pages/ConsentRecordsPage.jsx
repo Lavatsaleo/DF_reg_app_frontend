@@ -193,6 +193,8 @@ function ConsentRecord({ record, printOnlyId, onPrint }) {
 
 function ConsentRecordsPage({ onBack, onSessionExpired }) {
   const [records, setRecords] = useState([]);
+  const [supportRequests, setSupportRequests] = useState([]);
+  const [updatingRequest, setUpdatingRequest] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [generatedAt, setGeneratedAt] = useState(null);
@@ -204,6 +206,7 @@ function ConsentRecordsPage({ onBack, onSessionExpired }) {
       setError("");
       const response = await axios.get(`${API_BASE_URL}/api/consents`);
       setRecords(response.data?.records || []);
+      setSupportRequests(response.data?.supportRequests || []);
       setGeneratedAt(response.data?.generatedAt || null);
     } catch (requestError) {
       if (requestError.response?.status === 401) {
@@ -229,6 +232,7 @@ function ConsentRecordsPage({ onBack, onSessionExpired }) {
         });
         if (!active) return;
         setRecords(response.data?.records || []);
+      setSupportRequests(response.data?.supportRequests || []);
         setGeneratedAt(response.data?.generatedAt || null);
       } catch (requestError) {
         if (!active) return;
@@ -254,6 +258,20 @@ function ConsentRecordsPage({ onBack, onSessionExpired }) {
     window.addEventListener("afterprint", reset);
     return () => window.removeEventListener("afterprint", reset);
   }, []);
+
+  async function markContacted(id) {
+    setUpdatingRequest(id);
+    setError("");
+    try {
+      await axios.patch(`${API_BASE_URL}/api/consents/support-requests/${id}/contacted`);
+      await loadRecords();
+    } catch (requestError) {
+      if (requestError.response?.status === 401) onSessionExpired?.();
+      setError(requestError.response?.data?.message || "Unable to mark the request as contacted.");
+    } finally {
+      setUpdatingRequest("");
+    }
+  }
 
   function printAll() {
     setPrintOnlyId("");
@@ -290,6 +308,34 @@ function ConsentRecordsPage({ onBack, onSessionExpired }) {
         </div>
       </div>
 
+      {!loading && (
+        <section className="ss-section-card mb-4 consent-page-actions" aria-labelledby="support-requests-heading">
+          <h2 id="support-requests-heading" className="h4">Requests for a consent explanation</h2>
+          <p>Contact these people before they decide whether to consent. Mark a request as contacted only after speaking with the person.</p>
+          {!supportRequests.length ? <p>No contact requests yet.</p> : (
+            <div className="table-responsive">
+              <table className="table align-middle">
+                <caption>Contact requests are separate from signed programme consent.</caption>
+                <thead><tr><th scope="col">Person</th><th scope="col">Country / pathway</th><th scope="col">Accommodation</th><th scope="col">Notification</th><th scope="col">Follow-up</th></tr></thead>
+                <tbody>{supportRequests.map((request) => (
+                  <tr key={request.id}>
+                    <td><strong>{request.fullName}</strong><br />{request.contactNumber}<br /><small>{formatDate(request.createdAt)}</small></td>
+                    <td>{request.country}<br />{request.pathway.replace(/_/g, " ")}</td>
+                    <td style={{ whiteSpace: "pre-wrap" }}>{request.accommodation || "None specified"}</td>
+                    <td>{request.notificationStatus === "SENT" ? "Email accepted by SMTP" : request.notificationStatus === "FAILED" ? "Email failed — follow up manually" : "Email not confirmed — check before follow-up"}</td>
+                    <td>{request.status === "CONTACTED" ? `Contacted ${formatDate(request.contactedAt)}` : (
+                      <button type="button" className="btn ss-btn-outline" disabled={Boolean(updatingRequest)} onClick={() => markContacted(request.id)}>
+                        {updatingRequest === request.id ? "Saving…" : "Mark contacted"}
+                      </button>
+                    )}</td>
+                  </tr>
+                ))}</tbody>
+              </table>
+            </div>
+          )}
+        </section>
+      )}
+
       {generatedAt && <p className="text-muted consent-page-actions">Generated {formatDate(generatedAt)} · {records.length} consent record{records.length === 1 ? "" : "s"}</p>}
       {error && <div className="alert ss-alert-error consent-page-actions">{error}</div>}
       {loading ? (
@@ -304,3 +350,4 @@ function ConsentRecordsPage({ onBack, onSessionExpired }) {
 }
 
 export default ConsentRecordsPage;
+

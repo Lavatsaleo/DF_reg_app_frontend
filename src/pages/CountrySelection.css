@@ -43,3 +43,12 @@
   max-width: 465px;
   margin-inline: auto;
 }
+
+
+/* The heading receives focus for screen-reader orientation, not interaction.
+   Keep the existing focus indicators on all actual controls. */
+#df-country-step-title:focus,
+#df-country-step-title:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}

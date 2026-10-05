@@ -171,6 +171,11 @@ function ContextualApplicationPage({
   const [consentLoadError, setConsentLoadError] = useState("");
   const [entryError, setEntryError] = useState("");
   const focusedStageRef = useRef(null);
+  const supportRequestId = useRef(null);
+  const [supportSending, setSupportSending] = useState(false);
+  const [supportSaved, setSupportSaved] = useState(null);
+  const [supportError, setSupportError] = useState("");
+  const [requestContact, setRequestContact] = useState(false);
 
   function moveToFlowStage(phase, step = 0, { replace = false } = {}) {
     if (phase === "application") {
@@ -424,6 +429,34 @@ function ContextualApplicationPage({
 
     onAnswerChange({ questionCode: "ENTRY_STAGE" }, "application");
     moveToFlowStage("application", 0);
+  }
+
+  async function saveSupportRequest() {
+    if (supportSending) return;
+    const fullName = String(answers.CONSENT_SUPPORT_REQUEST_NAME || "").trim();
+    const contactNumber = String(answers.CONSENT_SUPPORT_REQUEST_PHONE || "").trim();
+    const accommodation = String(answers.CONSENT_SUPPORT_REQUEST_ACCOMMODATION || "").trim();
+    if (fullName.length < 2 || fullName.length > 150 || !/^\+?\d{7,15}$/.test(contactNumber) || accommodation.length > 2000 || !requestContact) {
+      setSupportError("Please enter your full name, a valid contact number (7–15 digits), and confirm that you want us to contact you. Accommodation details must be no more than 2,000 characters.");
+      return;
+    }
+    setSupportSending(true);
+    setSupportError("");
+    try {
+      if (!supportRequestId.current) supportRequestId.current = window.crypto.randomUUID();
+      const response = await axios.post(`${API_BASE_URL}/api/consents/support-requests`, {
+        requestId: supportRequestId.current,
+        fullName, contactNumber, accommodation,
+        country: residenceCountry,
+        pathway: selectedPathway.id,
+        requestContact,
+      });
+      setSupportSaved({ reference: response.data.reference });
+    } catch (error) {
+      setSupportError(error.response?.data?.message || "We could not confirm that your request was saved. Please try again.");
+    } finally {
+      setSupportSending(false);
+    }
   }
 
   function handleSupportPhoneChange(value) {
@@ -797,11 +830,24 @@ function ContextualApplicationPage({
                     <div className="alert ss-alert-error" role="alert">
                       <h3 className="h5">Consent is required to continue</h3>
                       <p>If you do not consent, the programme cannot process your application or enrol you in the programme.</p>
+                      <button type="button" className="btn ss-btn-outline" onClick={onBackToPathways}>
+                        Back to pathways
+                      </button>
                     </div>
                   )}
 
                   {consentSupportRequested && (
                     <div className="border rounded-4 p-4 bg-light">
+                      {supportSaved ? (
+                        <div role="status" aria-live="polite">
+                          <h3 className="h5">Your request has been saved</h3>
+                          <p>Someone from the programme will contact you using the number you provided to explain the information and answer your questions.</p>
+                          <p>You have not given programme consent or submitted an application. You can return to decide after speaking with the team.</p>
+                          <p className="small">Request reference: {supportSaved.reference}</p>
+                          <button type="button" className="btn ss-btn-primary" onClick={onBackToPathways}>Back to pathways</button>
+                        </div>
+                      ) : (
+                        <fieldset disabled={supportSending} className="border-0 p-0 m-0">
                       <h3 className="h5">Request an explanation before deciding</h3>
                       <p>{consentDocument.supportRequestInstruction}</p>
                       <div className="row g-3">
@@ -841,9 +887,16 @@ function ContextualApplicationPage({
                           />
                         </div>
                       </div>
-                      <p className="mt-3 mb-0">
-                        Your information is saved with this application draft. You can return to this consent section before deciding.
-                      </p>
+                      <label className="d-flex gap-2 align-items-start mt-3">
+                        <input type="checkbox" className="mt-1" checked={requestContact} onChange={(event) => setRequestContact(event.target.checked)} />
+                        <span>I agree that the programme team may use these details to contact me about this request. This does not give consent to participate in the programme.</span>
+                      </label>
+                      {supportError && <div className="alert ss-alert-error mt-3" role="alert">{supportError}</div>}
+                      <button type="button" className="btn ss-btn-primary mt-3" onClick={saveSupportRequest} disabled={supportSending}>
+                        {supportSending ? "Saving request…" : "Save contact request"}
+                      </button>
+                        </fieldset>
+                      )}
                     </div>
                   )}
 
@@ -998,4 +1051,5 @@ function ContextualApplicationPage({
 }
 
 export default ContextualApplicationPage;
+
 
