@@ -206,6 +206,7 @@ function MemberWorkloadCard({ member, canManage, onToggleActive, onCreateLogin, 
           >
             <input
               type="password"
+              aria-label={`Temporary password for ${member.fullName}`}
               minLength="8"
               value={temporaryPassword}
               onChange={(event) => setTemporaryPassword(event.target.value)}
@@ -590,7 +591,7 @@ function AssignmentCard({ assignment, members, canReassign, onSelect, onReassign
 
       {canReassign && (
         <div className="committee-reassign-row">
-          <select value={toMemberId} onChange={(event) => setToMemberId(event.target.value)}>
+          <select aria-label="Reassign to committee member" value={toMemberId} onChange={(event) => setToMemberId(event.target.value)}>
             <option value="">Reassign to...</option>
             {members
               .filter((member) => member.isActive && member.role === "MEMBER")
@@ -602,6 +603,7 @@ function AssignmentCard({ assignment, members, canReassign, onSelect, onReassign
           </select>
           <input
             type="text"
+            aria-label="Reason for reassignment"
             value={reason}
             onChange={(event) => setReason(event.target.value)}
             placeholder="Reason for reassignment"
@@ -1568,19 +1570,20 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
               <div className="committee-filter-grid">
                 <input
                   type="search"
+                  aria-label="Search assignments"
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
                   placeholder={isSuperAdmin ? "Search name, ID, phone, or reference" : "Search anonymous ID, reference, pathway, or status"}
                 />
                 {userRole !== "COMMITTEE_MEMBER" && (
-                  <select value={filterMemberId} onChange={(event) => setFilterMemberId(event.target.value)}>
+                  <select aria-label="Filter by committee member" value={filterMemberId} onChange={(event) => setFilterMemberId(event.target.value)}>
                     <option value="">All members</option>
                     {members.map((member) => (
                       <option key={member.id} value={member.id}>{member.fullName}</option>
                     ))}
                   </select>
                 )}
-                <select value={filterStatus} onChange={(event) => setFilterStatus(event.target.value)}>
+                <select aria-label="Filter by review status" value={filterStatus} onChange={(event) => setFilterStatus(event.target.value)}>
                   <option value="">All statuses</option>
                   <option value="ASSIGNED">Assigned</option>
                   <option value="IN_REVIEW">In review</option>

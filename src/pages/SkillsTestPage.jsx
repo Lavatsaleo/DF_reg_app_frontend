@@ -72,8 +72,9 @@ function ResultPanel({ attempt, applicant, onCheckStatus }) {
 }
 
 function SkillsTestQuestion({ question, value, onChange, hasError }) {
+  const errorId = `${question.questionCode}-error`;
   return (
-    <fieldset className={`ss-skills-question ${hasError ? "has-error" : ""}`}>
+    <fieldset className={`ss-skills-question ${hasError ? "has-error" : ""}`} aria-describedby={hasError ? errorId : undefined}>
       <legend>
         <span>Question {question.questionNumber}</span>
         {question.questionText}
@@ -90,6 +91,7 @@ function SkillsTestQuestion({ question, value, onChange, hasError }) {
                 value={option.value}
                 checked={value === option.value}
                 onChange={() => onChange(question.questionCode, option.value)}
+                aria-invalid={hasError ? "true" : undefined}
               />
               <span>{option.label}</span>
             </label>
@@ -97,7 +99,7 @@ function SkillsTestQuestion({ question, value, onChange, hasError }) {
         })}
       </div>
       {hasError && (
-        <p className="ss-field-error" role="alert">
+        <p id={errorId} className="ss-field-error">
           Please answer this question.
         </p>
       )}
@@ -230,12 +232,13 @@ function SkillsTestPage({ initialToken = "", onBackHome, onCheckStatus }) {
 
     if (Object.keys(validationErrors).length > 0) {
       setFieldErrors(validationErrors);
-      setMessage("Please answer all questions before submitting the test.");
+      const unanswered = Object.keys(validationErrors).length;
+      setMessage(`Please answer all questions before submitting the test. ${unanswered} ${unanswered === 1 ? "question is" : "questions are"} still unanswered.`);
       window.requestAnimationFrame(() => {
-        document.querySelector(".ss-skills-question.has-error")?.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-        });
+        const firstQuestion = document.querySelector(".ss-skills-question.has-error");
+        firstQuestion?.scrollIntoView({ behavior: "smooth", block: "center" });
+        // Keyboard and screen reader users land on the first unanswered question.
+        firstQuestion?.querySelector("input")?.focus({ preventScroll: true });
       });
       return;
     }

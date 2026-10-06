@@ -79,3 +79,13 @@ export function groupQuestionsBySection(questions) {
     return groups;
   }, {});
 }
+
+// Testers expected Enter to choose an option; native radios only respond to Space and arrows.
+export function selectChoiceOnEnter(event) {
+  if (event.key !== "Enter" || event.isComposing) return false;
+  const target = event.target;
+  if (!(target instanceof HTMLInputElement) || !["radio", "checkbox"].includes(target.type)) return false;
+  event.preventDefault();
+  target.click();
+  return true;
+}

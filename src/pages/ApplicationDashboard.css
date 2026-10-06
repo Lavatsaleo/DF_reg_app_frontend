@@ -87,19 +87,68 @@
 .df-dashboard-user-form button { justify-self: start; }
 .df-dashboard-user-list { padding: 0; margin-top: 20px; list-style: none; }
 .df-dashboard-user-list li { display: flex; gap: 12px; justify-content: space-between; font-size: .83rem; padding: 12px 0; border-top: 1px solid var(--df-border); }
+/* Gender colours reuse the brand palette; every split also carries visible counts and a table view. */
+.df-dashboard-page { --df-sex-female: var(--df-orange); --df-sex-male: var(--df-teal); --df-sex-unrecorded: #b5ada4; }
+.df-sex-key { display: inline-block; width: 12px; height: 12px; border-radius: 3px; background: var(--sex-colour); flex-shrink: 0; }
+.df-sex-key.line { width: 14px; height: 3px; border-radius: 2px; }
+.df-dashboard-page .female { --sex-colour: var(--df-sex-female); }
+.df-dashboard-page .male { --sex-colour: var(--df-sex-male); }
+.df-dashboard-page .unrecorded { --sex-colour: var(--df-sex-unrecorded); }
+.df-gender-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; list-style: none; padding: 0; margin: 0; font-size: .78rem; color: var(--df-muted); align-self: start; }
+.df-gender-legend li { display: flex; align-items: center; gap: 6px; }
+.df-gender-card { margin-bottom: 24px; }
+.df-gender-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 32px; align-items: start; }
+.df-gender-split { display: grid; gap: 12px; }
+.df-gender-stat { background: var(--df-bg); border-radius: 14px; padding: 14px 16px; display: grid; grid-template-columns: 1fr auto; align-items: baseline; gap: 2px 12px; }
+.df-gender-stat > span { display: flex; align-items: center; gap: 8px; font-size: .85rem; font-weight: 700; }
+.df-gender-stat > strong { font-size: 1.6rem; letter-spacing: -.03em; grid-row: span 2; }
+.df-gender-stat > small { color: var(--df-muted); font-size: .75rem; }
+.df-gender-funnel { list-style: none; padding: 0; margin: 0; display: grid; gap: 18px; }
+.df-gender-funnel li > div:first-child { display: flex; justify-content: space-between; gap: 12px; font-size: .85rem; margin-bottom: 7px; }
+.df-gender-funnel strong small { font-weight: 500; color: var(--df-muted); margin-left: 9px; }
+.df-stack-track { display: flex; gap: 2px; height: 14px; }
+.df-sex-segment { display: block; min-width: 2px; height: 100%; background: var(--sex-colour); }
+.df-sex-segment:first-child { border-radius: 4px 0 0 4px; }
+.df-sex-segment:last-child { border-radius: 0 4px 4px 0; }
+.df-sex-segment:only-child { border-radius: 4px; }
+.df-sex-segment.empty { flex-grow: 1; background: var(--df-bg); border-radius: 4px; }
+.df-sex-breakdown { display: block; color: var(--df-muted); font-size: .74rem; margin-top: 6px; }
+.df-bar-track.split { height: 12px; background: transparent; }
+.df-bar-track.split > span { display: flex; gap: 2px; background: transparent; }
+.df-month-column > div.split > span { display: flex; flex-direction: column-reverse; gap: 2px; background: transparent; }
+.df-month-column > div.split .df-sex-segment { width: 100%; height: auto; min-height: 2px; border-radius: 0; }
+.df-month-column > div.split .df-sex-segment:last-child { border-radius: 4px 4px 0 0; }
+.df-chart-bars li[tabindex], .df-gender-funnel li[tabindex], .df-month-column[tabindex] { border-radius: 8px; outline-offset: 4px; cursor: default; }
+.df-chart-bars li[tabindex]:hover .df-sex-segment, .df-gender-funnel li[tabindex]:hover .df-sex-segment, .df-month-column[tabindex]:hover .df-sex-segment { filter: brightness(1.08); }
+.df-split-toggle[aria-pressed="true"] { background: var(--df-yellow); border-color: var(--df-yellow); color: #111; }
+.df-split-notice { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin: -8px 0 16px; }
+.df-split-notice small { color: var(--df-muted); font-size: .78rem; }
+.df-chart-tooltip { position: fixed; z-index: 1080; pointer-events: none; min-width: 190px; background: var(--df-white); color: var(--df-black); border: 1px solid var(--df-border); border-radius: 10px; padding: 10px 12px; box-shadow: 0 8px 24px rgba(0, 0, 0, .14); font-size: .8rem; }
+.df-chart-tooltip p { margin: 0 0 6px; font-weight: 750; }
+.df-chart-tooltip div { display: flex; align-items: center; gap: 8px; }
+.df-chart-tooltip strong { min-width: 34px; }
+.df-chart-tooltip span { color: var(--df-muted); }
 @media (max-width: 1000px) { .df-metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .df-dashboard-header { align-items: start; } }
 @media (max-width: 720px) {
   .df-dashboard-shell { padding: 24px 16px; }
   .df-dashboard-header, .df-dashboard-context { flex-direction: column; }
   .df-dashboard-user { text-align: left; }
-  .df-dashboard-chart-grid, .df-map-grid, .df-dashboard-user-form { grid-template-columns: 1fr; }
+  .df-dashboard-chart-grid, .df-map-grid, .df-dashboard-user-form, .df-gender-grid { grid-template-columns: 1fr; }
   .df-dashboard-card { padding: 20px; }
   .df-metric { padding: 16px; }
   .df-metric-top { align-items: start; }
   .df-metric-top i { display: none; }
   .df-dashboard-filters { padding: 16px; }
   .df-demo-notice { flex-wrap: wrap; }
+  .df-gender-card .df-card-heading { flex-direction: column; }
 }
 html.ss-high-contrast .df-dashboard-page { --df-bg: #000; --df-white: #000; --df-black: #fff; --df-muted: #fff; --df-border: #fff; --df-soft-yellow: #000; --df-soft-teal: #000; }
 html.ss-high-contrast .df-data-mode button[aria-pressed="true"] { color: #000; }
 html.ss-high-contrast .df-map-bubble:focus { stroke: #fff; }
+/* Disclosure toggles and source links need a 24px+ target on touch screens. */
+.df-dashboard-page details > summary { min-height: 44px; display: flex; align-items: center; gap: 6px; cursor: pointer; }
+.df-dashboard-page details > summary::before { content: "B8"; transition: transform .15s ease; }
+.df-dashboard-page details[open] > summary::before { transform: rotate(90deg); }
+.df-dashboard-page details > summary::-webkit-details-marker { display: none; }
+.df-dashboard-page details > summary { list-style: none; }
+.df-map-attribution a { display: inline-block; padding: 6px 0; }

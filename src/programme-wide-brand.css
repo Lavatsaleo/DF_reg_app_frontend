@@ -757,3 +757,45 @@ a:not(.btn):focus {
 .df-open-badge span {
   color: #465C17 !important;
 }
+
+/* Accessibility and small-screen fixes (responsive audit, October 2026). */
+/* Brand link colours must not reach the skip link: it needs the yellow-on-black pair to stay readable. */
+a.ss-skip-link,
+a.ss-skip-link:focus,
+a.ss-skip-link:visited {
+  color: #ffc81f !important;
+}
+
+/* Headings receive focus after navigation so screen readers announce the new page; they are not controls. */
+main h1[tabindex="-1"]:focus,
+main[tabindex="-1"]:focus {
+  outline: none;
+}
+
+/* On phones and small tablets the transparent availability callout sat on top of the photo; place it below instead. */
+@media (max-width: 767.98px) {
+  .df-clean-hero-media {
+    min-height: 0 !important;
+  }
+
+  .df-open-badge {
+    position: relative !important;
+    left: auto !important;
+    bottom: auto !important;
+    width: auto !important;
+    margin-top: 1.25rem !important;
+  }
+}
+
+/* Stand-alone links (contact details, policy links listed on their own) need a 24px+ touch target. */
+a.ss-contact-value,
+main li > a:only-child {
+  display: inline-block;
+  min-height: 24px;
+  padding-block: 3px;
+}
+
+/* The review intro box became light teal, but an older rule still set its text to translucent white. */
+.ss-review-intro p {
+  color: var(--df-black) !important;
+}

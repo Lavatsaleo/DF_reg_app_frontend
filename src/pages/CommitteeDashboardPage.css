@@ -790,7 +790,8 @@
 
 .committee-filter-grid {
   width: min(100%, 760px);
-  grid-template-columns: minmax(260px, 1.2fr) minmax(190px, 0.85fr) minmax(170px, 0.75fr) auto;
+  /* Fixed column minimums overflowed the card on tablets; let filters wrap onto extra rows instead. */
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr));
 }
 
 .committee-board-grid {

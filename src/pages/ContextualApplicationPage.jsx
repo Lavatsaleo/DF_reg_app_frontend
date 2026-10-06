@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { selectChoiceOnEnter } from "../utils/formUtils";
 import axios from "axios";
 import "./CountrySelection.css";
 import ApplicationConfirmation from "../components/ApplicationConfirmation";
@@ -561,7 +562,7 @@ function ContextualApplicationPage({
     }
 
     return (
-      <main id="main-content" tabIndex="-1">
+      <main id="main-content" tabIndex="-1" onKeyDown={selectChoiceOnEnter}>
         <section className="ss-form-hero df-entry-hero">
           <div className="container">
             <a

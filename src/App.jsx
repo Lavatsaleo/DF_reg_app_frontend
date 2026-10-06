@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import axios from "axios";
-import AccessibilityToolbar from "./components/AccessibilityToolbar";
+import AccessibilityMenu from "./components/AccessibilityMenu";
 import AppNavbar from "./components/AppNavbar";
 import LandingPage from "./pages/LandingPage";
 import ContextualApplicationPage from "./pages/ContextualApplicationPage";
@@ -62,6 +62,24 @@ function configureAxiosAuth(token) {
   else delete axios.defaults.headers.common.Authorization;
 }
 
+// Child pages fetch in their own effects, which run before App's; attach the saved token before the first render.
+function loadInitialStaffSession() {
+  const session = loadStaffSession();
+  configureAxiosAuth(session?.token || "");
+  return session;
+}
+
+const VIEW_TITLES = {
+  home: "Apply for digital skills training",
+  status: "Check your application status",
+  "skills-test": "Basic IT skills test",
+  "participant-registration": "Participant registration and baseline survey",
+  "staff-login": "Staff sign in",
+  committee: "Committee workspace",
+  dashboard: "Application dashboard",
+  consents: "Signed consent records",
+};
+
 function App() {
   const registration = useRegistrationForm();
   const { selectedPathway: historySelectedPathway, handlePathwaySelect: historySelectPathway } = registration;
@@ -72,7 +90,7 @@ function App() {
   const [skillsTestReference, setSkillsTestReference] = useState("");
   const [skillsTestToken, setSkillsTestToken] = useState(initialSkillsTestToken);
   const [participantRegistrationToken, setParticipantRegistrationToken] = useState(initialParticipantRegistrationToken);
-  const [staffSession, setStaffSession] = useState(() => loadStaffSession());
+  const [staffSession, setStaffSession] = useState(loadInitialStaffSession);
 
   useEffect(() => {
     configureAxiosAuth(staffSession?.token || "");
@@ -127,6 +145,30 @@ function App() {
     window.addEventListener("popstate", handleBrowserNavigation);
     return () => window.removeEventListener("popstate", handleBrowserNavigation);
   }, [historySelectedPathway, historySelectPathway]);
+
+  // Screen readers announce the title, so each view gets its own.
+  const pageTitle = currentView === "application" && registration.selectedPathway
+    ? `${registration.selectedPathway.title} application`
+    : VIEW_TITLES[currentView];
+  useEffect(() => {
+    document.title = pageTitle ? `${pageTitle} | Digital Futures` : "Digital Futures";
+  }, [pageTitle]);
+
+  // A view change replaces the page without a reload, so move focus to the new heading unless the page already placed it.
+  const previousView = useRef(currentView);
+  useEffect(() => {
+    if (previousView.current === currentView) return undefined;
+    previousView.current = currentView;
+    const frame = window.requestAnimationFrame(() => {
+      const main = document.getElementById("main-content");
+      if (!main || main.contains(document.activeElement)) return;
+      const heading = main.querySelector("h1") || main;
+      if (!heading.hasAttribute("tabindex")) heading.setAttribute("tabindex", "-1");
+      window.scrollTo(0, 0);
+      heading.focus({ preventScroll: true });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [currentView]);
 
   // NVDA should encounter the heading before the applicant-support card.
   useEffect(() => {
@@ -279,9 +321,11 @@ function App() {
         showConsentsButton={canViewConsentArchive}
       />
 
-      <AccessibilityToolbar
+      <AccessibilityMenu
         preferences={accessibility.preferences}
         onTogglePreference={accessibility.togglePreference}
+        onSetPreference={accessibility.setPreference}
+        onToggleProfile={accessibility.toggleProfile}
         onResetPreferences={accessibility.resetPreferences}
       />
 

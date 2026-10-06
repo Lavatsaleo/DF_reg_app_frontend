@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { selectChoiceOnEnter } from "../utils/formUtils";
 import ResultAlert from "./ResultAlert";
 import ReviewApplication from "./ReviewApplication";
 import WizardSection from "./WizardSection";
@@ -268,13 +269,7 @@ function RegistrationWizard({
     if (event.key !== "Enter" || event.isComposing) return;
     const target = event.target;
     if (!(target instanceof HTMLInputElement)) return;
-
-    // Support Enter as an alternative to Space for radio buttons and checkboxes.
-    if (target.type === "radio" || target.type === "checkbox") {
-      event.preventDefault();
-      target.click();
-      return;
-    }
+    if (selectChoiceOnEnter(event)) return;
 
     // Text-like inputs must not activate the form's default submit button.
     if (!["submit", "button", "reset"].includes(target.type)) event.preventDefault();

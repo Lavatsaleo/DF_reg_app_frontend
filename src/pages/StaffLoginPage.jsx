@@ -78,7 +78,7 @@ function StaffLoginPage({ onLogin, onBackHome }) {
             </div>
           </div>
 
-          {error && <div className="alert alert-error mb-3">{error}</div>}
+          {error && <div className="alert alert-error mb-3" role="alert">{error}</div>}
 
           <form onSubmit={handleLogin} className="staff-login-form">
             <label>

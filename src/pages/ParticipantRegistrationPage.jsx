@@ -405,9 +405,11 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
     if (Object.keys(nextErrors).length > 0) {
       window.requestAnimationFrame(() => {
         const firstCode = Object.keys(nextErrors)[0];
-        document
-          .getElementById(`${firstCode}-registration-card`)
-          ?.scrollIntoView({ behavior: "smooth", block: "center" });
+        const card = document.getElementById(`${firstCode}-registration-card`);
+        card?.scrollIntoView({ behavior: "smooth", block: "center" });
+        // Focus the first invalid control so its error (linked by aria-describedby) is read out.
+        const control = card?.querySelector("input:not([type=hidden]), select, textarea, button");
+        control?.focus({ preventScroll: true });
       });
       return false;
     }
@@ -1100,7 +1102,8 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
                               type="file"
                               accept=".pdf,.jpg,.jpeg,.png"
                               aria-labelledby={labelId}
-                              aria-describedby={helpId}
+                              aria-describedby={[helpId, error ? errorId : null].filter(Boolean).join(" ") || undefined}
+                              aria-invalid={error ? "true" : "false"}
                               aria-required={question.required ? "true" : "false"}
                               onChange={(event) =>
                                 handleFileChange(question, event.target.files?.[0] || null)
@@ -1130,7 +1133,7 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
                         )}
 
                         {error && (
-                          <div id={errorId} className="invalid-feedback d-block" role="alert">
+                          <div id={errorId} className="invalid-feedback d-block">
                             {error}
                           </div>
                         )}
