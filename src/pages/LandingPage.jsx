@@ -1,57 +1,14 @@
 import { pathways } from "../data/pathways";
 import PathwayCard from "../components/PathwayCard";
-import heroPerson from "../assets/hero-person.webp";
-// Approved secondary partnership lock-up. Keep the supplied PNG in public/ so Vite copies it to dist/.
-const secondaryLogoLockup = "/digital-futures-secondary-logo.png";
+import ProgrammePartnership from "../components/ProgrammePartnership";
+import HeroBanner from "../components/HeroBanner";
+import programmePartners from "../assets/programme-partners-3.webp";
+import "./LandingHero.css";
 
 function LandingPage({ pathwayMessage, onPathwaySelect, onCheckStatus }) {
-  const openPathways = pathways.filter((pathway) => pathway.status === "open");
-
   return (
     <main id="main-content" tabIndex="-1" className="df-home-page df-home-clean">
-      <section className="df-clean-hero" aria-labelledby="digital-futures-title">
-        <div className="container">
-          <div className="df-clean-hero-grid">
-            <div className="df-clean-hero-copy">
-              <span className="df-eyebrow">Digital Futures application portal</span>
-              <h1 id="digital-futures-title" className="df-clean-hero-title">
-                Digital skills.<br />
-                <span>Inclusive futures.</span>
-              </h1>
-              <p className="df-clean-hero-intro">
-                Apply for a Digital Futures training pathway through an accessible portal with clear eligibility checks, secure consent and guided next steps.
-              </p>
-
-              <div className="df-clean-hero-actions">
-                <a href="#pathways" className="btn ss-btn-primary">
-                  Choose a pathway <i className="bi bi-arrow-right" aria-hidden="true" />
-                </a>
-                <button type="button" className="btn ss-btn-outline" onClick={onCheckStatus}>
-                  <i className="bi bi-search" aria-hidden="true" /> Check application status
-                </button>
-              </div>
-
-            </div>
-
-            <div className="df-clean-hero-media" aria-label="Digital Futures participant">
-              <div className="df-photo-shape df-photo-shape-teal" aria-hidden="true" />
-              <div className="df-photo-frame">
-                <img src={heroPerson} alt="Digital Futures participant wearing glasses and a pink shirt" />
-              </div>
-              <div className="df-photo-triangles" aria-hidden="true">
-                <span />
-                <span />
-                <span />
-              </div>
-              <div className="df-open-badge">
-                <span>Accepting applications</span>
-                <strong>Physical &amp; Virtual Academy</strong>
-                <small>{openPathways.length} pathways accepting applications</small>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <HeroBanner pathways={pathways} onPathwaySelect={onPathwaySelect} onCheckStatus={onCheckStatus} />
 
       <section id="pathways" className="df-clean-pathway-section" aria-labelledby="pathways-title">
         <div className="container">
@@ -81,13 +38,26 @@ function LandingPage({ pathwayMessage, onPathwaySelect, onCheckStatus }) {
         </div>
       </section>
 
-      <section className="df-programme-partners df-programme-partners-footer" aria-label="Digital Futures partnership">
+      <section className="df-hero-partners" aria-labelledby="programme-partners-title">
         <div className="container">
-          <img
-            src={secondaryLogoLockup}
-            alt="In partnership with Mastercard Foundation, ACET, African Disability Forum, International Labour Organization and Sightsavers"
-            className="df-secondary-logo-lockup"
-          />
+          <div className="df-hero-partners-inner">
+            <div>
+              <span className="df-eyebrow">Working together</span>
+              <h2 id="programme-partners-title">Programme partners</h2>
+            </div>
+            <div className="df-hero-partners-logos">
+              <ProgrammePartnership compact />
+              <span className="df-hero-partners-divider" aria-hidden="true" />
+              <img
+                src={programmePartners}
+                width="440"
+                height="70"
+                loading="lazy"
+                alt="African Center for Economic Transformation (ACET), African Disability Forum (ADF) and International Labour Organization (ILO)"
+                className="df-hero-partners-strip"
+              />
+            </div>
+          </div>
         </div>
       </section>
     </main>

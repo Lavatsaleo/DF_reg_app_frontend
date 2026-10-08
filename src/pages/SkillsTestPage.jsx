@@ -282,9 +282,16 @@ function SkillsTestPage({ initialToken = "", onBackHome, onCheckStatus }) {
         <div className="container">
           <div className="row align-items-center g-4">
             <div className="col-12 col-lg-8">
-              <button type="button" className="btn ss-btn-outline mb-4" onClick={onBackHome}>
+              <a
+                href="/"
+                className="df-back-link d-flex align-items-center gap-2 mb-4"
+                onClick={(event) => {
+                  event.preventDefault();
+                  onBackHome();
+                }}
+              >
                 <i className="bi bi-arrow-left" aria-hidden="true" /> Back to home
-              </button>
+              </a>
               <span className="ss-small-label light">Basic IT skills test</span>
               <h1 id="skills-page-title">Complete your basic IT skills test</h1>
               <p>

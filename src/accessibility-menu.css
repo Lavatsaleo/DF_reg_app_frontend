@@ -386,3 +386,12 @@ html.ss-high-contrast .a11y-tile.is-on { border-color: #ffc81f; }
 html.ss-high-contrast .a11y-launcher { background: #000000; border-color: #ffc81f; }
 html.ss-high-contrast .a11y-switch[aria-checked="true"] { background: #ffc81f; }
 html.ss-high-contrast .a11y-switch[aria-checked="true"] > span { background: #000000; border-color: #000000; }
+
+/* Reserve room at the end of every page so the floating launcher never covers the last content on small screens. */
+@media (max-width: 767.98px) {
+  #root::after {
+    content: "";
+    display: block;
+    height: 88px;
+  }
+}

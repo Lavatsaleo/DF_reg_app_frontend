@@ -97,8 +97,12 @@
 .df-gender-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; list-style: none; padding: 0; margin: 0; font-size: .78rem; color: var(--df-muted); align-self: start; }
 .df-gender-legend li { display: flex; align-items: center; gap: 6px; }
 .df-gender-card { margin-bottom: 24px; }
-.df-gender-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 32px; align-items: start; }
-.df-gender-split { display: grid; gap: 12px; }
+.df-gender-split { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 28px; }
+.df-gender-subhead { font-size: 0.95rem !important; font-weight: 800; letter-spacing: 0 !important; margin: 0 0 12px; }
+.df-disability-total { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin-bottom: 20px; padding: 14px 16px; border-radius: 14px; background: var(--df-bg); }
+.df-disability-total strong { font-size: 1.8rem; letter-spacing: -0.03em; }
+.df-disability-total span { color: var(--df-muted); font-size: 0.85rem; }
+.df-disability-total .df-sex-breakdown { flex-basis: 100%; margin-top: 0; }
 .df-gender-stat { background: var(--df-bg); border-radius: 14px; padding: 14px 16px; display: grid; grid-template-columns: 1fr auto; align-items: baseline; gap: 2px 12px; }
 .df-gender-stat > span { display: flex; align-items: center; gap: 8px; font-size: .85rem; font-weight: 700; }
 .df-gender-stat > strong { font-size: 1.6rem; letter-spacing: -.03em; grid-row: span 2; }
@@ -120,7 +124,7 @@
 .df-month-column > div.split .df-sex-segment:last-child { border-radius: 4px 4px 0 0; }
 .df-chart-bars li[tabindex], .df-gender-funnel li[tabindex], .df-month-column[tabindex] { border-radius: 8px; outline-offset: 4px; cursor: default; }
 .df-chart-bars li[tabindex]:hover .df-sex-segment, .df-gender-funnel li[tabindex]:hover .df-sex-segment, .df-month-column[tabindex]:hover .df-sex-segment { filter: brightness(1.08); }
-.df-split-toggle[aria-pressed="true"] { background: var(--df-yellow); border-color: var(--df-yellow); color: #111; }
+.df-split-toggle[aria-pressed="true"], .df-split-toggle[aria-pressed="true"]:hover { background: #111111 !important; border-color: #111111 !important; color: #ffffff !important; }
 .df-split-notice { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin: -8px 0 16px; }
 .df-split-notice small { color: var(--df-muted); font-size: .78rem; }
 .df-chart-tooltip { position: fixed; z-index: 1080; pointer-events: none; min-width: 190px; background: var(--df-white); color: var(--df-black); border: 1px solid var(--df-border); border-radius: 10px; padding: 10px 12px; box-shadow: 0 8px 24px rgba(0, 0, 0, .14); font-size: .8rem; }
@@ -133,7 +137,7 @@
   .df-dashboard-shell { padding: 24px 16px; }
   .df-dashboard-header, .df-dashboard-context { flex-direction: column; }
   .df-dashboard-user { text-align: left; }
-  .df-dashboard-chart-grid, .df-map-grid, .df-dashboard-user-form, .df-gender-grid { grid-template-columns: 1fr; }
+  .df-dashboard-chart-grid, .df-map-grid, .df-dashboard-user-form, .df-gender-split { grid-template-columns: 1fr; }
   .df-dashboard-card { padding: 20px; }
   .df-metric { padding: 16px; }
   .df-metric-top { align-items: start; }
@@ -147,7 +151,7 @@ html.ss-high-contrast .df-data-mode button[aria-pressed="true"] { color: #000; }
 html.ss-high-contrast .df-map-bubble:focus { stroke: #fff; }
 /* Disclosure toggles and source links need a 24px+ target on touch screens. */
 .df-dashboard-page details > summary { min-height: 44px; display: flex; align-items: center; gap: 6px; cursor: pointer; }
-.df-dashboard-page details > summary::before { content: "B8"; transition: transform .15s ease; }
+.df-dashboard-page details > summary::before { content: "\25B8"; transition: transform .15s ease; }
 .df-dashboard-page details[open] > summary::before { transform: rotate(90deg); }
 .df-dashboard-page details > summary::-webkit-details-marker { display: none; }
 .df-dashboard-page details > summary { list-style: none; }

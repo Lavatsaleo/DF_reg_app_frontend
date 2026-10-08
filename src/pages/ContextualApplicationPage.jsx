@@ -613,7 +613,7 @@ function ContextualApplicationPage({
                     </div>
                     <button
                       type="button"
-                      className="btn btn-sm ss-btn-outline"
+                      className="btn btn-sm ss-btn-outline text-nowrap"
                       onClick={moveBackOneFlowStep}
                     >
                       Back to consent

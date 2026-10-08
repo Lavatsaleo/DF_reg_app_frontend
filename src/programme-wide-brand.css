@@ -799,3 +799,8 @@ main li > a:only-child {
 .ss-review-intro p {
   color: var(--df-black) !important;
 }
+
+/* Back links sit on their own line above the page label, sized to their text. */
+.df-back-link.d-flex {
+  width: fit-content;
+}

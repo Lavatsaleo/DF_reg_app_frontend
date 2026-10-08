@@ -1,0 +1,666 @@
+/* Landing hero: full-width brand gradient band with a rotating pathway carousel.
+   Text is #111 throughout, which keeps at least 7:1 contrast on every brand colour used behind it. */
+
+.df-hero-band {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  padding: clamp(2.5rem, 5vw, 4.5rem) 0 clamp(2.75rem, 5vw, 4.75rem);
+  color: #111111;
+}
+
+/* Background: one gradient layer per theme, cross-faded as slides change. */
+.df-hero-band-bg {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.df-hero-band-layer {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.9s ease;
+}
+
+.df-hero-band-layer.is-active {
+  opacity: 1;
+}
+
+.df-hero-band-layer.theme-teal {
+  background:
+    radial-gradient(circle at 12% 18%, rgba(255, 255, 255, 0.45), transparent 38%),
+    radial-gradient(circle at 88% 85%, rgba(255, 200, 31, 0.55), transparent 42%),
+    linear-gradient(125deg, #4fcdb0 0%, #6fc694 48%, #8db92e 100%);
+}
+
+.df-hero-band-layer.theme-sun {
+  background:
+    radial-gradient(circle at 12% 18%, rgba(255, 255, 255, 0.5), transparent 38%),
+    radial-gradient(circle at 85% 80%, rgba(79, 205, 176, 0.7), transparent 45%),
+    linear-gradient(125deg, #ffc81f 0%, #ffd95e 45%, #4fcdb0 100%);
+}
+
+.df-hero-band-layer.theme-citrus {
+  background:
+    radial-gradient(circle at 12% 18%, rgba(255, 255, 255, 0.4), transparent 38%),
+    radial-gradient(circle at 88% 82%, rgba(255, 200, 31, 0.75), transparent 45%),
+    linear-gradient(125deg, #ff8a4c 0%, #ff671b 45%, #ffc81f 100%);
+}
+
+/* Youthful texture: a soft dot grid, outline rings and the brand's red triangles. */
+.df-hero-band-dots {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(17, 17, 17, 0.09) 1.5px, transparent 1.6px);
+  background-size: 22px 22px;
+  mask-image: linear-gradient(100deg, transparent 0%, #000000 45%, #000000 100%);
+}
+
+.df-hero-band-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.55);
+}
+
+.df-hero-band-ring.ring-a {
+  width: clamp(280px, 38vw, 560px);
+  aspect-ratio: 1;
+  top: -18%;
+  right: -8%;
+}
+
+.df-hero-band-ring.ring-b {
+  width: clamp(90px, 10vw, 150px);
+  aspect-ratio: 1;
+  top: 12%;
+  right: 33%;
+  background: rgba(255, 255, 255, 0.18);
+  border-color: transparent;
+}
+
+.df-hero-band-triangles {
+  position: absolute;
+  right: 3%;
+  bottom: 12%;
+  display: grid;
+  gap: 7px;
+  width: clamp(48px, 5vw, 72px);
+}
+
+.df-hero-band-triangles span {
+  display: block;
+  aspect-ratio: 5 / 2;
+  background: #d22a2f;
+  clip-path: polygon(0 100%, 100% 0, 100% 100%);
+}
+
+.df-hero-band-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  align-items: center;
+  gap: clamp(2rem, 5vw, 4.5rem);
+}
+
+/* Copy */
+.df-hero-band-eyebrow {
+  display: inline-block;
+  margin-bottom: 1rem;
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.df-hero-band-title {
+  margin: 0 0 1.25rem;
+  color: #111111 !important;
+  font-family: "Arial Black", Arial, Helvetica, sans-serif !important;
+  font-size: clamp(2.6rem, 5.6vw, 5.4rem) !important;
+  /* Room for the highlight band on the second line without touching the first line's descenders. */
+  line-height: 1.24 !important;
+  letter-spacing: -0.04em;
+}
+
+/* "Inclusive futures." as a black highlight band with yellow type: readable on every theme. */
+.df-hero-band-title span {
+  padding: 0 0.16em;
+  color: #ffc81f;
+  background: #111111;
+  border-radius: 0.12em;
+  /* Each wrapped line gets its own rounded band that hugs the words. */
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+.df-hero-band-intro {
+  max-width: 34rem;
+  margin: 0 0 1.75rem;
+  color: #111111;
+  font-size: clamp(1.05rem, 1.5vw, 1.2rem);
+  line-height: 1.6;
+}
+
+.df-hero-band-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+}
+
+.df-hero-band-actions .btn {
+  min-height: 52px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.df-hero-band-btn-primary,
+.df-hero-band-btn-primary:visited {
+  color: #ffffff !important;
+  background: #111111 !important;
+  border: 2px solid #111111 !important;
+  text-decoration: none !important;
+}
+
+.df-hero-band-btn-primary:hover,
+.df-hero-band-btn-primary:focus-visible {
+  color: #111111 !important;
+  background: #ffc81f !important;
+}
+
+.df-hero-band-btn-secondary {
+  color: #111111 !important;
+  background: #ffffff !important;
+  border: 2px solid #111111 !important;
+}
+
+.df-hero-band-btn-secondary:hover,
+.df-hero-band-btn-secondary:focus-visible {
+  background: #fff4cc !important;
+}
+
+.df-hero-band-actions .btn:focus-visible,
+.df-hero-control:focus-visible,
+.df-hero-dot:focus-visible {
+  outline: 3px solid #111111;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 6px #ffffff;
+}
+
+.df-hero-band-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 1.5rem 0 0;
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.df-hero-band-status i {
+  color: #263711;
+}
+
+/* Carousel: on wide screens the photo fills the right half of the band, edge to edge. */
+.df-hero-carousel {
+  position: relative;
+  width: 100%;
+}
+
+.df-hero-slides {
+  display: grid;
+}
+
+/* Slides share one grid cell so swapping never shifts the layout. */
+.df-hero-slide {
+  grid-area: 1 / 1;
+  position: relative;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.8s ease, visibility 0s linear 0.8s;
+}
+
+.df-hero-slide.is-active {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.8s ease, visibility 0s;
+}
+
+.df-hero-slide-photo {
+  position: relative;
+  margin: 0;
+  overflow: hidden;
+  aspect-ratio: 4 / 5;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.35);
+  box-shadow: 0 24px 50px rgba(17, 17, 17, 0.2);
+}
+
+.df-hero-slide-photo img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.06);
+  transition: transform 7s ease-out;
+}
+
+.df-hero-slide.is-active .df-hero-slide-photo img {
+  transform: scale(1);
+}
+
+.df-hero-slide-card {
+  position: relative;
+  z-index: 2;
+  width: auto;
+  margin: -3rem 1rem 0;
+  padding: 1.1rem 1.25rem 1.25rem;
+  background: #ffffff;
+  border-left: 6px solid #ffc81f;
+  border-radius: 16px;
+  box-shadow: 0 18px 40px rgba(17, 17, 17, 0.18);
+}
+
+.df-hero-slide-tag {
+  display: block;
+  color: #b3231f;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.df-hero-slide-card h2 {
+  margin: 0.2rem 0 0.35rem;
+  font-size: 1.4rem !important;
+  line-height: 1.2;
+}
+
+.df-hero-slide-card p {
+  margin: 0 0 0.9rem;
+  color: #3c3935;
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.df-hero-slide-card .btn {
+  width: 100%;
+  min-height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.92rem;
+}
+
+.df-hero-carousel-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  width: fit-content;
+  margin: 1.25rem auto 0;
+  padding: 0.3rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 8px 22px rgba(17, 17, 17, 0.12);
+}
+
+.df-hero-control {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 2px solid #111111;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #111111;
+  font-size: 1.15rem;
+  cursor: pointer;
+}
+
+.df-hero-control:hover {
+  background: #fff4cc;
+}
+
+.df-hero-control-play {
+  margin-left: 0.3rem;
+  background: #111111;
+  color: #ffffff;
+}
+
+.df-hero-control-play:hover {
+  background: #333333;
+}
+
+.df-hero-dots {
+  display: flex;
+  gap: 0.2rem;
+}
+
+/* Each dot is a 44px target; the bar inside shows progress on the active slide. */
+.df-hero-dot {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.df-hero-dot span {
+  position: relative;
+  display: block;
+  width: 28px;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(17, 17, 17, 0.28);
+}
+
+.df-hero-dot.is-active span {
+  width: 40px;
+  background: rgba(17, 17, 17, 0.35);
+}
+
+.df-hero-dot.is-active span::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #111111;
+}
+
+.df-hero-dot.is-timing span::after {
+  transform-origin: left;
+  animation: df-hero-progress linear forwards;
+  animation-duration: inherit;
+}
+
+@keyframes df-hero-progress {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .df-hero-band-layer,
+  .df-hero-slide,
+  .df-hero-slide-photo img {
+    transition: none !important;
+  }
+
+  .df-hero-slide-photo img {
+    transform: none !important;
+  }
+}
+
+html.ss-reduce-motion .df-hero-slide-photo img {
+  transform: none !important;
+}
+
+/* Wide screens: copy on the left half, photo covering the whole right half from top to bottom. */
+@media (min-width: 992px) {
+  .df-hero-band {
+    display: flex;
+    align-items: center;
+    min-height: clamp(580px, 44vw, 740px);
+  }
+
+  .df-hero-band > .container {
+    width: 100%;
+  }
+
+  .df-hero-band-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .df-hero-band-copy {
+    position: relative;
+    z-index: 3;
+    max-width: calc(50% - 1.5rem);
+  }
+
+  .df-hero-band-title {
+    font-size: clamp(2.8rem, 4.7vw, 5rem) !important;
+  }
+
+  .df-hero-carousel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 50%;
+  }
+
+  .df-hero-slides,
+  .df-hero-slide {
+    height: 100%;
+  }
+
+  .df-hero-slide-photo {
+    position: absolute;
+    inset: 0;
+    aspect-ratio: auto;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    /* The left edge fades into the brand gradient so the photo blends into the band. */
+    mask-image: linear-gradient(90deg, transparent 0%, #000000 26%);
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000000 26%);
+  }
+
+  /* Card and controls sit on the faded left edge so the person stays in view. */
+  .df-hero-slide-card {
+    position: absolute;
+    left: 4%;
+    bottom: 100px;
+    width: min(56%, 330px);
+    margin: 0;
+  }
+
+  .df-hero-carousel-controls {
+    position: absolute;
+    left: 4%;
+    bottom: 28px;
+    z-index: 3;
+    margin: 0;
+  }
+
+  /* Triangles sit top-right on the photo, clear of the card and controls. */
+  .df-hero-band-triangles {
+    top: 8%;
+    right: 3%;
+    bottom: auto;
+    z-index: 2;
+  }
+
+  .df-hero-band-ring.ring-b {
+    display: none;
+  }
+}
+
+@media (max-width: 991.98px) {
+  .df-hero-band-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .df-hero-carousel {
+    max-width: 560px;
+    margin-inline: auto;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .df-hero-band-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .df-hero-slide-card {
+    margin: -2.5rem 0.6rem 0;
+  }
+
+  .df-hero-band-triangles {
+    display: none;
+  }
+}
+
+html.ss-high-contrast .df-hero-band-layer {
+  background: #000000 !important;
+}
+
+html.ss-high-contrast .df-hero-band,
+html.ss-high-contrast .df-hero-band-title,
+html.ss-high-contrast .df-hero-band-intro {
+  color: #ffffff !important;
+}
+
+html.ss-high-contrast .df-hero-band-eyebrow,
+html.ss-high-contrast .df-hero-band-status {
+  color: #000000;
+  background: #ffffff;
+}
+
+html.ss-high-contrast .df-hero-band-dots,
+html.ss-high-contrast .df-hero-band-ring {
+  display: none;
+}
+
+html.ss-high-contrast .df-hero-band-title span {
+  color: #000000;
+  background: #ffc81f;
+}
+
+html.ss-high-contrast .df-hero-dot span {
+  background: rgba(255, 255, 255, 0.45);
+}
+
+html.ss-high-contrast .df-hero-dot.is-active span::after {
+  background: #ffc81f;
+}
+
+/* Hero and pathway sections each had generous padding, leaving a large empty band between them. */
+.df-home-clean .df-clean-pathway-section {
+  padding-top: clamp(2.5rem, 4vw, 3.5rem);
+}
+
+/* Pathway cards: vector icons stay crisp and high-contrast at any size (the old PNG icons were blurry or corrupt). */
+.df-pathway-glyph {
+  color: #111111;
+  font-size: 1.9rem;
+  line-height: 1;
+}
+
+/* Full-width actions keep "Apply for …" on one line instead of wrapping inside a narrow pill. */
+.df-home-clean .df-clean-pathway-card .btn {
+  width: 100%;
+  max-width: none;
+}
+
+/* Programme partners footer */
+.df-hero-partners {
+  padding: clamp(1.75rem, 3vw, 2.5rem) 0;
+  background: #ffffff;
+  border-top: 1px solid var(--df-border);
+}
+
+.df-hero-partners-inner {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.3fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 2rem;
+}
+
+.df-hero-partners .df-eyebrow {
+  margin-bottom: 0.25rem;
+}
+
+.df-hero-partners h2 {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif !important;
+  font-size: 1.35rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
+}
+
+.df-hero-partners-logos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1.25rem 2rem;
+}
+
+.df-hero-partners .df-partnership {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  max-width: none;
+}
+
+.df-hero-partners-divider {
+  width: 1px;
+  align-self: stretch;
+  min-height: 48px;
+  background: var(--df-border);
+}
+
+.df-hero-partners .df-partner-logo img {
+  width: auto;
+}
+
+/* Logos differ in shape: a wide wordmark, a square lock-up and a three-logo strip. */
+.df-hero-partners .df-sightsavers-partner img {
+  height: 38px;
+}
+
+.df-hero-partners .df-mastercard-partner img {
+  height: 88px;
+}
+
+.df-hero-partners .df-sightsavers-partner,
+.df-hero-partners .df-mastercard-partner {
+  width: auto;
+}
+
+.df-hero-partners-strip {
+  display: block;
+  width: min(100%, 400px);
+  height: auto;
+}
+
+@media (max-width: 767.98px) {
+  .df-hero-partners-inner {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  .df-hero-partners-logos {
+    justify-content: flex-start;
+  }
+
+  .df-hero-partners-divider {
+    display: none;
+  }
+}
+
+html.ss-high-contrast .df-hero-partners {
+  background: #000000;
+  border-color: #ffffff;
+}
+
+/* Logos keep a white plate so their own colours stay legible in high contrast. */
+html.ss-high-contrast .df-hero-partners-logos {
+  padding: 0.75rem 1rem;
+  background: #ffffff;
+  border-radius: 10px;
+}
