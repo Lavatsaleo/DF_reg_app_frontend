@@ -1,3 +1,4 @@
+// Card wording agreed with the programme team (website wording, October 2026).
 export const pathways = [
   {
     id: "PHYSICAL_ACADEMY",
@@ -7,13 +8,13 @@ export const pathways = [
     tag: "In-person learning",
     icon: "bi-building-check",
     description:
-      "Apply for the Physical Academy residential training pathway.",
+      "This pathway may suit you if you prefer in-person training (face to face) and you can attend full-time training for 9 months.",
     highlights: [
-      "Nine-month residential training",
-      "In-person classes at the training institute",
-      "Accommodation needs captured in the application",
-      "Accessibility and support requirements captured",
-      "Motivation and training readiness",
+      "Industry relevant IT skills",
+      "Instructor led, classroom based practical learning",
+      "Full-time training for 9 months",
+      "Career development support and mentorship",
+      "Referral to internship and employment opportunities",
     ],
   },
   {
@@ -24,13 +25,13 @@ export const pathways = [
     tag: "Online learning",
     icon: "bi-laptop",
     description:
-      "Apply for the Virtual Academy pathway and tell us about your training readiness and access to the resources needed to participate.",
+      "This pathway may suit you if you prefer flexible, online, distance learning, you can join regular online sessions and you can attend part-time training for 4 months.",
     highlights: [
-      "Participant application and eligibility information",
-      "Device, internet and electricity access",
-      "Accessibility and support requirements",
-      "Motivation and training readiness",
-      "Remote participation readiness",
+      "Industry relevant IT skills",
+      "Instructor led and self-paced learning",
+      "Part-time class schedule for 4 months",
+      "Career development support and mentorship",
+      "Referral to practical workplace attachment",
     ],
   },
   {
@@ -38,16 +39,15 @@ export const pathways = [
     title: "Digital Entrepreneurship",
     mode: "UNKNOWN",
     status: "open",
-    tag: "Business pathway",
+    tag: "Start or grow your business",
     icon: "bi-rocket-takeoff",
     description:
-      "Apply for the Digital Entrepreneurship pathway to develop a digital enterprise idea or grow an existing business.",
+      "This pathway may be right for you if you want to develop a business that provides a digital product or service, or use digital tools to start or grow your business.",
     highlights: [
-      "Average commitment of 5 hours per week for at least 3 months",
-      "Digital enterprise profile",
-      "Business stage and business idea",
-      "Accessibility and support requirements",
-      "Business growth motivation",
+      "Business development training",
+      "Business mentorship",
+      "Pitch for seed funding",
+      "Part-time training and business support for 3 months",
     ],
   },
 ];

@@ -4,6 +4,30 @@ import heroBraids from "../assets/hero-slide-braids.webp";
 import heroHat from "../assets/hero-slide-hat.webp";
 
 const ROTATE_MS = 7000;
+const PROGRAMME_COUNTRIES = ["Ghana", "Nigeria", "Kenya", "Zambia"];
+
+// The first and last steps are also the way in: choose a pathway, or check an existing application.
+const APPLICATION_JOURNEY = [
+  { title: "Choose a pathway", icon: "bi-signpost-split", href: "#pathways" },
+  { title: "Check your eligibility", icon: "bi-person-check" },
+  { title: "Complete the consent check", icon: "bi-shield-check" },
+  { title: "Fill out your application", icon: "bi-pencil-square" },
+  { title: "Submit your application", icon: "bi-send-check" },
+  { title: "Check your application status", icon: "bi-search", opensStatus: true },
+];
+
+function JourneyStep({ step, number, onCheckStatus }) {
+  const body = (
+    <>
+      <span className="df-hero-step-number" aria-hidden="true">{number}</span>
+      <span className="df-hero-step-title">{step.title}</span>
+      <i className={`bi ${step.href || step.opensStatus ? "bi-arrow-right" : step.icon} df-hero-step-icon`} aria-hidden="true" />
+    </>
+  );
+  if (step.href) return <a className="df-hero-step is-action" href={step.href}>{body}</a>;
+  if (step.opensStatus) return <button type="button" className="df-hero-step is-action" onClick={onCheckStatus}>{body}</button>;
+  return <div className="df-hero-step">{body}</div>;
+}
 
 // Each slide pairs a photo with an open pathway; the theme sets the band's brand gradient.
 const SLIDE_ART = {
@@ -12,7 +36,7 @@ const SLIDE_ART = {
     alt: "Smiling young woman in a floral dress, seated in her wheelchair outside a training centre",
     theme: "teal",
     // Focal point keeps the face in frame however the photo is cropped to fill its area.
-    focus: "50% 30%",
+    focus: "58% 30%",
   },
   VIRTUAL_ACADEMY: {
     image: heroBraids,
@@ -36,7 +60,7 @@ function prefersReducedMotion() {
   );
 }
 
-function HeroBanner({ pathways, onPathwaySelect, onCheckStatus }) {
+function HeroBanner({ pathways, onCheckStatus }) {
   const slides = pathways
     .filter((pathway) => pathway.status === "open" && SLIDE_ART[pathway.id])
     .map((pathway) => ({ pathway, ...SLIDE_ART[pathway.id] }));
@@ -71,7 +95,6 @@ function HeroBanner({ pathways, onPathwaySelect, onCheckStatus }) {
   }
 
   const current = slides[active] || slides[0];
-  const openCount = pathways.filter((pathway) => pathway.status === "open").length;
 
   return (
     <section className={`df-hero-band theme-${current?.theme || "teal"}`} aria-labelledby="digital-futures-title">
@@ -79,39 +102,42 @@ function HeroBanner({ pathways, onPathwaySelect, onCheckStatus }) {
         {["teal", "sun", "citrus"].map((theme) => (
           <span key={theme} className={`df-hero-band-layer theme-${theme}${current?.theme === theme ? " is-active" : ""}`} />
         ))}
-        <span className="df-hero-band-dots" />
-        <span className="df-hero-band-ring ring-a" />
-        <span className="df-hero-band-ring ring-b" />
-        <span className="df-hero-band-triangles">
-          <span />
-          <span />
-          <span />
-        </span>
       </div>
 
-      <div className="container df-hero-band-grid">
-        <div className="df-hero-band-copy">
-          <span className="df-hero-band-eyebrow">Digital Futures application portal</span>
-          <h1 id="digital-futures-title" className="df-hero-band-title">
-            Digital skills.
-            <br />
-            <span>Inclusive futures.</span>
-          </h1>
-          <p className="df-hero-band-intro">
-            Apply for a Digital Futures training pathway through an accessible portal with clear eligibility checks, secure consent and guided next steps.
-          </p>
-          <div className="df-hero-band-actions">
-            <a href="#pathways" className="btn df-hero-band-btn-primary">
-              Choose a pathway <i className="bi bi-arrow-right" aria-hidden="true" />
-            </a>
-            <button type="button" className="btn df-hero-band-btn-secondary" onClick={onCheckStatus}>
-              <i className="bi bi-search" aria-hidden="true" /> Check application status
-            </button>
+      <div className="container">
+        <h1 id="digital-futures-title" className="df-hero-band-title">
+          Build your digital skills and your career in tech
+        </h1>
+      </div>
+
+      <div className="df-hero-band-body">
+        <div className="container">
+          <div className="df-hero-band-copy">
+            <p className="df-hero-band-intro">
+              Apply for a Digital Futures training pathway through an accessible portal with clear eligibility checks, secure consent and guided next steps.
+            </p>
+
+            <h2 className="df-hero-journey-title">Your application journey</h2>
+            <ol className="df-hero-journey">
+              {APPLICATION_JOURNEY.map((step, index) => (
+                <li key={step.title}>
+                  <JourneyStep step={step} number={index + 1} onCheckStatus={onCheckStatus} />
+                </li>
+              ))}
+            </ol>
+
+            <div className="df-hero-about">
+              <h2>About Digital Futures</h2>
+              <p>
+                Digital Futures is an IT skills programme for young people with disabilities in Ghana, Nigeria, Kenya and Zambia. Through this initiative you can develop the skills and certifications to work in the digital economy.
+              </p>
+              <ul className="df-hero-countries" aria-label="Programme countries">
+                {PROGRAMME_COUNTRIES.map((country) => (
+                  <li key={country}><i className="bi bi-geo-alt-fill" aria-hidden="true" /> {country}</li>
+                ))}
+              </ul>
+            </div>
           </div>
-          <p className="df-hero-band-status">
-            <i className="bi bi-check-circle-fill" aria-hidden="true" />
-            Accepting applications · {openCount} {openCount === 1 ? "pathway" : "pathways"} open
-          </p>
         </div>
 
         {count > 0 && (
@@ -120,7 +146,7 @@ function HeroBanner({ pathways, onPathwaySelect, onCheckStatus }) {
             className="df-hero-carousel"
             role="region"
             aria-roledescription="carousel"
-            aria-label="Training pathways"
+            aria-label="Digital Futures participants"
             onMouseEnter={() => setHeld(true)}
             onMouseLeave={() => setHeld(false)}
             onFocus={() => setHeld(true)}
@@ -136,7 +162,7 @@ function HeroBanner({ pathways, onPathwaySelect, onCheckStatus }) {
                     className={`df-hero-slide${isActive ? " is-active" : ""}`}
                     role="group"
                     aria-roledescription="slide"
-                    aria-label={`${index + 1} of ${count}: ${pathway.title}`}
+                    aria-label={`Photo ${index + 1} of ${count}`}
                     // Hidden slides leave the tab order and the accessibility tree.
                     inert={!isActive}
                   >
@@ -149,14 +175,6 @@ function HeroBanner({ pathways, onPathwaySelect, onCheckStatus }) {
                         loading={index === 0 ? "eager" : "lazy"}
                       />
                     </figure>
-                    <div className="df-hero-slide-card">
-                      <span className="df-hero-slide-tag">{pathway.tag}</span>
-                      <h2>{pathway.title}</h2>
-                      <p>{pathway.highlights[0]}</p>
-                      <button type="button" className="btn ss-btn-primary" onClick={() => onPathwaySelect(pathway)}>
-                        Apply for {pathway.title} <i className="bi bi-arrow-right" aria-hidden="true" />
-                      </button>
-                    </div>
                   </div>
                 );
               })}
@@ -164,7 +182,7 @@ function HeroBanner({ pathways, onPathwaySelect, onCheckStatus }) {
 
             {count > 1 && (
               <div className="df-hero-carousel-controls">
-                <button type="button" className="df-hero-control" aria-label="Previous pathway" onClick={() => goTo(active - 1)}>
+                <button type="button" className="df-hero-control" aria-label="Previous photo" onClick={() => goTo(active - 1)}>
                   <i className="bi bi-chevron-left" aria-hidden="true" />
                 </button>
                 <div className="df-hero-dots">
@@ -173,7 +191,7 @@ function HeroBanner({ pathways, onPathwaySelect, onCheckStatus }) {
                       key={slide.pathway.id}
                       type="button"
                       className={`df-hero-dot${index === active ? " is-active" : ""}${index === active && rotating ? " is-timing" : ""}`}
-                      aria-label={`Show ${slide.pathway.title}`}
+                      aria-label={`Show photo ${index + 1}`}
                       aria-current={index === active ? "true" : undefined}
                       onClick={() => goTo(index)}
                     >
@@ -181,7 +199,7 @@ function HeroBanner({ pathways, onPathwaySelect, onCheckStatus }) {
                     </button>
                   ))}
                 </div>
-                <button type="button" className="df-hero-control" aria-label="Next pathway" onClick={() => goTo(active + 1)}>
+                <button type="button" className="df-hero-control" aria-label="Next photo" onClick={() => goTo(active + 1)}>
                   <i className="bi bi-chevron-right" aria-hidden="true" />
                 </button>
                 <button

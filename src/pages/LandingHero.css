@@ -1,11 +1,12 @@
-/* Landing hero: full-width brand gradient band with a rotating pathway carousel.
+/* Landing hero: brand gradient band. Heading on top; intro, application journey and "About" on the left;
+   a rotating photo blended into the background on the right.
    Text is #111 throughout, which keeps at least 7:1 contrast on every brand colour used behind it. */
 
 .df-hero-band {
   position: relative;
   overflow: hidden;
   isolation: isolate;
-  padding: clamp(2.5rem, 5vw, 4.5rem) 0 clamp(2.75rem, 5vw, 4.75rem);
+  padding-top: clamp(2.25rem, 4.5vw, 4rem);
   color: #111111;
 }
 
@@ -49,169 +50,169 @@
     linear-gradient(125deg, #ff8a4c 0%, #ff671b 45%, #ffc81f 100%);
 }
 
-/* Youthful texture: a soft dot grid, outline rings and the brand's red triangles. */
-.df-hero-band-dots {
-  position: absolute;
-  inset: 0;
-  background-image: radial-gradient(rgba(17, 17, 17, 0.09) 1.5px, transparent 1.6px);
-  background-size: 22px 22px;
-  mask-image: linear-gradient(100deg, transparent 0%, #000000 45%, #000000 100%);
-}
-
-.df-hero-band-ring {
-  position: absolute;
-  border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.55);
-}
-
-.df-hero-band-ring.ring-a {
-  width: clamp(280px, 38vw, 560px);
-  aspect-ratio: 1;
-  top: -18%;
-  right: -8%;
-}
-
-.df-hero-band-ring.ring-b {
-  width: clamp(90px, 10vw, 150px);
-  aspect-ratio: 1;
-  top: 12%;
-  right: 33%;
-  background: rgba(255, 255, 255, 0.18);
-  border-color: transparent;
-}
-
-.df-hero-band-triangles {
-  position: absolute;
-  right: 3%;
-  bottom: 12%;
-  display: grid;
-  gap: 7px;
-  width: clamp(48px, 5vw, 72px);
-}
-
-.df-hero-band-triangles span {
-  display: block;
-  aspect-ratio: 5 / 2;
-  background: #d22a2f;
-  clip-path: polygon(0 100%, 100% 0, 100% 100%);
-}
-
-.df-hero-band-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
-  align-items: center;
-  gap: clamp(2rem, 5vw, 4.5rem);
-}
-
-/* Copy */
-.df-hero-band-eyebrow {
-  display: inline-block;
-  margin-bottom: 1rem;
-  padding: 0.35rem 0.8rem;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.72);
-  font-size: 0.88rem;
-  font-weight: 700;
-}
-
+/* Heading: wraps on phones; one line across the container from 992px.
+   Arial Black runs about 24.5x its font size for this sentence, so 3.2vw keeps it inside the container. */
 .df-hero-band-title {
   margin: 0 0 1.25rem;
   color: #111111 !important;
   font-family: "Arial Black", Arial, Helvetica, sans-serif !important;
-  font-size: clamp(2.6rem, 5.6vw, 5.4rem) !important;
-  /* Room for the highlight band on the second line without touching the first line's descenders. */
-  line-height: 1.24 !important;
-  letter-spacing: -0.04em;
-}
-
-/* "Inclusive futures." as a black highlight band with yellow type: readable on every theme. */
-.df-hero-band-title span {
-  padding: 0 0.16em;
-  color: #ffc81f;
-  background: #111111;
-  border-radius: 0.12em;
-  /* Each wrapped line gets its own rounded band that hugs the words. */
-  box-decoration-break: clone;
-  -webkit-box-decoration-break: clone;
+  font-size: clamp(1.9rem, 6.6vw, 2.6rem) !important;
+  line-height: 1.15 !important;
+  letter-spacing: -0.02em;
 }
 
 .df-hero-band-intro {
-  max-width: 34rem;
+  max-width: 38rem;
   margin: 0 0 1.75rem;
   color: #111111;
   font-size: clamp(1.05rem, 1.5vw, 1.2rem);
   line-height: 1.6;
 }
 
-.df-hero-band-actions {
+/* Application journey: six numbered steps; the first and last are links into the site. */
+.df-hero-journey-title {
+  margin: 0 0 0.75rem;
+  color: #111111;
+  font-family: Arial, Helvetica, sans-serif !important;
+  font-size: 1.15rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0 !important;
+}
+
+.df-hero-journey {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.6rem;
+  margin: 0 0 1.75rem;
+  padding: 0;
+  list-style: none;
+}
+
+.df-hero-journey li {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.85rem;
 }
 
-.df-hero-band-actions .btn {
-  min-height: 52px;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55rem;
-  padding: 0.75rem 1.5rem;
-  border-radius: 999px;
-  font-weight: 700;
-}
-
-.df-hero-band-btn-primary,
-.df-hero-band-btn-primary:visited {
-  color: #ffffff !important;
-  background: #111111 !important;
-  border: 2px solid #111111 !important;
+.df-hero-step {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  width: 100%;
+  min-height: 96px;
+  padding: 0.8rem 0.9rem 0.9rem;
+  color: #111111 !important;
+  background: rgba(255, 255, 255, 0.88);
+  border: 2px solid transparent;
+  border-radius: 14px;
+  font: inherit;
+  text-align: left;
   text-decoration: none !important;
 }
 
-.df-hero-band-btn-primary:hover,
-.df-hero-band-btn-primary:focus-visible {
+.df-hero-step-number {
+  display: grid;
+  place-items: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 50%;
+  background: #111111;
+  color: #ffc81f;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.df-hero-step-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.df-hero-step-icon {
+  position: absolute;
+  top: 0.85rem;
+  right: 0.85rem;
+  font-size: 1.15rem;
+}
+
+/* The link step must beat the site-wide link rules (olive colour, inline-block padding). */
+.df-hero-journey a.df-hero-step {
+  display: flex;
+  padding: 0.8rem 0.9rem 0.9rem;
   color: #111111 !important;
-  background: #ffc81f !important;
 }
 
-.df-hero-band-btn-secondary {
-  color: #111111 !important;
-  background: #ffffff !important;
-  border: 2px solid #111111 !important;
+/* Clickable steps look like actions: solid white with a black outline and arrow. */
+.df-hero-step.is-action {
+  background: #ffffff;
+  border-color: #111111;
+  cursor: pointer;
 }
 
-.df-hero-band-btn-secondary:hover,
-.df-hero-band-btn-secondary:focus-visible {
-  background: #fff4cc !important;
+.df-hero-step.is-action:hover {
+  background: #fff4cc;
 }
 
-.df-hero-band-actions .btn:focus-visible,
-.df-hero-control:focus-visible,
-.df-hero-dot:focus-visible {
+.df-hero-step.is-action:focus-visible {
   outline: 3px solid #111111;
   outline-offset: 3px;
   box-shadow: 0 0 0 6px #ffffff;
 }
 
-.df-hero-band-status {
+/* About Digital Futures: a calm white panel so programme information reads separately from the steps. */
+.df-hero-about {
+  max-width: 38rem;
+  padding: 1.15rem 1.3rem 1.25rem;
+  background: rgba(255, 255, 255, 0.9);
+  border-left: 6px solid #111111;
+  border-radius: 16px;
+}
+
+.df-hero-about h2 {
+  margin: 0 0 0.5rem;
+  color: #111111;
+  font-family: Arial, Helvetica, sans-serif !important;
+  font-size: 1.15rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0 !important;
+}
+
+.df-hero-about p {
+  margin: 0 0 1rem;
+  color: #111111;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.df-hero-countries {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.df-hero-countries li {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  margin: 1.5rem 0 0;
-  padding: 0.45rem 0.9rem;
+  gap: 0.35rem;
+  padding: 0.3rem 0.8rem;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.72);
-  font-size: 0.9rem;
+  background: var(--df-soft-teal);
+  border: 1px solid var(--df-teal);
+  font-size: 0.88rem;
   font-weight: 700;
 }
 
-.df-hero-band-status i {
-  color: #263711;
+.df-hero-countries i {
+  color: #d22a2f;
 }
 
-/* Carousel: on wide screens the photo fills the right half of the band, edge to edge. */
+/* Photo carousel: no frame; the photo blends into the band like part of the background. */
 .df-hero-carousel {
   position: relative;
-  width: 100%;
+  margin-top: 2rem;
 }
 
 .df-hero-slides {
@@ -221,7 +222,6 @@
 /* Slides share one grid cell so swapping never shifts the layout. */
 .df-hero-slide {
   grid-area: 1 / 1;
-  position: relative;
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.8s ease, visibility 0s linear 0.8s;
@@ -238,9 +238,11 @@
   margin: 0;
   overflow: hidden;
   aspect-ratio: 4 / 5;
-  border-radius: 24px;
-  background: rgba(255, 255, 255, 0.35);
-  box-shadow: 0 24px 50px rgba(17, 17, 17, 0.2);
+  max-height: 560px;
+  width: 100%;
+  /* Top edge fades into the band on small screens. */
+  mask-image: linear-gradient(180deg, transparent 0%, #000000 16%);
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000000 16%);
 }
 
 .df-hero-slide-photo img {
@@ -250,7 +252,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transform: scale(1.06);
+  transform: scale(1.04);
   transition: transform 7s ease-out;
 }
 
@@ -258,60 +260,19 @@
   transform: scale(1);
 }
 
-.df-hero-slide-card {
-  position: relative;
-  z-index: 2;
-  width: auto;
-  margin: -3rem 1rem 0;
-  padding: 1.1rem 1.25rem 1.25rem;
-  background: #ffffff;
-  border-left: 6px solid #ffc81f;
-  border-radius: 16px;
-  box-shadow: 0 18px 40px rgba(17, 17, 17, 0.18);
-}
-
-.df-hero-slide-tag {
-  display: block;
-  color: #b3231f;
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-}
-
-.df-hero-slide-card h2 {
-  margin: 0.2rem 0 0.35rem;
-  font-size: 1.4rem !important;
-  line-height: 1.2;
-}
-
-.df-hero-slide-card p {
-  margin: 0 0 0.9rem;
-  color: #3c3935;
-  font-size: 0.92rem;
-  line-height: 1.45;
-}
-
-.df-hero-slide-card .btn {
-  width: 100%;
-  min-height: 46px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  font-size: 0.92rem;
-}
-
 .df-hero-carousel-controls {
+  position: absolute;
+  left: 50%;
+  bottom: 1rem;
+  z-index: 3;
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 0.4rem;
-  width: fit-content;
-  margin: 1.25rem auto 0;
   padding: 0.3rem 0.5rem;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.88);
-  box-shadow: 0 8px 22px rgba(17, 17, 17, 0.12);
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 8px 22px rgba(17, 17, 17, 0.14);
+  transform: translateX(-50%);
 }
 
 .df-hero-control {
@@ -339,6 +300,13 @@
 
 .df-hero-control-play:hover {
   background: #333333;
+}
+
+.df-hero-control:focus-visible,
+.df-hero-dot:focus-visible {
+  outline: 3px solid #111111;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 6px #ffffff;
 }
 
 .df-hero-dots {
@@ -407,30 +375,23 @@ html.ss-reduce-motion .df-hero-slide-photo img {
   transform: none !important;
 }
 
-/* Wide screens: copy on the left half, photo covering the whole right half from top to bottom. */
+/* Wide screens: copy on the left half; the photo fills the right half to the screen edge and band bottom. */
 @media (min-width: 992px) {
-  .df-hero-band {
-    display: flex;
-    align-items: center;
-    min-height: clamp(580px, 44vw, 740px);
+  .df-hero-band-title {
+    margin-bottom: clamp(1.5rem, 2.6vw, 2.25rem);
+    font-size: clamp(1.75rem, 3.2vw, 3.2rem) !important;
+    line-height: 1.1 !important;
   }
 
-  .df-hero-band > .container {
-    width: 100%;
-  }
-
-  .df-hero-band-grid {
-    grid-template-columns: 1fr;
+  .df-hero-band-body {
+    position: relative;
+    padding-bottom: clamp(2.5rem, 4.5vw, 4rem);
   }
 
   .df-hero-band-copy {
     position: relative;
-    z-index: 3;
-    max-width: calc(50% - 1.5rem);
-  }
-
-  .df-hero-band-title {
-    font-size: clamp(2.8rem, 4.7vw, 5rem) !important;
+    z-index: 2;
+    max-width: calc(50% - 2rem);
   }
 
   .df-hero-carousel {
@@ -439,6 +400,7 @@ html.ss-reduce-motion .df-hero-slide-photo img {
     right: 0;
     bottom: 0;
     width: 50%;
+    margin: 0;
   }
 
   .df-hero-slides,
@@ -450,67 +412,27 @@ html.ss-reduce-motion .df-hero-slide-photo img {
     position: absolute;
     inset: 0;
     aspect-ratio: auto;
-    border-radius: 0;
-    background: transparent;
-    box-shadow: none;
-    /* The left edge fades into the brand gradient so the photo blends into the band. */
-    mask-image: linear-gradient(90deg, transparent 0%, #000000 26%);
-    -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000000 26%);
-  }
-
-  /* Card and controls sit on the faded left edge so the person stays in view. */
-  .df-hero-slide-card {
-    position: absolute;
-    left: 4%;
-    bottom: 100px;
-    width: min(56%, 330px);
-    margin: 0;
+    max-height: none;
+    /* Left and top edges fade into the gradient so the photo reads as part of the background. */
+    mask-image: linear-gradient(90deg, transparent 0%, #000000 24%), linear-gradient(180deg, transparent 0%, #000000 14%);
+    mask-composite: intersect;
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000000 24%), linear-gradient(180deg, transparent 0%, #000000 14%);
+    -webkit-mask-composite: source-in;
   }
 
   .df-hero-carousel-controls {
-    position: absolute;
-    left: 4%;
-    bottom: 28px;
-    z-index: 3;
-    margin: 0;
-  }
-
-  /* Triangles sit top-right on the photo, clear of the card and controls. */
-  .df-hero-band-triangles {
-    top: 8%;
-    right: 3%;
-    bottom: auto;
-    z-index: 2;
-  }
-
-  .df-hero-band-ring.ring-b {
-    display: none;
-  }
-}
-
-@media (max-width: 991.98px) {
-  .df-hero-band-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .df-hero-carousel {
-    max-width: 560px;
-    margin-inline: auto;
+    left: 58%;
+    bottom: 1.5rem;
   }
 }
 
 @media (max-width: 575.98px) {
-  .df-hero-band-actions .btn {
-    width: 100%;
-    justify-content: center;
+  .df-hero-journey {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .df-hero-slide-card {
-    margin: -2.5rem 0.6rem 0;
-  }
-
-  .df-hero-band-triangles {
-    display: none;
+  .df-hero-about {
+    padding: 1.1rem 1.1rem 1.2rem;
   }
 }
 
@@ -520,24 +442,35 @@ html.ss-high-contrast .df-hero-band-layer {
 
 html.ss-high-contrast .df-hero-band,
 html.ss-high-contrast .df-hero-band-title,
-html.ss-high-contrast .df-hero-band-intro {
+html.ss-high-contrast .df-hero-band-intro,
+html.ss-high-contrast .df-hero-journey-title {
   color: #ffffff !important;
 }
 
-html.ss-high-contrast .df-hero-band-eyebrow,
-html.ss-high-contrast .df-hero-band-status {
-  color: #000000;
-  background: #ffffff;
+html.ss-high-contrast .df-hero-step,
+html.ss-high-contrast .df-hero-about {
+  color: #ffffff !important;
+  background: #000000;
+  border: 2px solid #ffffff;
 }
 
-html.ss-high-contrast .df-hero-band-dots,
-html.ss-high-contrast .df-hero-band-ring {
-  display: none;
+html.ss-high-contrast .df-hero-step.is-action {
+  border-color: #ffc81f;
 }
 
-html.ss-high-contrast .df-hero-band-title span {
-  color: #000000;
-  background: #ffc81f;
+html.ss-high-contrast .df-hero-about {
+  border-left-width: 6px;
+}
+
+html.ss-high-contrast .df-hero-about h2,
+html.ss-high-contrast .df-hero-about p {
+  color: #ffffff !important;
+}
+
+html.ss-high-contrast .df-hero-countries li {
+  background: #000000;
+  border-color: #ffffff;
+  color: #ffffff;
 }
 
 html.ss-high-contrast .df-hero-dot span {
@@ -663,4 +596,12 @@ html.ss-high-contrast .df-hero-partners-logos {
   padding: 0.75rem 1rem;
   background: #ffffff;
   border-radius: 10px;
+}
+
+/* Pathway card sub-heading ("This pathway may suit you if…") reads as an introduction, not small print. */
+.df-home-clean .df-clean-pathway-description {
+  color: #111111 !important;
+  font-size: 0.98rem !important;
+  font-weight: 600;
+  line-height: 1.55 !important;
 }

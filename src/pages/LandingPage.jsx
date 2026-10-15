@@ -8,16 +8,16 @@ import "./LandingHero.css";
 function LandingPage({ pathwayMessage, onPathwaySelect, onCheckStatus }) {
   return (
     <main id="main-content" tabIndex="-1" className="df-home-page df-home-clean">
-      <HeroBanner pathways={pathways} onPathwaySelect={onPathwaySelect} onCheckStatus={onCheckStatus} />
+      <HeroBanner pathways={pathways} onCheckStatus={onCheckStatus} />
 
       <section id="pathways" className="df-clean-pathway-section" aria-labelledby="pathways-title">
         <div className="container">
           <div className="df-clean-pathway-heading">
             <div>
-              <span className="df-eyebrow">Choose your pathway</span>
-              <h2 id="pathways-title">Start with the pathway that fits you</h2>
+              <span className="df-eyebrow">Training pathways</span>
+              <h2 id="pathways-title">Choose the pathway that is right for you</h2>
               <p>
-                Compare the options at a glance, then choose the pathway that best matches your qualifications, availability and preferred learning format.
+                Compare the options at a glance, then choose the pathway that best matches your career goals, qualifications, availability and preferred learning format.
               </p>
             </div>
           </div>
