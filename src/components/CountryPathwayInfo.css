@@ -318,3 +318,9 @@
   outline: none !important;
   box-shadow: none !important;
 }
+
+.df-country-info .df-info-aside-hint {
+  margin: 1rem 0 0.5rem;
+  font-size: 0.9rem;
+  color: var(--df-muted);
+}

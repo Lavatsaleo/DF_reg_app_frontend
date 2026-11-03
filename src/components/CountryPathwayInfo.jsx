@@ -96,7 +96,7 @@ function InfoTabs({ tabs, activeId, onChange }) {
   );
 }
 
-function ActionPanel({ countryContent, onContinue, onChangeCountry }) {
+function ActionPanel({ countryContent, onContinue, onBackToPathways }) {
   return (
     <aside className="df-info-aside" aria-labelledby="df-info-next-title">
       <div className="df-info-aside-card">
@@ -106,8 +106,9 @@ function ActionPanel({ countryContent, onContinue, onChangeCountry }) {
         <button type="button" className="btn ss-btn-primary w-100" onClick={onContinue}>
           Continue to consent check <i className="bi bi-arrow-right" aria-hidden="true" />
         </button>
-        <button type="button" className="btn ss-btn-outline w-100 mt-2" onClick={onChangeCountry}>
-          Change country
+        <p className="df-info-aside-hint">Not the right pathway for you? Compare the other pathways and choose again.</p>
+        <button type="button" className="btn ss-btn-outline w-100" onClick={onBackToPathways}>
+          <i className="bi bi-arrow-left" aria-hidden="true" /> Back to pathways
         </button>
 
         {countryContent?.journey?.length > 0 && (
@@ -181,8 +182,8 @@ function CountryPathwayInfo({ pathway, country, onContinue, onChangeCountry, onB
                     <button type="button" className="btn ss-btn-primary" onClick={onContinue}>
                       Continue to consent check <i className="bi bi-arrow-right" aria-hidden="true" />
                     </button>
-                    <button type="button" className="btn ss-btn-outline" onClick={onChangeCountry}>
-                      Change country
+                    <button type="button" className="btn ss-btn-outline" onClick={onBackToPathways}>
+                      <i className="bi bi-arrow-left" aria-hidden="true" /> Back to pathways
                     </button>
                   </div>
                 </div>
@@ -261,7 +262,7 @@ function CountryPathwayInfo({ pathway, country, onContinue, onChangeCountry, onB
               </div>
             </div>
 
-            <ActionPanel countryContent={countryContent} onContinue={onContinue} onChangeCountry={onChangeCountry} />
+            <ActionPanel countryContent={countryContent} onContinue={onContinue} onBackToPathways={onBackToPathways} />
           </div>
         )}
       </section>
