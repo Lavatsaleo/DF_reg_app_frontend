@@ -1,66 +1,149 @@
 /* Country page shown between choosing a country and the consent check. Uses the portal brand tokens. */
-.df-country-info .df-info-lead {
-  font-size: 1.0625rem;
-  color: var(--df-muted);
-  margin-bottom: 1.5rem;
-}
-
-.df-country-info .df-info-section {
-  background: var(--df-white);
-  border: 1px solid var(--df-border);
-  border-radius: var(--df-radius-lg);
-  padding: clamp(1.25rem, 3vw, 1.75rem);
-  margin-bottom: 1.25rem;
-}
-
-.df-country-info .df-info-section h2 {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  font-size: 1.3rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-}
-
-.df-country-info .df-info-section h2 .bi {
-  display: inline-grid;
-  place-items: center;
-  flex: 0 0 auto;
-  width: 2.25rem;
-  height: 2.25rem;
-  border-radius: 50%;
-  background: var(--df-soft-yellow);
-  color: var(--df-black);
-  font-size: 1.05rem;
-}
-
-.df-country-info .df-info-section h3 {
-  font-size: 1.05rem;
-  font-weight: 700;
-  margin: 1.25rem 0 0.5rem;
-}
-
-.df-country-info .df-info-section p:last-child,
-.df-country-info .df-info-section ul:last-child,
-.df-country-info .df-info-section ol:last-child {
-  margin-bottom: 0;
-}
-
-.df-country-info .df-info-section li + li {
-  margin-top: 0.3rem;
-}
-
-.df-country-info .df-info-grid {
+.df-country-info .df-info-layout {
   display: grid;
-  gap: 0 1.25rem;
+  gap: 1.5rem;
+  align-items: start;
 }
 
-@media (min-width: 768px) {
-  .df-country-info .df-info-grid {
-    grid-template-columns: 1fr 1fr;
+@media (min-width: 992px) {
+  .df-country-info .df-info-layout {
+    grid-template-columns: minmax(0, 1fr) 340px;
+  }
+
+  /* The next step stays in view while applicants read through the tabs. */
+  .df-country-info .df-info-aside {
+    position: sticky;
+    top: 120px;
   }
 }
 
+.df-country-info .df-info-main {
+  min-width: 0;
+}
+
+/* Tabs */
+.df-country-info .df-info-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  padding: 0.35rem;
+  margin-bottom: 1rem;
+  background: var(--df-white);
+  border: 1px solid var(--df-border);
+  border-radius: 28px;
+}
+
+.df-country-info .df-info-tabs button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex: 0 0 auto;
+  min-height: 44px;
+  padding: 0.5rem 0.8rem;
+  font-size: 0.95rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--df-black);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.df-country-info .df-info-tabs button:hover {
+  background: var(--df-soft-yellow);
+}
+
+.df-country-info .df-info-tabs button.is-active {
+  background: var(--df-black);
+  color: var(--df-white);
+}
+
+.df-country-info .df-info-tabs button:focus-visible {
+  outline: 3px solid var(--df-yellow, #ffc81f);
+  outline-offset: 2px;
+}
+
+.df-country-info .df-info-tab-count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  padding: 0 0.35rem;
+  border-radius: 999px;
+  background: var(--df-soft-yellow);
+  color: var(--df-black);
+  font-size: 0.8rem;
+}
+
+/* Panels */
+.df-country-info .df-info-panel {
+  background: var(--df-white);
+  border: 1px solid var(--df-border);
+  border-radius: var(--df-radius-lg);
+  padding: clamp(1.25rem, 3vw, 2rem);
+}
+
+.df-country-info .df-info-panel:focus-visible {
+  outline: 3px solid var(--df-yellow, #ffc81f);
+  outline-offset: 3px;
+}
+
+.df-country-info .df-info-panel-lead {
+  color: var(--df-muted);
+  margin-bottom: 0.25rem;
+}
+
+.df-country-info .df-info-overview {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.df-country-info .df-info-pair {
+  display: grid;
+  gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .df-country-info .df-info-pair {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .df-country-info .df-info-pair > :only-child {
+    grid-column: 1 / -1;
+  }
+}
+
+.df-country-info .df-info-block h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+}
+
+.df-country-info .df-info-block h3 .bi {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 50%;
+  background: var(--df-soft-yellow);
+  color: var(--df-black);
+  font-size: 1rem;
+}
+
+.df-country-info .df-info-block p:last-child,
+.df-country-info .df-info-block ul:last-child {
+  margin-bottom: 0;
+}
+
+.df-country-info .df-info-block li + li {
+  margin-top: 0.3rem;
+}
+
+/* Courses */
 .df-country-info .df-course-list {
   display: grid;
   gap: 1rem;
@@ -75,37 +158,34 @@
 }
 
 .df-country-info .df-course-card h3 {
-  margin-top: 0;
-  font-size: 1.15rem;
+  margin: 0 0 0.5rem;
+  font-size: 1.2rem;
 }
 
 .df-country-info .df-course-description {
   margin-bottom: 0.75rem;
 }
 
-.df-country-info .df-course-card dl {
-  margin: 0;
-}
-
-.df-country-info .df-course-card dl > div {
-  padding-top: 0.75rem;
+.df-country-info .df-course-detail {
   border-top: 1px solid var(--df-border);
-  margin-top: 0.75rem;
 }
 
-.df-country-info .df-course-card dt {
+.df-country-info .df-course-detail summary {
+  cursor: pointer;
+  padding: 0.7rem 0;
   font-weight: 700;
-  margin-bottom: 0.25rem;
 }
 
-.df-country-info .df-course-card dd {
-  margin: 0;
+.df-country-info .df-course-detail-body {
+  padding-bottom: 0.75rem;
 }
 
-.df-country-info .df-course-card dd p {
-  margin-bottom: 0.4rem;
+.df-country-info .df-course-detail-body p:last-child,
+.df-country-info .df-course-detail-body ul:last-child {
+  margin-bottom: 0;
 }
 
+/* Lists and notes */
 .df-country-info .df-check-list {
   list-style: none;
   padding-left: 0;
@@ -134,10 +214,7 @@
   font-weight: 600;
 }
 
-.df-country-info .df-info-journey {
-  padding-left: 1.4rem;
-}
-
+/* FAQs */
 .df-country-info .df-faq-list {
   display: grid;
   gap: 0.6rem;
@@ -164,6 +241,56 @@
   padding: 0.85rem 1rem 1rem;
 }
 
+.df-country-info .df-faq-answer p:last-child,
+.df-country-info .df-faq-answer ul:last-child {
+  margin-bottom: 0;
+}
+
+/* Side panel */
+.df-country-info .df-info-aside-card {
+  background: var(--df-white);
+  border: 1px solid var(--df-border);
+  border-top: 6px solid var(--df-yellow, #ffc81f);
+  border-radius: var(--df-radius-lg);
+  padding: 1.5rem;
+}
+
+.df-country-info .df-info-aside-card h2 {
+  font-size: 1.4rem;
+  font-weight: 800;
+  margin: 0.25rem 0 0.5rem;
+}
+
+.df-country-info .df-info-aside-card > p {
+  color: var(--df-muted);
+}
+
+.df-country-info .df-info-aside-journey {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--df-border);
+}
+
+.df-country-info .df-info-aside-journey summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.df-country-info .df-info-aside-journey[open] summary {
+  margin-bottom: 0.6rem;
+}
+
+.df-country-info .df-info-journey {
+  padding-left: 1.25rem;
+  margin-bottom: 0;
+  font-size: 0.95rem;
+}
+
+.df-country-info .df-info-journey li + li {
+  margin-top: 0.35rem;
+}
+
+/* Coming soon */
 .df-country-info .df-info-coming-soon {
   display: flex;
   gap: 1rem;
@@ -180,15 +307,8 @@
   margin-bottom: 0.5rem;
 }
 
-.df-country-info .df-info-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-top: 1.75rem;
-}
-
 @media (max-width: 575.98px) {
-  .df-country-info .df-info-actions .btn {
+  .df-country-info .df-info-coming-soon .btn {
     width: 100%;
   }
 }

@@ -882,3 +882,81 @@ main li > a:only-child {
     grid-row: 1 !important;
   }
 }
+
+/* Consent step 1: summary and full notice on the left, the decision on the right. */
+.df-consent-layout {
+  display: grid;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+@media (min-width: 992px) {
+  .df-consent-layout {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  }
+}
+
+.df-consent-layout > .ss-section-card {
+  margin: 0;
+}
+
+.df-consent-lead {
+  color: var(--df-muted);
+}
+
+.df-consent-glance {
+  display: grid;
+  gap: 0.75rem;
+  margin: 1.25rem 0 1.5rem;
+  padding: 0;
+  list-style: none;
+}
+
+/* Two tiles per row only where the summary has the full width (tablets); one per row beside the decision. */
+@media (min-width: 576px) and (max-width: 991.98px) {
+  .df-consent-glance {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.df-consent-glance li {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  padding: 0.85rem 1rem;
+  border-radius: var(--df-radius);
+  background: var(--df-soft-teal);
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+.df-consent-glance .bi {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--df-white);
+  color: var(--df-black);
+}
+
+.df-consent-info .df-consent-details + .df-consent-details {
+  margin-top: 0.75rem;
+}
+
+.df-consent-decision {
+  border-top: 6px solid var(--df-yellow) !important;
+}
+
+.df-consent-decision h2 {
+  margin-top: 0;
+}
+
+.df-consent-confirm-list {
+  padding-left: 1.2rem;
+}
+
+.df-consent-confirm-list li + li {
+  margin-top: 0.35rem;
+}

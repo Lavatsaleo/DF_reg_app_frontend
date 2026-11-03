@@ -14,6 +14,20 @@ import {
   getConsentContactCountries,
 } from "../utils/countryContext";
 
+// Plain-language summary of the consent notice; the full wording stays in the sections below it.
+const CONSENT_AT_A_GLANCE = [
+  { icon: "bi-clock", text: "The application takes about 10 to 15 minutes." },
+  { icon: "bi-cash-coin", text: "Applying is free. There is no application fee." },
+  { icon: "bi-shield-lock", text: "Your information is kept secure and shared only with authorised programme staff and partners." },
+  { icon: "bi-hand-index", text: "Taking part is voluntary. You can stop at any time before you submit." },
+  { icon: "bi-telephone", text: "If you are selected, we may contact you about your progress until October 2030." },
+  { icon: "bi-file-earmark-text", text: "You will receive a copy of this form for your records." },
+];
+
+function stripTrailingColon(value) {
+  return String(value || "").replace(/:\s*$/, "");
+}
+
 function localDateString() {
   const now = new Date();
   const year = now.getFullYear();
@@ -619,7 +633,7 @@ function ContextualApplicationPage({
 
         <section className="container py-5">
           <div className="row justify-content-center">
-            <div className="col-12 col-xl-9">
+            <div className={showAssistance ? "col-12 col-xl-9" : "col-12"}>
               {showAssistance ? (
                 <article className="ss-section-card">
                   <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-start gap-3 mb-3">
@@ -780,63 +794,83 @@ function ContextualApplicationPage({
                   </button>
                 </article>
               ) : (
-                <article className="ss-section-card">
-                  <div className="mb-4">
+                <div className="df-consent-layout">
+                  <article className="ss-section-card df-consent-info">
                     <span className="ss-small-label dark">Consent · Step 1 of 2</span>
                     <h2 className="mt-2" id="df-preapplication-step-title" tabIndex="-1">
-                      {consentDocument.introductionTitle}
+                      Before you decide
                     </h2>
-                  </div>
-
-                  {consentDocument.introduction.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
-
-                  <h2 className="h4 mt-4">{consentDocument.purposeTitle}</h2>
-                  {consentDocument.purpose.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
-
-                  {consentDocument.informationLinks.map((item) => (
-                    <p key={item.url}>
-                      {item.before}
-                      <a href={item.url} target="_blank" rel="noreferrer">{item.label}</a>
-                      {item.between}
-                      <a href={item.secondUrl} target="_blank" rel="noreferrer">{item.secondLabel}</a>
+                    <p className="df-consent-lead">
+                      Here is a short summary. Open each section below to read the full consent information.
                     </p>
-                  ))}
 
-                  <details className="df-consent-details mt-4">
-                    <summary>{consentDocument.rightsTitle}</summary>
-                    <div className="df-consent-details-body">
-                      <p>{consentDocument.rightsIntro}</p>
-                      <ConsentCountryContacts
-                        consent={consentDocument}
-                        residenceCountry={residenceCountry}
-                        type="safeguarding"
-                      />
-                      <p>
-                        {consentDocument.speakUpPrefix}
-                        <a href={consentDocument.speakUpUrl} target="_blank" rel="noreferrer">
-                          {consentDocument.speakUpUrl}
-                        </a>
-                      </p>
-                    </div>
-                  </details>
+                    <ul className="df-consent-glance">
+                      {CONSENT_AT_A_GLANCE.map((item) => (
+                        <li key={item.text}>
+                          <i className={`bi ${item.icon}`} aria-hidden="true" />
+                          <span>{item.text}</span>
+                        </li>
+                      ))}
+                    </ul>
 
-                  <details className="df-consent-details mt-3">
-                    <summary>{consentDocument.questionsTitle}</summary>
-                    <div className="df-consent-details-body">
-                      <p>{consentDocument.questionsIntro}</p>
-                      <ConsentCountryContacts
-                        consent={consentDocument}
-                        residenceCountry={residenceCountry}
-                        type="questions"
-                      />
-                    </div>
-                  </details>
+                    <details className="df-consent-details">
+                      <summary>{stripTrailingColon(consentDocument.introductionTitle)}</summary>
+                      <div className="df-consent-details-body">
+                        {consentDocument.introduction.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
+                      </div>
+                    </details>
 
-                  <hr className="my-4" />
-                  <h2>{consentDocument.consentTitle}</h2>
+                    <details className="df-consent-details">
+                      <summary>{stripTrailingColon(consentDocument.purposeTitle)}</summary>
+                      <div className="df-consent-details-body">
+                        {consentDocument.purpose.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
+                        {consentDocument.informationLinks.map((item) => (
+                          <p key={item.url}>
+                            {item.before}
+                            <a href={item.url} target="_blank" rel="noreferrer">{item.label}</a>
+                            {item.between}
+                            <a href={item.secondUrl} target="_blank" rel="noreferrer">{item.secondLabel}</a>
+                          </p>
+                        ))}
+                      </div>
+                    </details>
+
+                    <details className="df-consent-details">
+                      <summary>{stripTrailingColon(consentDocument.rightsTitle)}</summary>
+                      <div className="df-consent-details-body">
+                        <p>{consentDocument.rightsIntro}</p>
+                        <ConsentCountryContacts
+                          consent={consentDocument}
+                          residenceCountry={residenceCountry}
+                          type="safeguarding"
+                        />
+                        <p>
+                          {consentDocument.speakUpPrefix}
+                          <a href={consentDocument.speakUpUrl} target="_blank" rel="noreferrer">
+                            {consentDocument.speakUpUrl}
+                          </a>
+                        </p>
+                      </div>
+                    </details>
+
+                    <details className="df-consent-details">
+                      <summary>{consentDocument.questionsTitle}</summary>
+                      <div className="df-consent-details-body">
+                        <p>{consentDocument.questionsIntro}</p>
+                        <ConsentCountryContacts
+                          consent={consentDocument}
+                          residenceCountry={residenceCountry}
+                          type="questions"
+                        />
+                      </div>
+                    </details>
+                  </article>
+
+                  <article className="ss-section-card df-consent-decision" aria-labelledby="df-consent-decision-title">
+                  <h2 id="df-consent-decision-title">{consentDocument.consentTitle}</h2>
                   <p>{consentDocument.consentIntro}</p>
                   <p className="fw-semibold">{consentDocument.consentLead}</p>
-                  <ul>{consentDocument.consentBullets.map((item) => <li key={item}>{item}</li>)}</ul>
+                  <ul className="df-consent-confirm-list">{consentDocument.consentBullets.map((item) => <li key={item}>{item}</li>)}</ul>
 
                   <ConsentOption
                     questionCode="REGISTRATION_CONSENT"
@@ -923,7 +957,7 @@ function ContextualApplicationPage({
                   {consentGranted && (
                     <div className="border-top pt-4 mt-4">
                       <div className="row g-3 mb-3">
-                        <div className="col-12 col-md-8">
+                        <div className="col-12">
                           <label className="form-label fw-semibold" htmlFor="consent-name">Full name (required field)</label>
                           <input
                             type="text"
@@ -933,7 +967,7 @@ function ContextualApplicationPage({
                             onChange={(event) => setHiddenAnswer("CONSENT_NAME_ID_CODE", event.target.value)}
                           />
                         </div>
-                        <div className="col-12 col-md-4">
+                        <div className="col-12 col-sm-6">
                           <label className="form-label fw-semibold" htmlFor="consent-date">Date (automatically generated)</label>
                           <input
                             type="date"
@@ -963,7 +997,8 @@ function ContextualApplicationPage({
                       </button>
                     </div>
                   )}
-                </article>
+                  </article>
+                </div>
               )}
             </div>
           </div>
