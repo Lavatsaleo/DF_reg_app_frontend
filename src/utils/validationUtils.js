@@ -58,6 +58,13 @@ function isValidIdentification(value) {
   return clean.length >= 3 && /^[\p{L}\p{N}\s/_.()+#&-]+$/u.test(clean);
 }
 
+function isValidNationalId(value, answers) {
+  const clean = String(value || "").trim();
+  if (answers.COUNTRY === "Nigeria") return /^\d{11}$/.test(clean);
+  if (answers.COUNTRY === "Ghana") return /^GHA-[A-Za-z0-9-]{11}$/.test(clean);
+  return isValidIdentification(clean);
+}
+
 function isValidCardIdentification(value, answers) {
   const clean = String(value || "").trim();
   const country = answers.COUNTRY;
@@ -113,6 +120,14 @@ export function validateAnswers({ questions, answers, isQuestionVisible }) {
 
     if (question.validationType === "IDENTIFICATION" && !isValidIdentification(value)) {
       errors[question.questionCode] = "Enter a valid identification number using letters, numbers or the punctuation used on the identification document.";
+      continue;
+    }
+
+    if (question.validationType === "NATIONAL_ID" && !isValidNationalId(value, answers)) {
+      errors[question.questionCode] = {
+        Nigeria: "Your NIN must be exactly 11 digits, numbers only.",
+        Ghana: "Your Ghana Card number must be 15 characters and begin with GHA-.",
+      }[answers.COUNTRY] || "Enter a valid identification number using letters, numbers or the punctuation used on the identification document.";
       continue;
     }
 

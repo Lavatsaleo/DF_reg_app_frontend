@@ -26,8 +26,8 @@ function ResultPanel({ attempt, applicant, onCheckStatus }) {
   if (!attempt) return null;
 
   const passedLabel = attempt.passed
-    ? "Passed basic test threshold"
-    : "Below basic test threshold";
+    ? "Reached the pass mark"
+    : "Below the pass mark";
 
   return (
     <section className="ss-skills-result-card" aria-labelledby="skills-result-title">
@@ -57,8 +57,10 @@ function ResultPanel({ attempt, applicant, onCheckStatus }) {
           <strong>{formatDate(attempt.submittedAt)}</strong>
         </div>
         <div role="listitem">
-          <span>Passing threshold</span>
-          <strong>{attempt.passingPercentage}%</strong>
+          <span>Pass mark</span>
+          <strong>
+            {attempt.passMark != null ? `${attempt.passMark}/${attempt.maxScore}` : `${attempt.passingPercentage}%`}
+          </strong>
         </div>
       </div>
 

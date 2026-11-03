@@ -78,7 +78,7 @@ function downloadSelectedParticipantsCsv(rows, scope) {
     "Participant code",
     "Full name",
     "Phone",
-    "Alternative phone",
+    "Emergency contact phone",
     "Email",
     "Country",
     "Admin level",
@@ -873,7 +873,11 @@ function ReviewPanel({
             <span>Basic IT Skills Test</span>
             <strong>{test.percentage}%</strong>
           </div>
-          <p>{test.passed ? "Passed the test threshold" : "Below the current test threshold"}</p>
+          <p>
+            {test.passed
+              ? `Reached the pass mark${test.passMark != null ? ` (${test.passMark}/${test.maxScore})` : ""}`
+              : `Below the pass mark${test.passMark != null ? ` (${test.passMark}/${test.maxScore})` : ""}. Follow up before deciding.`}
+          </p>
         </div>
       )}
 

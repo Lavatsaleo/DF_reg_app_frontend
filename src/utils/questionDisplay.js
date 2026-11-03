@@ -34,13 +34,9 @@ const PHONE_INFO_BY_COUNTRY = {
 
 const NATIONAL_ID_INFO_BY_COUNTRY = {
   Kenya: "Enter your 8-digit national ID number or passport number.",
-  Nigeria: "Enter your 11-digit NIN or passport number.",
+  Nigeria: "Enter your 11-digit NIN, numbers only.",
+  Ghana: "Enter your 15-character Ghana Card number, beginning with GHA-.",
   Zambia: "Enter your NRC number, including any slashes, or your passport number.",
-};
-
-const CARD_INFO_BY_COUNTRY = {
-  Ghana: "For a Ghana Card, enter its 15-character number beginning with GHA-. Otherwise, enter the number exactly as printed on your chosen document.",
-  Nigeria: "For a NIN, enter its 11 digits. Otherwise, enter the number exactly as printed on your chosen document.",
 };
 
 export function resolveQuestionHelpText(question, answers = {}) {
@@ -48,9 +44,13 @@ export function resolveQuestionHelpText(question, answers = {}) {
   const code = question?.questionCode;
 
   if (code === "DATE_OF_BIRTH") {
-    const min = Number(question?.metadata?.minEligibleAge || 18);
-    const max = Number(question?.metadata?.maxEligibleAge || 35);
-    return `Age range for this pathway: ${min}–${max} years.`;
+    const byCountry = question?.metadata?.eligibilityByCountry;
+    const rules = byCountry ? byCountry[country] || byCountry.default : null;
+    if (!rules) return "Enter your date of birth.";
+    const end = rules.maxAgeAt
+      ? ` at the end of training (${new Date(`${rules.maxAgeAt}T00:00:00`).toLocaleDateString("en-GB", { month: "long", year: "numeric" })})`
+      : "";
+    return `Age range for this pathway: ${rules.minAge}–${rules.maxAge} years${end}.`;
   }
 
   if (question?.responseType === "PHONE" && PHONE_INFO_BY_COUNTRY[country]) {
@@ -62,7 +62,7 @@ export function resolveQuestionHelpText(question, answers = {}) {
   }
 
   if (code === "NATIONAL_ID_CARD_NUMBER") {
-    return CARD_INFO_BY_COUNTRY[country] || "Enter the number exactly as printed on your identification document.";
+    return "Enter the number exactly as printed on your identification document.";
   }
 
   if (code === "FIRST_NAME") {
@@ -70,9 +70,8 @@ export function resolveQuestionHelpText(question, answers = {}) {
   }
 
   if (code === "EDUCATION_LEVEL") {
-    return country === "Nigeria"
-      ? "Choose your highest completed qualification. In Nigeria, selection starts from HND, bachelor's degree or postgraduate level."
-      : "Choose the highest level of education you have completed.";
+    return getMetadataCountryValue(question, answers, "helpTextByCountry") ||
+      "Choose the highest level of education you have completed.";
   }
 
   if (code === "ACCESSIBILITY_NEEDS") {
@@ -83,10 +82,8 @@ export function resolveQuestionHelpText(question, answers = {}) {
     return "This helps the programme team plan training dates.";
   }
 
-  if (code === "TRAINING_AVAILABILITY") {
-    return question?.metadata?.blockingAnswer === "No"
-      ? "You must be available for an average of 5 hours per week for at least 3 months."
-      : "This pathway involves in-person training over nine months.";
+  if (code === "TRAINING_AVAILABILITY" && question?.metadata?.blockingAnswer === "No" && !question.metadata.helpTextByCountry?.[country]) {
+    return "You must be available for an average of 5 hours per week for at least 3 months.";
   }
 
   if (code === "DEVICE_ACCESS") {

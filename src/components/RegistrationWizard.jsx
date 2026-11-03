@@ -77,7 +77,8 @@ function groupSurveyPages(groupedQuestions) {
     : remainingPages;
 }
 
-function calculateAge(dateOfBirth) {
+// Age on the reference date (today unless given), or null for an invalid or future date of birth.
+function calculateAge(dateOfBirth, referenceDate = new Date()) {
   const match = String(dateOfBirth || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
   if (!match) return null;
 
@@ -92,11 +93,10 @@ function calculateAge(dateOfBirth) {
     date > new Date()
   ) return null;
 
-  const today = new Date();
-  let age = today.getFullYear() - year;
+  let age = referenceDate.getFullYear() - year;
   if (
-    today.getMonth() + 1 < month ||
-    (today.getMonth() + 1 === month && today.getDate() < day)
+    referenceDate.getMonth() + 1 < month ||
+    (referenceDate.getMonth() + 1 === month && referenceDate.getDate() < day)
   ) age -= 1;
 
   return age;
@@ -111,44 +111,83 @@ function getEarlyEligibilityFeedback(answers, selectedPathway, questions) {
       type: "not-eligible",
       title: "You do not meet this pathway's availability requirement.",
       message:
-        "Digital Entrepreneurship requires at least 5 hours of study per week for 3 months. You can change your answer if it was entered incorrectly.",
+        "Digital Entrepreneurship requires you to be available for the full training period. You can change your answer if it was entered incorrectly.",
     };
   }
 
-  const birthDateQuestion = questions.find((question) => question.questionCode === "DATE_OF_BIRTH");
+  const rules = getEligibilityRules(questions, answers.COUNTRY);
   const age = calculateAge(answers.DATE_OF_BIRTH);
 
-  if (birthDateQuestion && age !== null) {
-    const min = Number(birthDateQuestion.metadata?.minEligibleAge || 18);
-    const max = Number(birthDateQuestion.metadata?.maxEligibleAge || 35);
+  if (rules && age !== null) {
+    const { minAge: min, maxAge: max, maxAgeAt } = rules;
+    // Some countries set the upper limit at the end of training rather than at application.
+    const ageAtMaxCheck = maxAgeAt ? calculateAge(answers.DATE_OF_BIRTH, new Date(`${maxAgeAt}T00:00:00`)) : age;
+    const rangeText = maxAgeAt ? `${min}–${max} at the end of training (${formatMonthYear(maxAgeAt)})` : `${min}–${max} when applying`;
 
-    if (age < min || age > max) {
+    if (age < min || ageAtMaxCheck > max) {
       if (!isEntrepreneurship) {
         return {
           type: "not-eligible",
           title: "You do not meet the age requirement for this academy.",
-          message: `Applicants must be ${min}–${max} years old when applying. Based on your date of birth, you are ${age}. You can correct your date of birth if it was entered incorrectly.`,
+          message: `Applicants must be aged ${rangeText}. Based on your date of birth, you do not meet this requirement. You can correct your date of birth if it was entered incorrectly.`,
         };
       }
 
       return {
         type: "review",
         title: "Your age needs programme review.",
-        message: `This pathway lists ages ${min}–${max}. You may continue, but your application will be flagged for programme review rather than automatically rejected.`,
+        message: `This pathway is for applicants aged ${rangeText}. You may continue, but your application will be flagged for programme review rather than automatically rejected.`,
       };
     }
+  }
+
+  if (answers.HAS_DISABILITY === "No") {
+    return {
+      type: "not-eligible",
+      title: "This programme is for people with disabilities.",
+      message:
+        "Digital Futures is for young people with disabilities, so you cannot continue with this application. You can change your answer if it was entered incorrectly.",
+    };
+  }
+
+  const minimumEducation = rules?.education;
+  const educationLevel = answers.EDUCATION_LEVEL;
+
+  if (minimumEducation && educationLevel && educationLevel !== "Other" && !minimumEducation.includes(educationLevel)) {
+    return {
+      type: "not-eligible",
+      title: "You do not meet the education requirement for this pathway.",
+      message: `${selectedPathway.title} applicants need a completed ${describeLevels(minimumEducation)} qualification. You can change your answer if it was entered incorrectly, or choose another pathway.`,
+    };
   }
 
   if (!isEntrepreneurship && availability === "No") {
     return {
       type: "information",
       title: "Please confirm your training availability.",
-      message:
-        "This pathway involves nine months of residential training. Check your availability answer before continuing.",
+      message: selectedPathway?.id === "VIRTUAL_ACADEMY"
+        ? "This pathway involves four months of virtual training. Check your availability answer before continuing."
+        : "This pathway involves nine months of residential training. Check your availability answer before continuing.",
     };
   }
 
   return null;
+}
+
+// Age and education rules for the applicant's country come from the backend question metadata.
+function getEligibilityRules(questions, country) {
+  const question = questions.find((item) => item.metadata?.eligibilityByCountry);
+  const byCountry = question?.metadata?.eligibilityByCountry;
+  return byCountry ? byCountry[country] || byCountry.default : null;
+}
+
+function formatMonthYear(isoDate) {
+  return new Date(`${isoDate}T00:00:00`).toLocaleDateString("en-GB", { month: "long", year: "numeric" });
+}
+
+function describeLevels(levels) {
+  const names = levels.map((level) => level.replace(/\s*\/\s*/g, " / ").replace(/^Highter /, "Higher "));
+  return names.length > 1 ? `${names.slice(0, -1).join(", ")} or ${names[names.length - 1]}` : names[0];
 }
 
 function RegistrationWizard({

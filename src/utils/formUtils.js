@@ -11,12 +11,17 @@ export function normalizeBoolean(value) {
   return value;
 }
 
+// A showIf may be one condition or a list of conditions, any of which shows the question.
 export function isQuestionVisible(question, answers) {
   if (!question.showIf) return true;
+  const conditions = Array.isArray(question.showIf) ? question.showIf : [question.showIf];
+  return conditions.some((condition) => matchesShowCondition(condition, answers));
+}
 
-  const controllingAnswer = answers[question.showIf.questionCode];
-  const expectedValue = question.showIf.value;
-  const operator = question.showIf.operator;
+function matchesShowCondition(condition, answers) {
+  const controllingAnswer = answers[condition.questionCode];
+  const expectedValue = condition.value;
+  const operator = condition.operator;
 
   const normalizedAnswer = normalizeBoolean(controllingAnswer);
   const normalizedExpected = normalizeBoolean(expectedValue);

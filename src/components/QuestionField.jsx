@@ -20,6 +20,8 @@ function getInputMode(question) {
 function getAutocomplete(question) {
   const text = `${question.questionCode || ""} ${question.questionText || ""}`.toLowerCase();
 
+  // Someone else's number: the browser must not offer the applicant's own phone.
+  if (question.questionCode === "ALTERNATIVE_CONTACT_NUMBER") return "off";
   if (question.responseType === "EMAIL" || text.includes("email")) return "email";
   if (question.responseType === "PHONE" || text.includes("phone") || text.includes("mobile")) return "tel";
   if (text.includes("first name") || text.includes("given name")) return "given-name";

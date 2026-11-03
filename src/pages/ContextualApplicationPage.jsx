@@ -3,6 +3,7 @@ import { selectChoiceOnEnter } from "../utils/formUtils";
 import axios from "axios";
 import "./CountrySelection.css";
 import ApplicationConfirmation from "../components/ApplicationConfirmation";
+import CountryPathwayInfo from "../components/CountryPathwayInfo";
 import ElectronicSignature from "../components/ElectronicSignature";
 import RegistrationWizard from "../components/RegistrationWizard";
 import RightsContactsPanel from "../components/RightsContactsPanel";
@@ -217,7 +218,7 @@ function ContextualApplicationPage({
       if (flow.phase === "application") {
         setEntryStage("application");
         onStepChange?.(Math.max(0, Number(flow.step) || 0));
-      } else if (["country", "consent", "assistance"].includes(flow.phase)) {
+      } else if (["country", "country-info", "consent", "assistance"].includes(flow.phase)) {
         setEntryStage(flow.phase);
       }
 
@@ -339,6 +340,8 @@ function ContextualApplicationPage({
     const headingId =
       accessibleStage === "country"
         ? "df-country-step-title"
+        : accessibleStage === "country-info"
+          ? "df-country-info-title"
         : accessibleStage === "consent" || accessibleStage === "assistance"
           ? "df-preapplication-step-title"
           : "application-title";
@@ -384,7 +387,8 @@ function ContextualApplicationPage({
       return;
     }
 
-    moveToFlowStage("consent");
+    // Applicants read about the pathway in their country before the consent check.
+    moveToFlowStage("country-info");
   }
 
   function continueFromConsent() {
@@ -479,7 +483,9 @@ function ContextualApplicationPage({
     );
   }
 
-  if (entryStage !== "country" && (loadingQuestions || consentLoading)) {
+  const beforeConsent = entryStage === "country" || entryStage === "country-info";
+
+  if (!beforeConsent && (loadingQuestions || consentLoading)) {
     return (
       <main id="main-content" tabIndex="-1" className="container py-5">
         <section className="ss-loading-card text-center" aria-live="polite">
@@ -491,7 +497,7 @@ function ContextualApplicationPage({
     );
   }
 
-  if (entryStage !== "country" && (consentLoadError || !consentDocument)) {
+  if (!beforeConsent && (consentLoadError || !consentDocument)) {
     return (
       <main id="main-content" tabIndex="-1" className="container py-5">
         <section className="ss-section-card mx-auto" style={{ maxWidth: "800px" }}>
@@ -558,6 +564,18 @@ function ContextualApplicationPage({
             </div>
           </section>
         </main>
+      );
+    }
+
+    if (entryStage === "country-info") {
+      return (
+        <CountryPathwayInfo
+          pathway={selectedPathway}
+          country={residenceCountry}
+          onContinue={() => moveToFlowStage("consent")}
+          onChangeCountry={() => moveToFlowStage("country")}
+          onBackToPathways={onBackToPathways}
+        />
       );
     }
 
