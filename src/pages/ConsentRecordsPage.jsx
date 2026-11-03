@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { API_BASE_URL } from "../config/api";
+import { formatPathwayLabel } from "../utils/displayLabels";
 
 function formatDate(value) {
   if (!value) return "Not available";
@@ -300,7 +301,7 @@ function ConsentRecordsPage({ onBack, onSessionExpired }) {
           <button type="button" className="btn ss-btn-outline mb-3" onClick={onBack}><i className="bi bi-arrow-left" aria-hidden="true" /> Back to staff workspace</button>
           <span className="ss-small-label dark d-block">Super Admin</span>
           <h1>Signed consent records</h1>
-          <p className="mb-0">View and print the consent captured with each submitted Application.</p>
+          <p className="mb-0">View and print the consent captured with each submitted application.</p>
         </div>
         <div className="d-flex flex-wrap gap-2">
           <button type="button" className="btn ss-btn-outline" onClick={loadRecords} disabled={loading}><i className="bi bi-arrow-clockwise" aria-hidden="true" /> Refresh</button>
@@ -320,7 +321,7 @@ function ConsentRecordsPage({ onBack, onSessionExpired }) {
                 <tbody>{supportRequests.map((request) => (
                   <tr key={request.id}>
                     <td><strong>{request.fullName}</strong><br />{request.contactNumber}<br /><small>{formatDate(request.createdAt)}</small></td>
-                    <td>{request.country}<br />{request.pathway.replace(/_/g, " ")}</td>
+                    <td>{request.country}<br />{formatPathwayLabel(request.pathway, "Not recorded")}</td>
                     <td style={{ whiteSpace: "pre-wrap" }}>{request.accommodation || "None specified"}</td>
                     <td>{request.notificationStatus === "SENT" ? "Email accepted by SMTP" : request.notificationStatus === "FAILED" ? "Email failed — follow up manually" : "Email not confirmed — check before follow-up"}</td>
                     <td>{request.status === "CONTACTED" ? `Contacted ${formatDate(request.contactedAt)}` : (

@@ -28,7 +28,7 @@ function getSectionStatus(questions, answers, errors, isActive) {
 }
 
 function getStepperLabel(section) {
-  const normalized = String(section || "").replace(/^Section\s+\d+\s*:\s*/i, "").trim();
+  const normalized = String(section || "").replace(/^Section\s+\d+\s*:\s*/i, "").replace(/\.$/, "").trim();
   const labels = {
     "Training pathway selection": "Training",
     "Personal & contact details": "Personal details",
@@ -40,9 +40,12 @@ function getStepperLabel(section) {
     "Motivation & training readiness": "Motivation",
     "Motivation and training readiness": "Motivation",
     "Access to device, internet and electricity": "Digital access",
+    "Eligibility criteria": "Education & support",
   };
+  // Pathways capitalise section names differently ("Motivation & Training Readiness").
+  const match = Object.keys(labels).find((key) => key.toLowerCase() === normalized.toLowerCase());
 
-  return labels[normalized] || normalized;
+  return match ? labels[match] : normalized;
 }
 
 // Source question codes and source sections remain unchanged for API submissions.

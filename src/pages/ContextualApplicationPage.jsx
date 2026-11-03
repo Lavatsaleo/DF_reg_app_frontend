@@ -626,12 +626,12 @@ function ContextualApplicationPage({
                     <div>
                       <span className="ss-small-label dark">Consent · Step 2 of 2 · Assistance</span>
                       <h2 className="mt-2" id="df-preapplication-step-title" tabIndex="-1">
-                        {consentDocument.assistanceStepTitle}
+                        Help with the consent section
                       </h2>
                     </div>
                     <button
                       type="button"
-                      className="btn btn-sm ss-btn-outline text-nowrap"
+                      className="btn btn-sm ss-btn-outline text-nowrap flex-shrink-0 align-self-start"
                       onClick={moveBackOneFlowStep}
                     >
                       Back to consent
@@ -648,6 +648,7 @@ function ContextualApplicationPage({
 
                   {assistanceRequired && (
                     <div className="border rounded-4 p-4 mb-4 bg-light">
+                      <h3 className="h5">{consentDocument.assistanceStepTitle}</h3>
                       <p>{consentDocument.assistanceIntro}</p>
                       <p className="fw-semibold">By signing below, I confirm that:</p>
                       <ul>
@@ -984,7 +985,7 @@ function ContextualApplicationPage({
               >
                 <i className="bi bi-arrow-left" aria-hidden="true" /> Back to pathways
               </button>
-              <span className="ss-small-label dark">Digital Futures Participant Application</span>
+              <span className="ss-small-label dark d-block">Digital Futures Participant Application</span>
               <h1 id="application-title" tabIndex="-1">{selectedPathway.title}</h1>
               <p>Complete one page at a time. Each page is checked before you continue.</p>
             </div>
@@ -1008,33 +1009,27 @@ function ContextualApplicationPage({
               >
                 <i className="bi bi-shield-check" aria-hidden="true" /> Consent
               </button>
+              <details className="df-floating-support">
+                <summary className="btn btn-sm ss-btn-outline">
+                  <i className="bi bi-life-preserver" aria-hidden="true" />
+                  <span>Help &amp; support</span>
+                  <i className="bi bi-chevron-down df-floating-support-chevron" aria-hidden="true" />
+                </summary>
+                <div className="df-floating-support-panel">
+                  <RightsContactsPanel
+                    consent={consentDocument}
+                    residenceCountry={residenceCountry}
+                    compact
+                  />
+                </div>
+              </details>
             </div>
           </div>
         </div>
       </section>
 
-      <details className="df-floating-support">
-        <summary>
-          <i className="bi bi-life-preserver" aria-hidden="true" />
-          <span>Help &amp; support</span>
-          <i className="bi bi-chevron-left df-floating-support-chevron" aria-hidden="true" />
-        </summary>
-        <div className="df-floating-support-panel">
-          <div className="df-floating-support-heading">
-            <div>
-              <span className="ss-small-label dark">{residenceCountry}</span>
-              <h2>Help &amp; support</h2>
-            </div>
-          </div>
-          <RightsContactsPanel
-            consent={consentDocument}
-            residenceCountry={residenceCountry}
-            compact
-          />
-        </div>
-      </details>
 
-      <section className="container-fluid px-3 px-lg-4 py-4 py-lg-5">
+      <section className="container py-4 py-lg-5">
         <div className="df-application-main-clean">
           <RegistrationWizard
               selectedPathway={selectedPathway}

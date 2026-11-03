@@ -18,11 +18,23 @@ function formatDate(value) {
   }
 }
 
+function formatInvitationStatus(status) {
+  const value = String(status || "").replace(/_/g, " ").toLowerCase();
+  return value ? value.charAt(0).toUpperCase() + value.slice(1) : "Not available";
+}
+
 function cleanToken(value) {
   return String(value || "").trim();
 }
 
 function ResultPanel({ attempt, applicant, onCheckStatus }) {
+  const headingRef = useRef(null);
+
+  // The result replaces the questions; move focus so screen readers announce it.
+  useEffect(() => {
+    headingRef.current?.focus();
+  }, [attempt?.id]);
+
   if (!attempt) return null;
 
   const passedLabel = attempt.passed
@@ -32,7 +44,7 @@ function ResultPanel({ attempt, applicant, onCheckStatus }) {
   return (
     <section className="ss-skills-result-card" aria-labelledby="skills-result-title">
       <span className="ss-small-label dark">Basic IT skills test submitted</span>
-      <h2 id="skills-result-title">Your test result has been saved</h2>
+      <h2 id="skills-result-title" tabIndex="-1" ref={headingRef}>Your test result has been saved</h2>
       <p>
         The committee will review this result together with your registration information and supporting documents.
       </p>
@@ -49,7 +61,7 @@ function ResultPanel({ attempt, applicant, onCheckStatus }) {
           <strong>{applicant?.applicationReference || "Not available"}</strong>
         </div>
         <div role="listitem">
-          <span>Participant code</span>
+          <span>Unique participant ID</span>
           <strong>{applicant?.participantCode || "Not available"}</strong>
         </div>
         <div role="listitem">
@@ -297,14 +309,14 @@ function SkillsTestPage({ initialToken = "", onBackHome, onCheckStatus }) {
               <span className="ss-small-label light">Basic IT skills test</span>
               <h1 id="skills-page-title">Complete your basic IT skills test</h1>
               <p>
-                Eligible applicants access this randomized test through the secure invitation link sent by email. The result is tied to the same applicant record used during registration.
+                Answer 30 multiple-choice questions about everyday computer, internet and online learning tasks. There is no time limit, and your result is added to your application for the selection committee.
               </p>
             </div>
             <div className="col-12 col-lg-4">
               <div className="ss-selected-card">
-                <span>Review package</span>
-                <strong>Registration + test</strong>
-                <small>Used by the review committee</small>
+                <span>About the test</span>
+                <strong>30 questions</strong>
+                <small>No time limit · submit once</small>
               </div>
             </div>
           </div>
@@ -334,7 +346,7 @@ function SkillsTestPage({ initialToken = "", onBackHome, onCheckStatus }) {
                 <div className="ss-status-summary-grid mt-4" role="list">
                   <div role="listitem">
                     <span>Invitation status</span>
-                    <strong>{invitation.status}</strong>
+                    <strong>{formatInvitationStatus(invitation.status)}</strong>
                   </div>
                   <div role="listitem">
                     <span>Expires</span>
@@ -412,17 +424,17 @@ function SkillsTestPage({ initialToken = "", onBackHome, onCheckStatus }) {
               <div className="ss-help-card">
                 <span className="ss-small-label dark">How this works</span>
                 <ol>
-                  <li>The applicant submits the registration form.</li>
-                  <li>If the application moves to the next step, the system emails a private test link.</li>
-                  <li>The link opens the Basic IT skills test and ties the result to the same applicant record.</li>
-                  <li>The committee reviews registration details, documents, and the test result together.</li>
+                  <li>You submitted your application and passed the first eligibility check.</li>
+                  <li>We emailed you this private test link.</li>
+                  <li>Answer all 30 questions, then submit the test once.</li>
+                  <li>The selection committee reviews your application and test result together.</li>
                 </ol>
               </div>
 
               <div className="ss-help-card mt-4">
                 <span className="ss-small-label dark">Important</span>
                 <p className="mb-0">
-                  The test can only be submitted once for the applicant. Questions and answer choices are randomized, and re-opening the link after submission will show the saved result instead of a new test.
+                  You can submit the test only once. If you open this link again after submitting, you will see your saved result.
                 </p>
               </div>
             </div>

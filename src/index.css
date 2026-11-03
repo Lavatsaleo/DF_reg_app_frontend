@@ -4173,50 +4173,24 @@ html.ss-high-contrast .ss-committee-corner.active {
   width: 100%;
 }
 
+/* Help & support sits with the header actions and opens as a dropdown, so it never covers form content. */
 .df-floating-support {
-  position: fixed;
-  top: 150px;
-  right: 18px;
-  z-index: 1040;
-  width: auto;
+  position: relative;
 }
 
 .df-floating-support > summary {
   list-style: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55rem;
-  min-height: 48px;
-  padding: 0.75rem 0.95rem;
-  border: 1px solid rgba(15, 23, 42, 0.14);
-  border-radius: 999px;
-  background: #ffffff;
-  color: #17191d;
-  font-weight: 900;
-  cursor: pointer;
-  box-shadow: 0 12px 34px rgba(15, 23, 42, 0.12);
 }
 
 .df-floating-support > summary::-webkit-details-marker {
   display: none;
 }
 
-.df-floating-support > summary:hover,
-.df-floating-support > summary:focus-visible {
-  border-color: #465c17;
-  box-shadow: 0 0 0 4px rgba(70, 92, 23, 0.10), 0 12px 34px rgba(15, 23, 42, 0.12);
-}
-
-.df-floating-support[open] {
-  width: min(380px, calc(100vw - 32px));
-}
-
-.df-floating-support[open] > summary {
-  float: right;
-  margin-bottom: 0.6rem;
-}
-
 .df-floating-support[open] .df-floating-support-chevron {
+  transform: rotate(180deg);
+}
+
+.df-floating-support-chevron {
   transform: rotate(180deg);
 }
 
@@ -4225,8 +4199,12 @@ html.ss-high-contrast .ss-committee-corner.active {
 }
 
 .df-floating-support-panel {
-  clear: both;
-  max-height: calc(100vh - 230px);
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  z-index: 1040;
+  width: min(380px, calc(100vw - 32px));
+  max-height: min(70vh, 640px);
   overflow-y: auto;
   padding: 1rem;
   border: 1px solid rgba(15, 23, 42, 0.12);

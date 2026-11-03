@@ -21,7 +21,7 @@ function ReviewApplication({
   onFinalSubmitIntent,
 }) {
   const panelId = "wizard-review-panel";
-  const buttonId = "wizard-review-button";
+  const buttonId = "wizard-review-panel-button";
 
   return (
     <section className={`ss-wizard-section ${isActive ? "active" : ""} review`}>
@@ -56,7 +56,7 @@ function ReviewApplication({
           <i className="bi bi-shield-check" aria-hidden="true" />
           <div>
             <h3>Almost done</h3>
-            <p>Review your Application. Use the edit buttons to go back to a section, or submit when everything looks correct.</p>
+            <p>Review your application. Use the edit buttons to go back to a section, or submit when everything looks correct.</p>
           </div>
         </div>
 
@@ -64,7 +64,7 @@ function ReviewApplication({
           {sectionEntries.map(([section, questions], index) => (
             <article className="ss-review-card" key={section}>
               <div className="ss-review-card-header">
-                <h3>{section}</h3>
+                <h3>{section.replace(/^Section\s+\d+\s*:\s*/i, "").replace(/\.$/, "")}</h3>
                 <button type="button" className="btn btn-sm ss-mini-edit-btn" onClick={() => onEditSection(index)}>
                   <i className="bi bi-pencil" aria-hidden="true" /> Edit
                 </button>

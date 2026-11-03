@@ -933,7 +933,7 @@ function ReviewPanel({
                 }, {})
               ).map(([section, questions]) => (
                 <section key={section} className="committee-answers-section">
-                  <h4>{section.replace(/^Section\s+\d+\s*:\s*/i, "")}</h4>
+                  <h4>{section.replace(/^Section\s+\d+\s*:\s*/i, "").replace(/\.$/, "")}</h4>
                   <dl>
                     {questions.map((item) => (
                       <div className="committee-answer-row" key={item.questionCode}>
@@ -1481,7 +1481,7 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
           <div className="committee-unassigned-strip">
             <i className="bi bi-info-circle" aria-hidden="true" />
             <span>
-              {unassignedApplicants.length} applicant{unassignedApplicants.length === 1 ? "" : "s"} completed the test and still need assignment. They are listed below under <strong>Applicants who need to be assigned</strong>.
+              {unassignedApplicants.length} applicant{unassignedApplicants.length === 1 ? "" : "s"} completed the test and still {unassignedApplicants.length === 1 ? "needs" : "need"} to be assigned. They are listed below under <strong>Applicants who need to be assigned</strong>.
             </span>
           </div>
         )}

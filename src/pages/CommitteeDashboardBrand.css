@@ -535,3 +535,23 @@
     border-radius: 10px !important;
   }
 }
+
+/* Nov 2026 review: names and emails wrapped one letter per line in narrow columns. */
+.committee-report-table {
+  min-width: 1280px;
+}
+
+.committee-report-table td strong,
+.committee-report-table td small {
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+
+/* Workload cards get the full width instead of a squeezed half column. */
+.committee-management-grid > .committee-workload-card {
+  grid-column: 1 / -1;
+}
+
+.committee-workload-card .committee-member-list {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 360px), 1fr));
+}

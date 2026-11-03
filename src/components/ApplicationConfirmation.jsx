@@ -1,4 +1,14 @@
+import { useEffect, useRef } from "react";
 import { formatPathwayLabel, formatStatusLabel } from "../utils/displayLabels";
+
+// Moves screen reader and keyboard focus to the result heading when the confirmation replaces the form.
+function useFocusOnMount() {
+  const ref = useRef(null);
+  useEffect(() => {
+    ref.current?.focus();
+  }, []);
+  return ref;
+}
 
 function getScreeningStatus(result) {
   if (result?.duplicate) return "EXISTING_APPLICATION";
@@ -75,12 +85,12 @@ function getNextStepCopy(result, selectedPathway) {
   if (screeningStatus === "EXISTING_APPLICATION") {
     return result?.existingApplicationOpened === false
       ? {
-          title: "Existing Application found",
-          body: "A new Application was not created. Please contact the project team if you need help accessing the existing Application.",
+          title: "Existing application found",
+          body: "A new application was not created. Please contact the project team if you need help accessing the existing application.",
         }
       : {
-          title: "Continue with the existing Application",
-          body: "A new Application was not created. The existing Application summary is shown below.",
+          title: "Continue with the existing application",
+          body: "A new application was not created. The existing application summary is shown below.",
         };
   }
 
@@ -90,7 +100,7 @@ function getNextStepCopy(result, selectedPathway) {
       body:
         result?.testInvitationEmailSent === false
           ? "Your Basic IT Skills Test invitation is being prepared for email delivery. Please check your email again shortly, including your spam or junk folder."
-          : "A secure Basic IT Skills Test invitation has been sent to the email address used in your Application. Please check your inbox and spam or junk folder.",
+          : "A secure Basic IT Skills Test invitation has been sent to the email address used in your application. Please check your inbox and spam or junk folder.",
     };
   }
 
@@ -101,13 +111,13 @@ function getNextStepCopy(result, selectedPathway) {
   ) {
     return {
       title: "Selection Committee review",
-      body: "The Basic IT Skills Test is not required for Digital Entrepreneurship. Your Application will move to the Selection Committee for review.",
+      body: "The Basic IT Skills Test is not required for Digital Entrepreneurship. Your application will move to the Selection Committee for review.",
     };
   }
 
   return {
     title: "Manual review",
-    body: "The project team will review the Application before deciding the next step.",
+    body: "The project team will review the application before deciding the next step.",
   };
 }
 
@@ -119,10 +129,11 @@ function getIneligibilityFeedback(result) {
   if (feedback.length > 0) return feedback;
   if (result?.eligibilityReason) return [result.eligibilityReason];
 
-  return ["The Application did not meet one or more of the current programme requirements."];
+  return ["Your application did not meet one or more of the current programme requirements."];
 }
 
 function IneligibleConfirmation({ result, selectedPathway, onStartNewApplication }) {
+  const headingRef = useFocusOnMount();
   return (
     <main id="main-content" tabIndex="-1" className="ss-confirmation-page">
       <section className="ss-confirmation-hero" aria-labelledby="confirmation-title">
@@ -135,15 +146,15 @@ function IneligibleConfirmation({ result, selectedPathway, onStartNewApplication
                 </div>
 
                 <span className="ss-small-label dark">Application outcome</span>
-                <h1 id="confirmation-title">Unfortunately, you are not eligible for this programme at this time.</h1>
+                <h1 id="confirmation-title" tabIndex="-1" ref={headingRef}>Unfortunately, you are not eligible for this programme at this time.</h1>
                 <p className="ss-confirmation-lead">
-                  Thank you for your interest in the <strong>{selectedPathway?.title || "Digital Futures"}</strong>. Your details have been received, but the Application does not meet the current requirements.
+                  Thank you for your interest in the <strong>{selectedPathway?.title || "Digital Futures"}</strong>. Your details have been received, but the application does not meet the current requirements.
                 </p>
 
                 <div className="ss-feedback-panel" role="note" aria-labelledby="ineligibility-feedback-title">
                   <div className="ss-feedback-panel-header">
                     <i className="bi bi-info-circle" aria-hidden="true" />
-                    <h2 id="ineligibility-feedback-title">Why this Application is not eligible</h2>
+                    <h2 id="ineligibility-feedback-title">Why this application is not eligible</h2>
                   </div>
                   <ul>
                     {getIneligibilityFeedback(result).map((message) => (
@@ -153,7 +164,7 @@ function IneligibleConfirmation({ result, selectedPathway, onStartNewApplication
                 </div>
 
                 <p className="ss-confirmation-footnote compact">
-                  Please do not submit another Application with the same phone number or email address. If you believe this result is incorrect, contact the project team for support.
+                  Please do not submit another application with the same phone number or email address. If you believe this result is incorrect, contact the project team for support.
                 </p>
 
                 <div className="ss-confirmation-actions">
@@ -171,6 +182,7 @@ function IneligibleConfirmation({ result, selectedPathway, onStartNewApplication
 }
 
 function ApplicationConfirmation({ result, selectedPathway, onStartNewApplication, onCheckStatus }) {
+  const headingRef = useFocusOnMount();
   const screeningStatus = getScreeningStatus(result);
   const isEligible = screeningStatus === "ELIGIBLE";
   const isDuplicate = screeningStatus === "EXISTING_APPLICATION";
@@ -208,16 +220,16 @@ function ApplicationConfirmation({ result, selectedPathway, onStartNewApplicatio
                   <i className={`bi ${isDuplicate ? "bi-info-circle" : "bi-check2-circle"}`} />
                 </div>
 
-                <span className="ss-small-label dark">{isDuplicate ? "Existing Application" : "Application submitted"}</span>
-                <h1 id="confirmation-title">
-                  {isDuplicate ? "This Application already exists." : "Thank you. Your Application has been received."}
+                <span className="ss-small-label dark">{isDuplicate ? "Existing application" : "Application submitted"}</span>
+                <h1 id="confirmation-title" tabIndex="-1" ref={headingRef}>
+                  {isDuplicate ? "This application already exists." : "Thank you. Your application has been received."}
                 </h1>
                 <p className="ss-confirmation-lead">
                   {isDuplicate
                     ? result?.existingApplicationOpened === false
-                      ? "A new Application was not created. Please contact the project team if you need help accessing the existing Application."
-                      : "A new Application was not created. We have opened the existing Application summary below."
-                    : <>Your Application for the <strong>{selectedPathway?.title || result?.pathway || "selected pathway"}</strong> has been saved successfully.</>}
+                      ? "A new application was not created. Please contact the project team if you need help accessing the existing application."
+                      : "A new application was not created. We have opened the existing application summary below."
+                    : <>Your application for the <strong>{selectedPathway?.title || result?.pathway || "selected pathway"}</strong> has been saved successfully.</>}
                 </p>
 
                 {reference && (
@@ -241,10 +253,12 @@ function ApplicationConfirmation({ result, selectedPathway, onStartNewApplicatio
                       <strong>{formatStatusLabel(result.status)}</strong>
                     </div>
                   )}
-                  <div className="ss-confirmation-detail" role="listitem">
-                    <span>Application outcome</span>
-                    <strong>{getOutcomeLabel(result, selectedPathway)}</strong>
-                  </div>
+                  {!result?.status && (
+                    <div className="ss-confirmation-detail" role="listitem">
+                      <span>Application outcome</span>
+                      <strong>{getOutcomeLabel(result, selectedPathway)}</strong>
+                    </div>
+                  )}
                   <div className="ss-confirmation-detail" role="listitem">
                     <span>Pathway</span>
                     <strong>{formatPathwayLabel(result?.pathway || selectedPathway?.title || selectedPathway?.id, "Physical Academy")}</strong>
@@ -254,14 +268,14 @@ function ApplicationConfirmation({ result, selectedPathway, onStartNewApplicatio
                 {canCheckStatus && (
                   <div className="ss-eligibility-note" role="note">
                     <i className="bi bi-phone" aria-hidden="true" />
-                    <p>Keep this Application reference. You can check the status using either the reference or the same mobile number entered in the Application.</p>
+                    <p>Keep this application reference. You can check the status using either the reference or the same mobile number entered in the application.</p>
                   </div>
                 )}
 
                 {isEligible && testRequired && (
                   <div className="ss-eligibility-note" role="note">
                     <i className="bi bi-envelope-check" aria-hidden="true" />
-                    <p>Please check the email address used in the Application, including the spam or junk folder. The Basic IT Skills Test can only be opened using the secure invitation sent by email.</p>
+                    <p>Please check the email address used in the application, including the spam or junk folder. The Basic IT Skills Test can only be opened using the secure invitation sent by email.</p>
                   </div>
                 )}
 
@@ -272,7 +286,7 @@ function ApplicationConfirmation({ result, selectedPathway, onStartNewApplicatio
                       <span aria-hidden="true">1</span>
                       <div>
                         <strong>Application received</strong>
-                        <p>The Application record is retained in the system.</p>
+                        <p>We have saved your application.</p>
                       </div>
                     </div>
                     <div className="ss-timeline-item active">
@@ -307,7 +321,7 @@ function ApplicationConfirmation({ result, selectedPathway, onStartNewApplicatio
                 </div>
 
                 <p className="ss-confirmation-footnote">
-                  Do not submit another Application using the same email address or phone number. This confirmation does not guarantee final selection.
+                  Do not submit another application using the same email address or phone number. This confirmation does not guarantee final selection.
                 </p>
               </div>
             </div>

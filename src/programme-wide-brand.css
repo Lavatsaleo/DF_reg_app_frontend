@@ -49,7 +49,8 @@
 .ss-form-hero::after,
 .ss-status-hero::after,
 .ss-confirmation-hero::after {
-  background: var(--df-teal) !important;
+  /* The half-hidden circle read as a rendering fault under the sticky header and overlapped cards. */
+  display: none !important;
 }
 
 .df-entry-hero h1,
@@ -767,7 +768,7 @@ a.ss-skip-link:visited {
 }
 
 /* Headings receive focus after navigation so screen readers announce the new page; they are not controls. */
-main h1[tabindex="-1"]:focus,
+main :is(h1, h2, h3)[tabindex="-1"]:focus,
 main[tabindex="-1"]:focus {
   outline: none;
 }
@@ -803,4 +804,81 @@ main li > a:only-child {
 /* Back links sit on their own line above the page label, sized to their text. */
 .df-back-link.d-flex {
   width: fit-content;
+}
+
+/* Application wizard polish (Nov 2026 review): inner spacing, consistent date controls, visible control borders. */
+.ss-registration-wizard .ss-survey-toolbar {
+  padding: 0.75rem 1.5rem;
+}
+
+.ss-registration-wizard .ss-wizard-section-intro {
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+}
+
+.ss-dob-fields {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: end;
+}
+
+.ss-dob-field-label {
+  margin-bottom: 0.5rem;
+}
+
+.ss-year-picker-trigger {
+  min-height: 52px;
+  border: 1px solid rgb(138, 133, 128);
+  border-radius: 8px;
+  color: #111111;
+}
+
+@media (max-width: 767.98px) {
+  .ss-dob-fields {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* A current step with errors kept the green fill but took the red text (1.1:1 contrast). */
+.ss-survey-stepper .current.needs_attention .ss-survey-step-dot {
+  border-color: #b42318;
+  background: #b42318;
+  color: #ffffff;
+  box-shadow: 0 0 0 5px rgba(180, 35, 24, 0.14);
+}
+
+.df-floating-support > summary.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+/* Phones: drop two of the four nested boxes so questions get the full width. */
+@media (max-width: 575.98px) {
+  .ss-registration-wizard.ss-form-shell {
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .ss-registration-wizard .ss-section-card.embedded {
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .ss-registration-wizard .ss-wizard-section-panel {
+    padding: 12px !important;
+  }
+
+  .ss-question-card .form-label {
+    grid-template-columns: 1fr !important;
+    gap: 0.4rem !important;
+  }
+
+  .ss-question-card .form-label .ss-required-chip {
+    justify-self: start !important;
+    grid-row: 1 !important;
+  }
 }

@@ -79,10 +79,25 @@ const SECTION_META = {
   },
 };
 
+// Current questionnaire sections, keyed by their name without the "Section N:" prefix.
+const QUESTIONNAIRE_SECTION_META = {
+  "eligibility criteria": { title: "Education & support", icon: "bi-mortarboard", caption: "Your studies and any support you need to take part" },
+  "training pathway selection": { icon: "bi-signpost-split", caption: "Your training pathway" },
+  "personal & contact details": { icon: "bi-person-badge", caption: "Your name, identity and how we can contact you" },
+  "education": { icon: "bi-mortarboard", caption: "Your qualifications" },
+  "disability, accessibility & health": { icon: "bi-universal-access-circle", caption: "Your disability and the support you need to take part" },
+  "prior engagement with sightsavers": { icon: "bi-people", caption: "Any earlier Sightsavers programmes you have joined" },
+  "motivation & training readiness": { icon: "bi-lightbulb", caption: "Why you are applying and when you can start" },
+  "access to device, internet and electricity": { icon: "bi-laptop", caption: "Your equipment for online learning" },
+};
+
 function getSectionMeta(title) {
-  return SECTION_META[title] || {
+  const key = String(title || "").replace(/^Section\s+\d+\s*:\s*/i, "").replace(/\.$/, "").trim().toLowerCase();
+  const questionnaireMeta = QUESTIONNAIRE_SECTION_META[key];
+
+  return SECTION_META[title] || (questionnaireMeta && { ...questionnaireMeta, intro: "" }) || {
     icon: "bi-ui-checks-grid",
-    caption: "Quick application step",
+    caption: "",
     intro: "Complete this step, then continue. Required fields are checked before you move forward.",
   };
 }
@@ -122,7 +137,7 @@ function WizardSection({
         </span>
         <div>
           <span className="ss-small-label dark">Application section</span>
-          <h2 id={headingId}>{title.replace(/^Section\s+\d+\s*:\s*/i, "")}</h2>
+          <h2 id={headingId}>{sectionMeta.title || title.replace(/^Section\s+\d+\s*:\s*/i, "").replace(/\.$/, "")}</h2>
           {sectionMeta.caption && <p>{sectionMeta.caption}</p>}
         </div>
       </header>

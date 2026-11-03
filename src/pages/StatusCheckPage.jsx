@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import { API_BASE_URL } from "../config/api";
 import { formatPathwayLabel, formatStatusLabel } from "../utils/displayLabels";
@@ -137,8 +137,14 @@ function StatusTimeline({ status }) {
   );
 }
 
-function StatusResultCard({ result, source }) {
+function StatusResultCard({ result }) {
   const reference = getReferenceFromResult(result);
+  const headingRef = useRef(null);
+
+  // A found application replaces the form result area; move focus so screen readers announce it.
+  useEffect(() => {
+    headingRef.current?.focus();
+  }, [result]);
   const status = result?.status || "Submitted";
   const statusLabel = formatStatusLabel(status);
 
@@ -147,7 +153,7 @@ function StatusResultCard({ result, source }) {
       <div className="d-flex flex-column flex-lg-row justify-content-between gap-3">
         <div>
           <span className="ss-small-label dark">Application found</span>
-          <h2 id="status-result-title">Current application status</h2>
+          <h2 id="status-result-title" tabIndex="-1" ref={headingRef}>Current application status</h2>
           <p className="mb-0">
             The information below shows the latest status available to this portal.
           </p>
@@ -178,10 +184,6 @@ function StatusResultCard({ result, source }) {
           <span>Submitted</span>
           <strong>{formatDate(result?.submittedAt || result?.savedAt)}</strong>
         </div>
-        <div role="listitem">
-          <span>Source</span>
-          <strong>{source === "server" ? "Official system" : "This device"}</strong>
-        </div>
       </div>
 
       {result?.nextStepMessage && (
@@ -191,7 +193,7 @@ function StatusResultCard({ result, source }) {
         </div>
       )}
 
-      {result?.eligibilityReason && (
+      {result?.eligibilityReason && result?.screeningStatus !== "ELIGIBLE" && (
         <div className="ss-status-note" role="note">
           <i className="bi bi-info-circle" aria-hidden="true" />
           <p>{result.eligibilityReason}</p>
@@ -252,7 +254,6 @@ function StatusResultCard({ result, source }) {
 function StatusCheckPage({ onBackHome, onStartApplication }) {
   const [identifier, setIdentifier] = useState("");
   const [lookupResult, setLookupResult] = useState(null);
-  const [lookupSource, setLookupSource] = useState("");
   const [lookupMessage, setLookupMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -263,7 +264,6 @@ function StatusCheckPage({ onBackHome, onStartApplication }) {
 
     const cleanIdentifier = identifier.trim();
     setLookupResult(null);
-    setLookupSource("");
     setLookupMessage("");
 
     if (!cleanIdentifier) {
@@ -281,7 +281,6 @@ function StatusCheckPage({ onBackHome, onStartApplication }) {
       const apiResult = response.data?.data || response.data?.application || response.data?.registration || response.data;
       if (apiResult && getReferenceFromResult(apiResult)) {
         setLookupResult(apiResult);
-        setLookupSource("server");
         return;
       }
 
@@ -291,7 +290,6 @@ function StatusCheckPage({ onBackHome, onStartApplication }) {
 
       if (localResult) {
         setLookupResult(localResult);
-        setLookupSource("local");
         setLookupMessage(
           "Showing the confirmation saved on this device because the official status lookup could not be reached."
         );
@@ -309,7 +307,6 @@ function StatusCheckPage({ onBackHome, onStartApplication }) {
     const recentReference = getReferenceFromResult(application);
     setIdentifier(recentReference);
     setLookupResult(application);
-    setLookupSource("local");
     setLookupMessage("Showing a recently submitted application saved on this device.");
   }
 
@@ -330,7 +327,7 @@ function StatusCheckPage({ onBackHome, onStartApplication }) {
                 <i className="bi bi-arrow-left" aria-hidden="true" /> Back to home
               </a>
               <span className="ss-small-label light">Application tracking</span>
-              <h1 id="status-page-title" tabIndex="-1">Check your registration status</h1>
+              <h1 id="status-page-title" tabIndex="-1">Check your application status</h1>
               <p>
                 Enter your application reference or the mobile number used during registration to see the latest status available to this portal.
               </p>
@@ -339,7 +336,7 @@ function StatusCheckPage({ onBackHome, onStartApplication }) {
               <div className="ss-selected-card">
                 <span>Applicant support</span>
                 <strong>Use your reference or mobile number</strong>
-                <small>Example: SS-PHYS-20260525-ABCDE or +254712345678</small>
+                <small>Example: APP-DF-2026-AB12CD or +254712345678</small>
               </div>
             </div>
           </div>
@@ -392,7 +389,7 @@ function StatusCheckPage({ onBackHome, onStartApplication }) {
 
               {lookupResult && (
                 <div className="mt-4">
-                  <StatusResultCard result={lookupResult} source={lookupSource} />
+                  <StatusResultCard result={lookupResult} />
                 </div>
               )}
             </section>
