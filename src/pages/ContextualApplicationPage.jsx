@@ -72,23 +72,26 @@ function writeApplicationFlowState(pathwayId, phase, step = 0, mode = "push") {
   }
 }
 
-function ConsentOption({ questionCode, questionText, options, value, onChange }) {
+function ConsentOption({ questionCode, questionText, options, value, onChange, isOptionLocked = () => false }) {
   return (
     <fieldset className="border-0 p-0 mb-4">
       <legend className="fs-6 fw-semibold mb-3">{questionText}</legend>
       <div className="d-grid gap-2">
         {(options || []).map((option, index) => {
           const id = `${questionCode}-${index}`;
+          const locked = isOptionLocked(option);
           return (
-            <label key={option} htmlFor={id} className={`ss-option-pill ${value === option ? "selected" : ""}`}>
+            <label key={option} htmlFor={id} className={`ss-option-pill ${value === option ? "selected" : ""} ${locked ? "is-locked" : ""}`}>
               <input
                 id={id}
                 type="radio"
                 name={questionCode}
                 value={option}
                 checked={value === option}
+                disabled={locked}
                 onChange={() => onChange({ questionCode }, option)}
               />
+              {locked && <i className="bi bi-lock" aria-hidden="true" />}
               {option}
             </label>
           );
@@ -123,6 +126,38 @@ function MultiSelectOptions({ questionCode, options, value, onChange }) {
         );
       })}
     </div>
+  );
+}
+
+const CONSENT_SECTION_KEYS = ["introduction", "purpose", "rights", "questions"];
+
+// One part of the consent notice. Applicants confirm each part before the consent decision unlocks.
+function ConsentReadSection({ sectionKey, index, title, isOpen, isRead, onToggle, onMarkRead, isLast, children }) {
+  const bodyId = `df-consent-read-${sectionKey}`;
+
+  return (
+    <section className={`df-consent-read ${isRead ? "is-read" : ""} ${isOpen ? "is-open" : ""}`}>
+      <h3 className="df-consent-read-title">
+        <button type="button" aria-expanded={isOpen} aria-controls={bodyId} onClick={onToggle}>
+          <span className="df-consent-read-marker" aria-hidden="true">
+            {isRead ? <i className="bi bi-check-lg" /> : index + 1}
+          </span>
+          <span className="df-consent-read-label">{title}</span>
+          <span className="df-consent-read-state">{isRead ? "Read" : "Not read yet"}</span>
+          <i className={`bi ${isOpen ? "bi-chevron-up" : "bi-chevron-down"}`} aria-hidden="true" />
+        </button>
+      </h3>
+      {isOpen && (
+        <div id={bodyId} className="df-consent-details-body">
+          {children}
+          {!isRead && (
+            <button type="button" className="btn ss-btn-primary btn-sm mt-2" onClick={onMarkRead}>
+              <i className="bi bi-check2" aria-hidden="true" /> {isLast ? "I have read this section" : "I have read this section, show the next one"}
+            </button>
+          )}
+        </div>
+      )}
+    </section>
   );
 }
 
@@ -182,6 +217,10 @@ function ContextualApplicationPage({
 }) {
   const [entryStage, setEntryStage] = useState(() => answers.COUNTRY ? "consent" : "country");
   const [editingConsent, setEditingConsent] = useState(false);
+  const [consentSectionsRead, setConsentSectionsRead] = useState([]);
+  const [openConsentSection, setOpenConsentSection] = useState(CONSENT_SECTION_KEYS[0]);
+  const [consentUnlockMessage, setConsentUnlockMessage] = useState("");
+  const consentDecisionHeadingRef = useRef(null);
   const [consentDocument, setConsentDocument] = useState(null);
   const [consentLoading, setConsentLoading] = useState(true);
   const [consentLoadError, setConsentLoadError] = useState("");
@@ -291,6 +330,38 @@ function ContextualApplicationPage({
   }
 
   const consentDecision = answers.REGISTRATION_CONSENT;
+  const consentSectionsComplete = CONSENT_SECTION_KEYS.every((key) => consentSectionsRead.includes(key));
+  // Someone returning to a decision they already made is not sent back through the reading steps.
+  // Asking for an explanation is not a decision, so it does not unlock Yes or No.
+  const consentDecisionUnlocked = consentSectionsComplete || Boolean(
+    consentDecision && !sameOption(consentDecision, consentDocument?.supportRequestOption)
+  );
+
+  function markConsentSectionRead(sectionKey) {
+    const nextRead = consentSectionsRead.includes(sectionKey) ? consentSectionsRead : [...consentSectionsRead, sectionKey];
+    setConsentSectionsRead(nextRead);
+    const nextUnread = CONSENT_SECTION_KEYS.find((key) => !nextRead.includes(key));
+    setOpenConsentSection(nextUnread || null);
+
+    if (nextUnread) {
+      // The confirm button disappears once clicked; keep keyboard and screen reader users at the next section.
+      window.requestAnimationFrame(() => {
+        const nextToggle = document.querySelector(`[aria-controls="df-consent-read-${nextUnread}"]`);
+        nextToggle?.focus({ preventScroll: true });
+        nextToggle?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      });
+    } else {
+      setConsentUnlockMessage("You have read all the consent information. You can now make your consent decision.");
+      window.requestAnimationFrame(() => {
+        consentDecisionHeadingRef.current?.focus({ preventScroll: true });
+        consentDecisionHeadingRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    }
+  }
+
+  function toggleConsentSection(sectionKey) {
+    setOpenConsentSection((current) => (current === sectionKey ? null : sectionKey));
+  }
   const consentGranted = sameOption(consentDecision, consentDocument?.consentGrantedOption);
   const consentDenied = sameOption(consentDecision, consentDocument?.consentDeniedOption);
   const consentSupportRequested = Boolean(
@@ -801,7 +872,7 @@ function ContextualApplicationPage({
                       Before you decide
                     </h2>
                     <p className="df-consent-lead">
-                      Here is a short summary. Open each section below to read the full consent information.
+                      Here is a short summary. Then read the four sections below and confirm each one to unlock your consent decision.
                     </p>
 
                     <ul className="df-consent-glance">
@@ -813,61 +884,90 @@ function ContextualApplicationPage({
                       ))}
                     </ul>
 
-                    <details className="df-consent-details">
-                      <summary>{stripTrailingColon(consentDocument.introductionTitle)}</summary>
-                      <div className="df-consent-details-body">
-                        {consentDocument.introduction.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
-                      </div>
-                    </details>
-
-                    <details className="df-consent-details">
-                      <summary>{stripTrailingColon(consentDocument.purposeTitle)}</summary>
-                      <div className="df-consent-details-body">
-                        {consentDocument.purpose.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
-                        {consentDocument.informationLinks.map((item) => (
-                          <p key={item.url}>
-                            {item.before}
-                            <a href={item.url} target="_blank" rel="noreferrer">{item.label}</a>
-                            {item.between}
-                            <a href={item.secondUrl} target="_blank" rel="noreferrer">{item.secondLabel}</a>
-                          </p>
-                        ))}
-                      </div>
-                    </details>
-
-                    <details className="df-consent-details">
-                      <summary>{stripTrailingColon(consentDocument.rightsTitle)}</summary>
-                      <div className="df-consent-details-body">
-                        <p>{consentDocument.rightsIntro}</p>
-                        <ConsentCountryContacts
-                          consent={consentDocument}
-                          residenceCountry={residenceCountry}
-                          type="safeguarding"
-                        />
-                        <p>
-                          {consentDocument.speakUpPrefix}
-                          <a href={consentDocument.speakUpUrl} target="_blank" rel="noreferrer">
-                            {consentDocument.speakUpUrl}
-                          </a>
-                        </p>
-                      </div>
-                    </details>
-
-                    <details className="df-consent-details">
-                      <summary>{consentDocument.questionsTitle}</summary>
-                      <div className="df-consent-details-body">
-                        <p>{consentDocument.questionsIntro}</p>
-                        <ConsentCountryContacts
-                          consent={consentDocument}
-                          residenceCountry={residenceCountry}
-                          type="questions"
-                        />
-                      </div>
-                    </details>
+                    {[
+                      {
+                        key: "introduction",
+                        title: stripTrailingColon(consentDocument.introductionTitle),
+                        body: consentDocument.introduction.map((paragraph) => <p key={paragraph}>{paragraph}</p>),
+                      },
+                      {
+                        key: "purpose",
+                        title: stripTrailingColon(consentDocument.purposeTitle),
+                        body: (
+                          <>
+                            {consentDocument.purpose.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
+                            {consentDocument.informationLinks.map((item) => (
+                              <p key={item.url}>
+                                {item.before}
+                                <a href={item.url} target="_blank" rel="noreferrer">{item.label}</a>
+                                {item.between}
+                                <a href={item.secondUrl} target="_blank" rel="noreferrer">{item.secondLabel}</a>
+                              </p>
+                            ))}
+                          </>
+                        ),
+                      },
+                      {
+                        key: "rights",
+                        title: stripTrailingColon(consentDocument.rightsTitle),
+                        body: (
+                          <>
+                            <p>{consentDocument.rightsIntro}</p>
+                            <ConsentCountryContacts consent={consentDocument} residenceCountry={residenceCountry} type="safeguarding" />
+                            <p>
+                              {consentDocument.speakUpPrefix}
+                              <a href={consentDocument.speakUpUrl} target="_blank" rel="noreferrer">
+                                {consentDocument.speakUpUrl}
+                              </a>
+                            </p>
+                          </>
+                        ),
+                      },
+                      {
+                        key: "questions",
+                        title: consentDocument.questionsTitle,
+                        body: (
+                          <>
+                            <p>{consentDocument.questionsIntro}</p>
+                            <ConsentCountryContacts consent={consentDocument} residenceCountry={residenceCountry} type="questions" />
+                          </>
+                        ),
+                      },
+                    ].map((section, index, all) => (
+                      <ConsentReadSection
+                        key={section.key}
+                        sectionKey={section.key}
+                        index={index}
+                        title={section.title}
+                        isOpen={openConsentSection === section.key}
+                        isRead={consentSectionsRead.includes(section.key)}
+                        isLast={index === all.length - 1}
+                        onToggle={() => toggleConsentSection(section.key)}
+                        onMarkRead={() => markConsentSectionRead(section.key)}
+                      >
+                        {section.body}
+                      </ConsentReadSection>
+                    ))}
                   </article>
 
                   <article className="ss-section-card df-consent-decision" aria-labelledby="df-consent-decision-title">
-                  <h2 id="df-consent-decision-title">{consentDocument.consentTitle}</h2>
+                  <h2 id="df-consent-decision-title" tabIndex="-1" ref={consentDecisionHeadingRef}>{consentDocument.consentTitle}</h2>
+                  <p className="visually-hidden" role="status" aria-live="polite">{consentUnlockMessage}</p>
+                  {!consentDecisionUnlocked && (
+                    <div className="df-consent-lock" role="note">
+                      <i className="bi bi-lock" aria-hidden="true" />
+                      <div>
+                        <strong>Read the consent information first</strong>
+                        <p className="mb-2">
+                          Read each section on this page and confirm it. Your consent choices unlock when all four are done.
+                        </p>
+                        <div className="df-consent-progress" aria-hidden="true">
+                          <span style={{ width: `${(consentSectionsRead.length / CONSENT_SECTION_KEYS.length) * 100}%` }} />
+                        </div>
+                        <small>{consentSectionsRead.length} of {CONSENT_SECTION_KEYS.length} sections read</small>
+                      </div>
+                    </div>
+                  )}
                   <p>{consentDocument.consentIntro}</p>
                   <p className="fw-semibold">{consentDocument.consentLead}</p>
                   <ul className="df-consent-confirm-list">{consentDocument.consentBullets.map((item) => <li key={item}>{item}</li>)}</ul>
@@ -878,6 +978,9 @@ function ContextualApplicationPage({
                     options={consentDocument.consentOptions}
                     value={consentDecision}
                     onChange={onAnswerChange}
+                    isOptionLocked={(option) =>
+                      !consentDecisionUnlocked && !sameOption(option, consentDocument.supportRequestOption)
+                    }
                   />
 
                   {consentDenied && (
