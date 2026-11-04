@@ -8,3 +8,11 @@ Administrative boundary data from geoBoundaries gbOpen, retrieved 5 October 2026
 - **Zambia** (2020): Zambia Data Hub. Creative Commons Attribution 4.0 International (CC BY 4.0). Boundary ID: ZMB-ADM1-6923714. Source: https://github.com/wmgeolab/geoBoundaries/tree/main/releaseData/gbOpen/ZMB/ADM1
 
 Changes: simplified coordinates with Shapely (0.012 degree tolerance, preserve topology), rounded to four decimals, and generated representative points inside each region. Regional names are matched to the existing registration lists: Tharaka → Tharaka Nithi, Ghana's Region suffix removed, and Zambia's Muchinga → existing Muchiga Province spelling. Original names are not changed in the registration form. These are overview boundaries, not authoritative legal boundaries or applicant locations. Bubble area represents application counts, not population-adjusted rates. Missing/unmatched locations remain in the region table and are counted separately.
+
+## Base map context (neighbouring countries, lakes, capitals)
+
+`applicationMapContext.json` holds the land, lakes and capital marker drawn around each country map. Neighbouring countries and lakes come from Natural Earth 1:50m Admin 0 Countries and Lakes (public domain, https://www.naturalearthdata.com/), clipped to each map frame, simplified and rounded to three decimals. Capital positions are approximate and only used as reference markers. Regenerate with:
+
+    node scripts/build-map-context.mjs <ne_50m_admin_0_countries.geojson> <ne_50m_lakes.geojson>
+
+The GeoJSON files are available from https://github.com/nvkelso/natural-earth-vector/tree/master/geojson.
