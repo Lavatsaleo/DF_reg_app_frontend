@@ -49,26 +49,6 @@
 .df-bar-track { height: 9px; background: var(--df-bg); border-radius: 5px; overflow: hidden; }
 .df-bar-track > span { display: block; height: 100%; background: var(--bar-colour); border-radius: inherit; }
 .df-chart-note, .df-data-note { color: var(--df-muted); font-size: .77rem; line-height: 1.6; margin-top: 20px; }
-.df-monthly-chart { display: flex; gap: 18px; overflow-x: auto; padding: 20px 0 10px; min-height: 290px; }
-.df-month-column { flex: 1; min-width: 56px; max-width: 100px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
-.df-month-column strong { font-size: .8rem; }
-.df-month-column > div { height: 210px; width: 100%; display: flex; align-items: end; background: var(--df-bg); border-radius: 6px; overflow: hidden; }
-.df-month-column > div > span { display: block; width: 100%; background: var(--df-yellow); border-radius: 6px 6px 0 0; }
-.df-month-column small { font-size: .68rem; text-align: center; white-space: nowrap; }
-.df-map-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
-.df-map-grid.single { grid-template-columns: 1fr; max-width: 860px; margin: auto; }
-.df-country-map { background: var(--df-bg); border-radius: 14px; padding: 16px; }
-.df-map-heading { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
-.df-map-heading button { border: 0; background: transparent; font-weight: 750; color: var(--df-black); padding: 4px; text-align: left; }
-.df-map-heading span { font-size: .78rem; color: var(--df-muted); }
-.df-country-map svg { display: block; width: 100%; height: auto; max-height: 440px; margin: 14px 0; }
-.df-country-map > small { font-size: .68rem; color: var(--df-muted); }
-.df-region-shape { fill: var(--df-white); stroke: #b5ada4; stroke-width: .8; vector-effect: non-scaling-stroke; }
-.df-map-bubble { fill: var(--df-orange); fill-opacity: .62; stroke: #a03908; stroke-width: 1; cursor: pointer; }
-.df-map-bubble:hover, .df-map-bubble:focus, .df-map-bubble.active { fill: var(--df-yellow); fill-opacity: 1; stroke: var(--df-black); stroke-width: 2; outline: none; }
-.df-map-legend { display: flex; align-items: center; gap: 10px; margin-top: 20px; color: var(--df-muted); font-size: .78rem; }
-.df-legend-dot { width: 14px; height: 14px; border-radius: 50%; background: var(--df-orange); display: inline-block; }
-.df-map-selection { background: var(--df-soft-yellow); color: var(--df-black); border-radius: 8px; padding: 10px 12px; margin: 14px 0; font-size: .83rem; }
 .df-map-attribution { color: var(--df-muted); font-size: .72rem; }
 .df-map-attribution p { margin-top: 12px; }
 .df-region-table { margin-top: 22px; border-top: 1px solid var(--df-border); padding-top: 18px; }
@@ -87,8 +67,8 @@
 .df-dashboard-user-form button { justify-self: start; }
 .df-dashboard-user-list { padding: 0; margin-top: 20px; list-style: none; }
 .df-dashboard-user-list li { display: flex; gap: 12px; justify-content: space-between; font-size: .83rem; padding: 12px 0; border-top: 1px solid var(--df-border); }
-/* Gender colours reuse the brand palette; every split also carries visible counts and a table view. */
-.df-dashboard-page { --df-sex-female: var(--df-orange); --df-sex-male: var(--df-teal); --df-sex-unrecorded: #b5ada4; }
+/* Gender colours are darker steps of the brand orange and teal, checked for colour-blind separation; every split also carries visible counts and a table view. */
+.df-dashboard-page { --df-sex-female: #e8600f; --df-sex-male: #16927a; --df-sex-unrecorded: #b0a89f; }
 .df-sex-key { display: inline-block; width: 12px; height: 12px; border-radius: 3px; background: var(--sex-colour); flex-shrink: 0; }
 .df-sex-key.line { width: 14px; height: 3px; border-radius: 2px; }
 .df-dashboard-page .female { --sex-colour: var(--df-sex-female); }
@@ -119,11 +99,8 @@
 .df-sex-breakdown { display: block; color: var(--df-muted); font-size: .74rem; margin-top: 6px; }
 .df-bar-track.split { height: 12px; background: transparent; }
 .df-bar-track.split > span { display: flex; gap: 2px; background: transparent; }
-.df-month-column > div.split > span { display: flex; flex-direction: column-reverse; gap: 2px; background: transparent; }
-.df-month-column > div.split .df-sex-segment { width: 100%; height: auto; min-height: 2px; border-radius: 0; }
-.df-month-column > div.split .df-sex-segment:last-child { border-radius: 4px 4px 0 0; }
-.df-chart-bars li[tabindex], .df-gender-funnel li[tabindex], .df-month-column[tabindex] { border-radius: 8px; outline-offset: 4px; cursor: default; }
-.df-chart-bars li[tabindex]:hover .df-sex-segment, .df-gender-funnel li[tabindex]:hover .df-sex-segment, .df-month-column[tabindex]:hover .df-sex-segment { filter: brightness(1.08); }
+.df-chart-bars li[tabindex], .df-gender-funnel li[tabindex] { border-radius: 8px; outline-offset: 4px; cursor: default; }
+.df-chart-bars li[tabindex]:hover .df-sex-segment, .df-gender-funnel li[tabindex]:hover .df-sex-segment { filter: brightness(1.08); }
 .df-split-toggle[aria-pressed="true"], .df-split-toggle[aria-pressed="true"]:hover { background: #111111 !important; border-color: #111111 !important; color: #ffffff !important; }
 .df-split-notice { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin: -8px 0 16px; }
 .df-split-notice small { color: var(--df-muted); font-size: .78rem; }
@@ -148,7 +125,6 @@
 }
 html.ss-high-contrast .df-dashboard-page { --df-bg: #000; --df-white: #000; --df-black: #fff; --df-muted: #fff; --df-border: #fff; --df-soft-yellow: #000; --df-soft-teal: #000; }
 html.ss-high-contrast .df-data-mode button[aria-pressed="true"] { color: #000; }
-html.ss-high-contrast .df-map-bubble:focus { stroke: #fff; }
 /* Disclosure toggles and source links need a 24px+ target on touch screens. */
 .df-dashboard-page details > summary { min-height: 44px; display: flex; align-items: center; gap: 6px; cursor: pointer; }
 .df-dashboard-page details > summary::before { content: "\25B8"; transition: transform .15s ease; }
@@ -156,3 +132,108 @@ html.ss-high-contrast .df-map-bubble:focus { stroke: #fff; }
 .df-dashboard-page details > summary::-webkit-details-marker { display: none; }
 .df-dashboard-page details > summary { list-style: none; }
 .df-map-attribution a { display: inline-block; padding: 6px 0; }
+
+/* Trend line chart */
+.df-trend-card { margin-bottom: 24px; }
+.df-trend-toolbar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 16px; margin-bottom: 12px; }
+.df-trend-summary { display: flex; flex-wrap: wrap; gap: 12px 32px; margin: 0; }
+.df-trend-summary dt { font-size: .72rem; font-weight: 750; color: var(--df-muted); margin-bottom: 4px; }
+.df-trend-summary dd { margin: 0; font-size: .9rem; font-weight: 700; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+.df-trend-summary dd > span { font-size: 1.5rem; letter-spacing: -.03em; }
+.df-trend-summary small { font-size: .74rem; font-weight: 700; display: inline-flex; gap: 3px; align-items: center; padding: 2px 8px; border-radius: 999px; }
+.df-trend-summary small.up { background: #e6f4ea; color: #1d6b34; }
+.df-trend-summary small.down { background: #fdecea; color: #a1262a; }
+.df-segmented { display: flex; background: var(--df-bg); padding: 4px; border-radius: 12px; }
+.df-segmented button { border: 0; background: transparent; padding: 8px 14px; min-height: 40px; color: var(--df-black); border-radius: 9px; font-size: .82rem; font-weight: 700; }
+.df-segmented button[aria-pressed="true"] { background: var(--df-white); box-shadow: 0 1px 3px rgba(0, 0, 0, .14); }
+.df-trend-legend { display: flex; flex-wrap: wrap; gap: 6px 18px; list-style: none; padding: 0; margin: 0 0 4px; font-size: .78rem; color: var(--df-muted); }
+.df-trend-legend li { display: flex; align-items: center; gap: 7px; }
+.df-line-key { display: inline-block; width: 18px; height: 3px; border-radius: 2px; background: var(--line-colour); flex-shrink: 0; }
+.df-line-key.unrecorded { background: repeating-linear-gradient(90deg, var(--line-colour) 0 5px, transparent 5px 8px); }
+.df-dashboard-page .total { --line-colour: #111111; }
+.df-dashboard-page .female { --line-colour: var(--df-sex-female); }
+.df-dashboard-page .male { --line-colour: var(--df-sex-male); }
+.df-dashboard-page .unrecorded { --line-colour: #8a837c; }
+.df-trend-frame { position: relative; }
+.df-trend-frame svg { display: block; width: 100%; height: auto; overflow: visible; touch-action: pan-y; }
+.df-trend-frame svg:focus-visible { outline: 3px solid var(--df-yellow); outline-offset: 4px; border-radius: 8px; }
+.df-trend-grid line { stroke: #e7e3df; stroke-width: 1; }
+.df-trend-grid text, .df-trend-axis { fill: var(--df-muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.df-trend-crosshair { stroke: #8a837c; stroke-width: 1; }
+.df-trend-line { fill: none; stroke: var(--line-colour); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+.df-trend-series.unrecorded .df-trend-line { stroke-dasharray: 6 4; }
+.df-trend-area { fill: var(--df-yellow); fill-opacity: .22; }
+.df-trend-dot { fill: var(--line-colour); stroke: var(--df-white); stroke-width: 2; }
+.df-trend-end-label { font-size: 13px; font-weight: 800; fill: var(--df-black); }
+.df-trend-hit { fill: transparent; cursor: crosshair; }
+.df-trend-tooltip, .df-map-tooltip { position: absolute; z-index: 5; pointer-events: none; min-width: 170px; background: var(--df-white); color: var(--df-black); border: 1px solid var(--df-border); border-radius: 10px; padding: 10px 12px; box-shadow: 0 8px 24px rgba(0, 0, 0, .14); font-size: .8rem; }
+.df-trend-tooltip { top: 4px; transform: translateX(14px); }
+.df-trend-tooltip.left { transform: translateX(calc(-100% - 14px)); }
+.df-trend-tooltip p, .df-map-tooltip p { margin: 0 0 6px; font-weight: 750; }
+.df-trend-tooltip div, .df-map-tooltip > div { display: flex; align-items: center; gap: 8px; }
+.df-trend-tooltip strong, .df-map-tooltip > div > strong { min-width: 34px; font-variant-numeric: tabular-nums; }
+.df-trend-tooltip span, .df-trend-tooltip small, .df-map-tooltip span { color: var(--df-muted); }
+.df-trend-tooltip small { display: block; margin-top: 6px; font-size: .7rem; }
+.df-dashboard-chart-grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 1200px) { .df-dashboard-chart-grid.three { grid-template-columns: repeat(2, minmax(0, 1fr)); } .df-dashboard-chart-grid.three > :last-child { grid-column: 1 / -1; } }
+
+/* Choropleth map */
+.df-map { position: relative; }
+.df-map-layout { display: grid; gap: 20px; align-items: start; }
+@media (min-width: 1100px) { .df-map-layout { grid-template-columns: minmax(0, 1fr) 300px; } }
+.df-map-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.df-map-grid.single { grid-template-columns: 1fr; }
+.df-country-map { background: #fbfaf8; border: 1px solid var(--df-border); border-radius: 14px; padding: 14px 16px 10px; margin: 0; }
+.df-map-heading { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px 12px; }
+.df-map-heading strong { display: block; font-size: 1rem; }
+.df-map-heading span { font-size: .76rem; color: var(--df-muted); }
+.df-map-heading .btn { font-size: .76rem; padding: 6px 10px; min-height: 36px; }
+.df-country-map svg { display: block; width: 100%; height: auto; max-height: 520px; margin: 8px 0 0; overflow: visible; }
+.df-region-shape { fill: #ece8e4; stroke: #ffffff; stroke-width: 1; vector-effect: non-scaling-stroke; transition: filter .12s ease; }
+.df-region-shape.has-data { cursor: pointer; }
+.df-region-shape.has-data:hover { filter: brightness(.94); }
+.df-region-shape:focus { outline: none; }
+.df-region-outline { fill: none; stroke: #111111; stroke-width: 2.5; vector-effect: non-scaling-stroke; pointer-events: none; }
+.df-map-label circle { fill: #111111; stroke: #ffffff; stroke-width: 1.5; }
+.df-map-label text { font-size: 11px; font-weight: 800; pointer-events: none; }
+.df-map-label .rank { fill: #ffffff; text-anchor: middle; font-size: 10px; }
+.df-map-label .name { fill: #111111; paint-order: stroke; stroke: #ffffff; stroke-width: 3.5px; stroke-linejoin: round; }
+.df-map-ranking { background: #fbfaf8; border: 1px solid var(--df-border); border-radius: 14px; padding: 16px; }
+.df-map-ranking h3 { font-size: 1rem; font-weight: 800; margin: 0 0 4px; }
+.df-map-ranking > p { font-size: .76rem; color: var(--df-muted); margin-bottom: 12px; }
+.df-map-ranking ol { list-style: none; padding: 0; margin: 0; counter-reset: rank; display: grid; gap: 2px; }
+.df-map-ranking li { counter-increment: rank; }
+.df-map-ranking li button { width: 100%; display: grid; grid-template-columns: 1.6rem minmax(0, 1fr) auto; grid-template-areas: "rank name count" ". bar bar"; align-items: center; gap: 4px 8px; border: 0; background: transparent; text-align: left; padding: 8px; border-radius: 10px; color: var(--df-black); }
+.df-map-ranking li button::before { content: counter(rank); grid-area: rank; font-size: .72rem; font-weight: 800; color: var(--df-muted); }
+.df-map-ranking li button:hover, .df-map-ranking li button.is-focus { background: var(--df-soft-yellow); }
+.df-map-ranking li button[aria-pressed="true"] { background: var(--df-soft-yellow); box-shadow: inset 0 0 0 2px #111111; }
+.df-map-rank-name { grid-area: name; font-size: .84rem; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.df-map-rank-name small { font-weight: 500; color: var(--df-muted); margin-left: 6px; }
+.df-map-ranking li strong { grid-area: count; font-size: .84rem; font-variant-numeric: tabular-nums; }
+.df-map-rank-bar { grid-area: bar; height: 6px; border-radius: 3px; background: #ece8e4; overflow: hidden; }
+.df-map-rank-bar > span { display: block; height: 100%; border-radius: 3px; }
+.df-map-tooltip { transform: translate(14px, 14px); max-width: 260px; }
+.df-map-tooltip.left { transform: translate(calc(-100% - 14px), 14px); }
+.df-map-tooltip p small { display: block; font-weight: 500; color: var(--df-muted); font-size: .72rem; }
+.df-map-tooltip .df-map-tooltip-total { align-items: baseline; margin-bottom: 2px; }
+.df-map-tooltip .df-map-tooltip-total strong { font-size: 1.25rem; min-width: 0; }
+.df-map-tooltip-rank { display: block; font-size: .72rem; margin-bottom: 6px; }
+.df-map-footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px; margin-top: 18px; }
+.df-map-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; font-size: .76rem; color: var(--df-muted); }
+.df-map-legend-title { font-weight: 750; color: var(--df-black); }
+.df-map-legend ul { display: flex; flex-wrap: wrap; gap: 6px 12px; list-style: none; padding: 0; margin: 0; }
+.df-map-legend li { display: flex; align-items: center; gap: 6px; font-variant-numeric: tabular-nums; }
+.df-map-swatch { width: 22px; height: 12px; border-radius: 3px; display: inline-block; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .08); }
+.df-map-swatch.empty { background: #ece8e4; }
+.df-map-selection { flex: 1 1 320px; background: var(--df-soft-yellow); color: var(--df-black); border-radius: 8px; padding: 10px 12px; margin: 0; font-size: .83rem; }
+@media (max-width: 720px) { .df-map-grid { grid-template-columns: 1fr; } .df-trend-toolbar { flex-direction: column; align-items: stretch; } .df-dashboard-chart-grid.three { grid-template-columns: 1fr; } }
+html.ss-high-contrast .df-region-shape { stroke: #000; }
+html.ss-high-contrast .df-region-outline { stroke: #fff; }
+html.ss-high-contrast .df-map-ranking li button[aria-pressed="true"] { box-shadow: inset 0 0 0 2px #fff; }
+html.ss-high-contrast .df-trend-grid line { stroke: #fff; }
+.df-trend-summary small.flat { background: var(--df-bg); color: var(--df-muted); }
+/* A single country map is drawn larger, so its labels are scaled down to stay the same size on screen. */
+.df-map-grid.single .df-map-label text { font-size: 7.5px; }
+.df-map-grid.single .df-map-label .rank { font-size: 6.5px; }
+.df-map-grid.single .df-map-label circle { r: 6px; }
+.df-map-grid.single .df-map-label .name { stroke-width: 2.5px; transform: translateX(-4px); }

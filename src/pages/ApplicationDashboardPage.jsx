@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { API_BASE_URL } from '../config/api';
 import ApplicationRegionMap from '../components/ApplicationRegionMap';
+import ApplicationTrendChart from '../components/ApplicationTrendChart';
 import DashboardAccessPanel from '../components/DashboardAccessPanel';
 import './ApplicationDashboard.css';
 const COUNTRIES = ['Kenya', 'Nigeria', 'Ghana', 'Zambia'];
@@ -56,6 +57,7 @@ export default function ApplicationDashboardPage({ staffUser, token, onStaffLogo
   const [month, setMonth] = useState('');
   const [sex, setSex] = useState('');
   const [splitByGender, setSplitByGender] = useState(false);
+  const [trendView, setTrendView] = useState('monthly');
   const [tip, setTip] = useState(null);
   const tooltip = { show: setTip, hide: () => setTip(null) };
   const [mode, setMode] = useState('live');
@@ -83,7 +85,6 @@ export default function ApplicationDashboardPage({ staffUser, token, onStaffLogo
   const scopeCountries = fixedCountry ? [fixedCountry] : COUNTRIES;
   const visibleCountries = country ? [country] : scopeCountries;
   const total = data?.totals.applications || 0;
-  const monthlyMax = Math.max(1, ...(data?.monthly || []).map(m => m.count));
   // A single-gender view has nothing to split.
   const split = splitByGender && !sex;
   return <main id="main-content" className="df-dashboard-page">
@@ -110,20 +111,20 @@ export default function ApplicationDashboardPage({ staffUser, token, onStaffLogo
         {total === 0 && <div className="df-empty-state"><h2>No applications in this view</h2><p>Change the country, month or gender, or choose Showcase data to demonstrate the dashboard.</p></div>}
         <GenderCard data={data} tooltip={tooltip} />
         {split && <div className="df-split-notice"><GenderLegend /><small>Charts below are split by gender (the map shows totals). Hover or focus a bar for exact counts.</small></div>}
+        <section className="df-dashboard-card df-trend-card"><div className="df-card-heading"><div><span>APPLICATION MOMENTUM</span><h2>Applications over time</h2><p>Monthly submissions{split ? ', one line per gender' : ''}. Switch to the running total to see overall growth.</p></div><i className="bi bi-graph-up" aria-hidden="true" /></div>{data.monthly.length ? <ApplicationTrendChart monthly={data.monthly} split={split} view={trendView} onViewChange={setTrendView} /> : <p className="df-chart-note">No monthly activity to display.</p>}<p className="df-chart-note">Submission month (UTC). Months with no applications are shown as zero.{month ? ' Clear the month filter to see the full trend.' : ''}</p></section>
         <div className="df-dashboard-chart-grid">
-          <section className="df-dashboard-card"><div className="df-card-heading"><div><span>WHO IS APPLYING</span><h2>Age at application</h2></div><i className="bi bi-person-lines-fill" aria-hidden="true" /></div><Bars items={data.ages} total={total} split={split} tooltip={tooltip} /><p className="df-chart-note">Age recorded when the application was submitted. Missing ages are shown separately.</p></section>
-          <section className="df-dashboard-card"><div className="df-card-heading"><div><span>APPLICATION MOMENTUM</span><h2>Applications by month</h2></div><i className="bi bi-calendar3" aria-hidden="true" /></div>{data.monthly.length ? <div className="df-monthly-chart" role="img" aria-label={data.monthly.map(m => `${monthLabel(m.name)}: ${m.count}`).join('; ')}>{data.monthly.map(m => <div className="df-month-column" key={m.name} {...(split && m.count ? hoverProps(tooltip, monthLabel(m.name), m.bySex) : {})}><strong>{number(m.count)}</strong><div className={split ? 'split' : undefined}><span style={{ height: `${m.count / monthlyMax * 100}%` }}>{split && <SexSegments bySex={m.bySex} count={m.count} />}</span></div><small>{monthLabel(m.name)}</small></div>)}</div> : <p className="df-chart-note">No monthly activity to display.</p>}<p className="df-chart-note">Submission month (UTC). All indicators follow the selected filters.</p></section>
-          <section className="df-dashboard-card"><div className="df-card-heading"><div><span>PROGRAMME REACH</span><h2>Applications by country</h2></div><span className="df-count-pill">{data.totals.countries} countries</span></div><Bars items={data.countries} total={total} palette="orange" split={split} tooltip={tooltip} /></section>
+          <section className="df-dashboard-card"><div className="df-card-heading"><div><span>PROGRAMME REACH</span><h2>Applications by country</h2></div><span className="df-count-pill">{data.totals.countries} {data.totals.countries === 1 ? 'country' : 'countries'}</span></div><Bars items={data.countries} total={total} palette="orange" split={split} tooltip={tooltip} /></section>
           <section className="df-dashboard-card"><div className="df-card-heading"><div><span>LEARNING PATHWAYS</span><h2>Pathway choices</h2></div><i className="bi bi-signpost-split" aria-hidden="true" /></div><Bars items={data.pathways.map(p => ({ ...p, name: PATHWAY_NAMES[p.name] || p.name }))} total={total} palette="green" split={split} tooltip={tooltip} /></section>
         </div>
-        <div className="df-dashboard-chart-grid">
+        <div className="df-dashboard-chart-grid three">
+          <section className="df-dashboard-card"><div className="df-card-heading"><div><span>WHO IS APPLYING</span><h2>Age at application</h2></div><i className="bi bi-person-lines-fill" aria-hidden="true" /></div><Bars items={data.ages} total={total} split={split} tooltip={tooltip} /><p className="df-chart-note">Age recorded when the application was submitted. Missing ages are shown separately.</p></section>
           <section className="df-dashboard-card"><div className="df-card-heading"><div><span>DISABILITY INCLUSION</span><h2>Disability types reported</h2></div><i className="bi bi-universal-access" aria-hidden="true" /></div>
             <div className="df-disability-total"><strong>{number(data.disability.count)}</strong><span>{share(data.disability.count, total)}% of applicants reported a disability</span>{split && data.disability.count > 0 && <small className="df-sex-breakdown">{sexSummary(data.disability.bySex)}</small>}</div>
             {data.disability.count ? <Bars items={data.disability.types} total={data.disability.count} palette="teal" split={split} tooltip={tooltip} /> : <p className="df-chart-note">No applicants in this view reported a disability.</p>}
             <p className="df-chart-note">Percentages are of applicants who reported a disability. One person can report more than one type, so the bars can add up to more than 100%.</p></section>
           <section className="df-dashboard-card"><div className="df-card-heading"><div><span>MOBILISATION</span><h2>How applicants heard about Digital Futures</h2></div><i className="bi bi-megaphone" aria-hidden="true" /></div><Bars items={data.sources} total={total} palette="orange" split={split} tooltip={tooltip} /><p className="df-chart-note">From the application question "How did you hear about the project?". Each applicant chooses one answer.</p></section>
         </div>
-        <section className="df-dashboard-card df-geography-card"><div className="df-card-heading"><div><span>WHERE APPLICATIONS COME FROM</span><h2>Geographic concentration</h2><p>Counties in Kenya, states in Nigeria, regions in Ghana and provinces in Zambia.</p></div><i className="bi bi-globe-africa" aria-hidden="true" /></div><ApplicationRegionMap regions={data.regions} countries={visibleCountries} onCountryChange={setCountry} />
+        <section className="df-dashboard-card df-geography-card"><div className="df-card-heading"><div><span>WHERE APPLICATIONS COME FROM</span><h2>Geographic concentration</h2><p>Each region is shaded by how many applications came from it: counties in Kenya, states in Nigeria, regions in Ghana and provinces in Zambia.</p></div><i className="bi bi-globe-africa" aria-hidden="true" /></div><ApplicationRegionMap regions={data.regions} countries={visibleCountries} onCountryChange={setCountry} canShowAll={!fixedCountry} />
           <details className="df-region-table"><summary>View all regional counts ({data.regions.length})</summary><div className="table-responsive"><table className="table"><caption>Regional totals for the selected country and month filters</caption><thead><tr><th scope="col">Country</th><th scope="col">Administrative region</th><th scope="col">Applications</th><th scope="col">Share of this view</th></tr></thead><tbody>{data.regions.map(r => <tr key={`${r.country}|${r.name}`}><td>{r.country}</td><td>{r.name}</td><td>{number(r.count)}</td><td>{total ? (r.count / total * 100).toFixed(1) : 0}%</td></tr>)}</tbody></table></div></details>
         </section>
         <ChartTooltip tip={tip} />
