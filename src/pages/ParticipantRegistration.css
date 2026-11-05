@@ -1,0 +1,198 @@
+/*
+ * Participant registration: page progress and save-and-resume.
+ * The page stepper itself reuses .ss-survey-stepper from the application form.
+ */
+
+.pr-progress {
+  max-width: 1100px;
+  margin-bottom: 1.5rem;
+}
+
+.pr-resume-note {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  background: #eef3e4;
+  border: 1px solid #465c17;
+  border-radius: 12px;
+  color: #111111;
+}
+
+.pr-resume-note span {
+  flex: 1 1 260px;
+}
+
+.pr-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.1);
+}
+
+.pr-save-status {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #465c17;
+}
+
+.pr-save-status.saving,
+.pr-save-status.idle {
+  color: #4a4f57;
+}
+
+.pr-save-status.error {
+  color: #b42318;
+}
+
+.pr-toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1rem;
+}
+
+.pr-expiry {
+  font-size: 0.88rem;
+  color: #4a4f57;
+}
+
+.pr-save-later {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 44px;
+}
+
+.pr-link-button {
+  min-height: 32px;
+  padding: 0 0.25rem;
+  border: 0;
+  background: none;
+  color: #111111;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.pr-link-button:hover {
+  text-decoration-thickness: 2px;
+}
+
+.pr-file-status:empty {
+  display: none;
+}
+
+.pr-file-status {
+  margin-bottom: 0.6rem;
+  font-size: 0.92rem;
+}
+
+.pr-file-status .saved {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.75rem;
+  background: #eef3e4;
+  border-radius: 8px;
+  color: #2f3d0f;
+  overflow-wrap: anywhere;
+}
+
+.pr-file-status .uploading {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #4a4f57;
+}
+
+.pr-document-list {
+  display: grid;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pr-document-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 12px;
+}
+
+.pr-document-list li > .bi {
+  font-size: 1.4rem;
+}
+
+.pr-document-list li.ready > .bi {
+  color: #465c17;
+}
+
+.pr-document-list li.missing {
+  border-color: #b42318;
+}
+
+.pr-document-list li.missing > .bi {
+  color: #b42318;
+}
+
+.pr-document-list span {
+  display: grid;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.pr-document-list small {
+  color: #4a4f57;
+  overflow-wrap: anywhere;
+}
+
+.pr-saved-card {
+  text-align: left;
+}
+
+.pr-saved-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  margin-bottom: 1rem;
+  font-size: 1.6rem;
+  color: #465c17;
+  background: #eef3e4;
+  border-radius: 50%;
+}
+
+@media (max-width: 767.98px) {
+  .pr-toolbar,
+  .pr-toolbar-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .pr-save-later {
+    justify-content: center;
+    width: 100%;
+  }
+}
+
+@media (forced-colors: active) {
+  .pr-resume-note,
+  .pr-document-list li {
+    border: 1px solid CanvasText;
+  }
+}

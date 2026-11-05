@@ -4,6 +4,43 @@ import ElectronicSignature from "../components/ElectronicSignature";
 import QuestionField from "../components/QuestionField";
 import { API_BASE_URL } from "../config/api";
 import { isQuestionVisible } from "../utils/formUtils";
+import "./ParticipantRegistration.css";
+
+const AUTOSAVE_DELAY_MS = 1000;
+const MAX_DOCUMENT_BYTES = 10 * 1024 * 1024;
+const DOCUMENT_MIME_TYPES = ["application/pdf", "image/jpeg", "image/png"];
+const MODULE_STEP_LABELS = {
+  1: "Documents",
+  2: "Everyday tasks",
+  3: "Household & income",
+  4: "Aspirations & work",
+  5: "Experiences",
+};
+
+function getModuleStepLabel(title) {
+  const number = Number(String(title || "").match(/^Module (\d+)/)?.[1]);
+  return MODULE_STEP_LABELS[number] || String(title || "").replace(/^Module \d+:\s*/, "");
+}
+
+function formatSavedTime(value) {
+  if (!value) return "";
+  const date = new Date(value);
+  const sameDay = date.toDateString() === new Date().toDateString();
+  return sameDay
+    ? date.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })
+    : date.toLocaleString(undefined, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+}
+
+function formatLongDate(value) {
+  return value
+    ? new Date(value).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })
+    : "";
+}
+
+function formatFileSize(bytes) {
+  if (!bytes) return "";
+  return bytes >= 1024 * 1024 ? `${(bytes / (1024 * 1024)).toFixed(1)} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`;
+}
 
 function localDateString() {
   const now = new Date();
@@ -112,9 +149,18 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
   const [alreadySubmitted, setAlreadySubmitted] = useState(false);
   const [stage, setStage] = useState("consent");
   const [activeModule, setActiveModule] = useState(0);
+  // Furthest page reached, counting consent (0), each module (1..n) and review (n + 1).
+  const [furthestStep, setFurthestStep] = useState(0);
   const [answers, setAnswers] = useState({});
-  const [files, setFiles] = useState({});
+  const [savedDocuments, setSavedDocuments] = useState({});
+  const [uploading, setUploading] = useState({});
   const [errors, setErrors] = useState({});
+  const [draftVersion, setDraftVersion] = useState(0);
+  const [saveState, setSaveState] = useState({ status: "idle", savedAt: null });
+  const [resumedAt, setResumedAt] = useState(null);
+  const [savedForLater, setSavedForLater] = useState(false);
+  const saveChainRef = useRef(Promise.resolve());
+  const uploadChainRef = useRef(Promise.resolve());
   const [submitMessage, setSubmitMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submittedResult, setSubmittedResult] = useState(null);
@@ -168,12 +214,26 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
           .join(" ")
           .trim();
 
+        const draft = data.alreadySubmitted ? null : data.draft;
+
         setConsent((current) => ({
           ...current,
-          fullName: current.fullName || fullName,
+          ...(draft?.consent || {}),
+          fullName: draft?.consent?.fullName || current.fullName || fullName,
         }));
 
-        if (data.alreadySubmitted) setStage("submitted");
+        if (data.alreadySubmitted) {
+          setStage("submitted");
+        } else if (draft) {
+          // Pick up where the participant stopped last time.
+          setAnswers(draft.answers || {});
+          setSavedDocuments(draft.documents || {});
+          setActiveModule(draft.step || 0);
+          setFurthestStep(draft.furthestStep || 0);
+          setStage(["form", "review"].includes(draft.stage) ? draft.stage : "consent");
+          setSaveState({ status: "saved", savedAt: draft.savedAt });
+          setResumedAt(draft.savedAt);
+        }
       } catch (error) {
         if (!active) return;
         setLoadError(
@@ -204,7 +264,72 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
       headingRef.current?.scrollIntoView({ block: "start" });
     });
     return () => window.cancelAnimationFrame(frame);
-  }, [stage, activeModule]);
+  }, [stage, activeModule, savedForLater]);
+
+  const draftPayload = useMemo(() => ({
+    stage: ["form", "review"].includes(stage) ? stage : "consent",
+    step: activeModule,
+    furthestStep,
+    answers,
+    consent: {
+      decision: consent.decision,
+      fullName: consent.fullName,
+      signedDate: consent.signedDate,
+      signatureMethod: consent.signatureMethod,
+      signatureData: consent.signatureData,
+      completedSelf: consent.completedSelf,
+      assistantName: consent.assistantName,
+      assistantRelationship: consent.assistantRelationship,
+      assistantRelationshipOther: consent.assistantRelationshipOther,
+      assistanceTypes: consent.assistanceTypes,
+      assistanceTypeOther: consent.assistanceTypeOther,
+      assistanceLanguage: consent.assistanceLanguage,
+      assistantSignatureMethod: consent.assistantSignatureMethod,
+      assistantSignatureData: consent.assistantSignatureData,
+      assistanceDate: consent.assistanceDate,
+    },
+  }), [stage, activeModule, furthestStep, answers, consent]);
+
+  // Saves are queued so an older save can never land after a newer one.
+  function saveDraft(payload) {
+    setSaveState((current) => ({ ...current, status: "saving" }));
+    const run = saveChainRef.current.then(async () => {
+      try {
+        const response = await axios.put(
+          `${API_BASE_URL}/api/participant-registration/invite/${encodeURIComponent(initialToken)}/draft`,
+          payload
+        );
+        setSaveState({ status: "saved", savedAt: response.data?.savedAt || new Date().toISOString() });
+        return true;
+      } catch {
+        setSaveState((current) => ({ ...current, status: "error" }));
+        return false;
+      }
+    });
+    saveChainRef.current = run;
+    return run;
+  }
+
+  // Autosave shortly after the participant stops typing or moves between pages.
+  useEffect(() => {
+    if (draftVersion === 0 || stage === "submitted") return undefined;
+    const timer = window.setTimeout(() => saveDraft(draftPayload), AUTOSAVE_DELAY_MS);
+    return () => window.clearTimeout(timer);
+    // saveDraft only reads refs and the token.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draftVersion, draftPayload, stage]);
+
+  const markChanged = () => setDraftVersion((value) => value + 1);
+
+  function updateConsent(changes) {
+    setConsent((current) => ({ ...current, ...changes }));
+    markChanged();
+  }
+
+  async function saveAndFinishLater() {
+    const saved = await saveDraft(draftPayload);
+    if (saved) setSavedForLater(true);
+  }
 
   const modules = useMemo(() => formData?.modules || [], [formData]);
   const questions = useMemo(() => formData?.questions || [], [formData]);
@@ -224,10 +349,15 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
       ...current,
       [question.questionCode]: value,
     }));
+    markChanged();
+    clearError(question.questionCode);
+  }
+
+  function clearError(questionCode) {
     setErrors((current) => {
-      if (!current[question.questionCode]) return current;
+      if (!current[questionCode]) return current;
       const next = { ...current };
-      delete next[question.questionCode];
+      delete next[questionCode];
       return next;
     });
   }
@@ -257,25 +387,49 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
         [question.questionCode]: next,
       };
     });
-
-    setErrors((current) => {
-      if (!current[question.questionCode]) return current;
-      const next = { ...current };
-      delete next[question.questionCode];
-      return next;
-    });
+    markChanged();
+    clearError(question.questionCode);
   }
 
+  // Documents upload as soon as they are chosen, so they are kept if the participant stops part way.
   function handleFileChange(question, file) {
-    setFiles((current) => ({
-      ...current,
-      [question.documentField]: file || null,
-    }));
-    setErrors((current) => {
-      if (!current[question.questionCode]) return current;
-      const next = { ...current };
-      delete next[question.questionCode];
-      return next;
+    if (!file) return;
+    const field = question.documentField;
+
+    if (!DOCUMENT_MIME_TYPES.includes(file.type)) {
+      setErrors((current) => ({ ...current, [question.questionCode]: "Please choose a PDF, JPG or PNG file." }));
+      return;
+    }
+    if (file.size > MAX_DOCUMENT_BYTES) {
+      setErrors((current) => ({ ...current, [question.questionCode]: "This file is larger than 10 MB. Please choose a smaller file." }));
+      return;
+    }
+
+    clearError(question.questionCode);
+    setUploading((current) => ({ ...current, [field]: file.name }));
+
+    const body = new FormData();
+    body.append("file", file);
+    uploadChainRef.current = uploadChainRef.current.then(async () => {
+      try {
+        const response = await axios.post(
+          `${API_BASE_URL}/api/participant-registration/invite/${encodeURIComponent(initialToken)}/documents/${encodeURIComponent(field)}`,
+          body
+        );
+        setSavedDocuments((current) => ({ ...current, [field]: response.data?.document }));
+        setSaveState({ status: "saved", savedAt: response.data?.savedAt || new Date().toISOString() });
+      } catch (error) {
+        setErrors((current) => ({
+          ...current,
+          [question.questionCode]: error.response?.data?.message || "The upload did not finish. Please choose the file again.",
+        }));
+      } finally {
+        setUploading((current) => {
+          const next = { ...current };
+          delete next[field];
+          return next;
+        });
+      }
     });
   }
 
@@ -331,10 +485,39 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
       return;
     }
 
+    goToStep(1);
+  }
+
+  // Pages are numbered consent (0), each module (1..n), then review (n + 1).
+  function goToStep(index) {
+    const reviewIndex = modules.length + 1;
+    const next = Math.max(0, Math.min(index, reviewIndex));
+    setErrors({});
     setSubmitMessage("");
-    setStage("form");
-    setActiveModule(0);
+    if (next === 0) {
+      setStage("consent");
+    } else if (next === reviewIndex) {
+      setStage("review");
+    } else {
+      setStage("form");
+      setActiveModule(next - 1);
+    }
+    setFurthestStep((current) => Math.max(current, next));
+    markChanged();
     window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function openStepFromProgress(index) {
+    if (index > furthestStep) return;
+    // Leaving the consent page forwards still needs a complete consent.
+    if (stage === "consent" && index > 0) {
+      const message = validateConsent();
+      if (message) {
+        setSubmitMessage(message);
+        return;
+      }
+    }
+    goToStep(index);
   }
 
   async function submitSupportRequest() {
@@ -379,8 +562,10 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
       if (!question.required) continue;
 
       if (question.responseType === "FILE") {
-        if (!files[question.documentField]) {
-          nextErrors[question.questionCode] = "This document is required.";
+        if (uploading[question.documentField]) {
+          nextErrors[question.questionCode] = "Please wait for this document to finish uploading.";
+        } else if (!savedDocuments[question.documentField]) {
+          nextErrors[question.questionCode] = errors[question.questionCode] || "This document is required.";
         }
         continue;
       }
@@ -419,32 +604,19 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
 
   function continueModule() {
     if (!validateModule()) return;
-
-    if (activeModule < modules.length - 1) {
-      setActiveModule((value) => value + 1);
-      setErrors({});
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    } else {
-      setStage("review");
-      setErrors({});
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
+    goToStep(activeModule + 2);
   }
 
   function previousModule() {
-    if (activeModule === 0) {
-      setStage("consent");
-      return;
-    }
-    setActiveModule((value) => Math.max(0, value - 1));
-    setErrors({});
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    goToStep(activeModule);
   }
 
   async function submitRegistration() {
     try {
       setSubmitting(true);
       setSubmitMessage("");
+      // Make sure any document still uploading has finished first.
+      await uploadChainRef.current;
 
       const payload = new FormData();
       payload.append("responses", JSON.stringify(answers));
@@ -469,10 +641,6 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
         })
       );
 
-      Object.entries(files).forEach(([field, file]) => {
-        if (file) payload.append(field, file);
-      });
-
       const response = await axios.post(
         `${API_BASE_URL}/api/participant-registration/invite/${encodeURIComponent(initialToken)}/submit`,
         payload
@@ -486,7 +654,8 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
       const nextErrors = {};
 
       (data?.missingQuestions || []).forEach((item) => {
-        nextErrors[item.questionCode] = "This question is required.";
+        const isDocument = questions.find((question) => question.questionCode === item.questionCode)?.responseType === "FILE";
+        nextErrors[item.questionCode] = isDocument ? "This document is required." : "This question is required.";
       });
       (data?.invalidQuestions || []).forEach((item) => {
         nextErrors[item.questionCode] = item.message;
@@ -604,6 +773,131 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
   const assistanceRequired =
     consent.completedSelf === consentDefinition?.assistanceRequiredOption;
 
+  const linkExpiry = formatLongDate(invitation?.expiresAt);
+  const reviewStep = modules.length + 1;
+  const currentStep = stage === "consent" ? 0 : stage === "review" ? reviewStep : activeModule + 1;
+  const progressSteps = [
+    "Consent",
+    ...modules.map((module) => getModuleStepLabel(module.title)),
+    "Review",
+  ];
+  const savedDocumentCount = Object.values(savedDocuments).filter(Boolean).length;
+
+  if (savedForLater) {
+    return (
+      <main id="main-content" tabIndex="-1" className="container py-5">
+        <section className="ss-section-card mx-auto pr-saved-card" style={{ maxWidth: "760px" }}>
+          <div className="pr-saved-icon" aria-hidden="true">
+            <i className="bi bi-bookmark-check" />
+          </div>
+          <span className="ss-small-label dark">Progress saved</span>
+          <h1 tabIndex="-1" ref={headingRef}>You can finish your registration later</h1>
+          <p>
+            Your answers{savedDocumentCount ? " and uploaded documents" : ""} are saved. To carry on, open the
+            registration link in your email again and you will return to <strong>{progressSteps[currentStep]}</strong>.
+          </p>
+          {linkExpiry && (
+            <p>
+              Please finish and submit before <strong>{linkExpiry}</strong>, when the link stops working.
+            </p>
+          )}
+          <div className="d-flex flex-wrap gap-3 mt-4">
+            <button type="button" className="btn ss-btn-primary" onClick={() => setSavedForLater(false)}>
+              Continue now
+            </button>
+            <button type="button" className="btn ss-btn-outline" onClick={onBackHome}>
+              Close and return to home
+            </button>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  const saveStatusText = {
+    saving: "Saving…",
+    error: "Not saved. Check your connection.",
+    saved: `Progress saved${saveState.savedAt ? ` · ${formatSavedTime(saveState.savedAt)}` : ""}`,
+    idle: "Your answers save automatically",
+  }[saveState.status];
+
+  const progressHeader = (
+    <div className="pr-progress mx-auto">
+      {resumedAt && (
+        <div className="pr-resume-note" role="status">
+          <i className="bi bi-arrow-counterclockwise" aria-hidden="true" />
+          <span>
+            Welcome back. We've kept the answers you saved on {formatLongDate(resumedAt)}, so you can carry on where you stopped.
+          </span>
+          <button type="button" className="pr-link-button" onClick={() => setResumedAt(null)}>
+            Dismiss
+          </button>
+        </div>
+      )}
+
+      <div className="pr-toolbar">
+        <div className={`pr-save-status ${saveState.status}`} aria-live="polite">
+          <i
+            className={`bi ${saveState.status === "error" ? "bi-exclamation-triangle" : saveState.status === "saving" ? "bi-cloud-arrow-up" : "bi-cloud-check"}`}
+            aria-hidden="true"
+          />
+          <span>{saveStatusText}</span>
+          {saveState.status === "error" && (
+            <button type="button" className="pr-link-button" onClick={() => saveDraft(draftPayload)}>
+              Try again
+            </button>
+          )}
+        </div>
+        <div className="pr-toolbar-actions">
+          {linkExpiry && <span className="pr-expiry">Link works until {linkExpiry}</span>}
+          <button
+            type="button"
+            className="btn ss-btn-outline pr-save-later"
+            onClick={saveAndFinishLater}
+            disabled={saveState.status === "saving"}
+          >
+            <i className="bi bi-bookmark" aria-hidden="true" /> Save and finish later
+          </button>
+        </div>
+      </div>
+
+      <nav className="ss-survey-stepper" aria-label="Registration pages">
+        <ol style={{ "--df-step-count": progressSteps.length }}>
+          {progressSteps.map((label, index) => {
+            const isCurrent = index === currentStep;
+            const isComplete = index < furthestStep && !isCurrent;
+            const canOpen = index <= furthestStep && !isCurrent;
+            return (
+              <li key={label} className={`${isComplete ? "complete" : ""} ${isCurrent ? "current" : ""}`}>
+                <button
+                  type="button"
+                  onClick={() => canOpen && openStepFromProgress(index)}
+                  disabled={!canOpen && !isCurrent}
+                  aria-current={isCurrent ? "step" : undefined}
+                >
+                  <span className="ss-survey-step-dot" aria-hidden="true">
+                    {isComplete ? <i className="bi bi-check2" /> : index + 1}
+                  </span>
+                  <span>
+                    {label}
+                    <span className="visually-hidden">
+                      {isCurrent ? " (current page)" : isComplete ? " (done)" : canOpen ? "" : " (not reached yet)"}
+                    </span>
+                  </span>
+                </button>
+              </li>
+            );
+          })}
+        </ol>
+      </nav>
+
+      <div className="ss-survey-mobile-progress">
+        <span>Page {currentStep + 1} of {progressSteps.length}</span>
+        <strong>{progressSteps[currentStep]}</strong>
+      </div>
+    </div>
+  );
+
   if (stage === "consent") {
     return (
       <main id="main-content" tabIndex="-1">
@@ -619,6 +913,7 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
         </section>
 
         <section className="container py-5">
+          {progressHeader}
           <article className="ss-section-card mx-auto" style={{ maxWidth: "960px" }}>
             <span className="ss-small-label dark">Consent</span>
             <h2>{consentDefinition?.introductionTitle}</h2>
@@ -689,7 +984,7 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
               options={consentDefinition?.consentOptions}
               value={consent.decision}
               onChange={(decision) => {
-                setConsent((current) => ({ ...current, decision }));
+                updateConsent({ decision });
                 setSubmitMessage("");
                 setSupportMessage("");
               }}
@@ -713,7 +1008,7 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
                       className="form-control"
                       value={consent.supportName}
                       onChange={(event) =>
-                        setConsent((current) => ({ ...current, supportName: event.target.value }))
+                        updateConsent({ supportName: event.target.value })
                       }
                     />
                   </div>
@@ -725,7 +1020,7 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
                       type="tel"
                       value={consent.supportPhone}
                       onChange={(event) =>
-                        setConsent((current) => ({ ...current, supportPhone: event.target.value }))
+                        updateConsent({ supportPhone: event.target.value })
                       }
                     />
                   </div>
@@ -739,7 +1034,7 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
                       rows={3}
                       value={consent.supportAccommodation}
                       onChange={(event) =>
-                        setConsent((current) => ({ ...current, supportAccommodation: event.target.value }))
+                        updateConsent({ supportAccommodation: event.target.value })
                       }
                     />
                   </div>
@@ -770,7 +1065,7 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
                       className="form-control"
                       value={consent.fullName}
                       onChange={(event) =>
-                        setConsent((current) => ({ ...current, fullName: event.target.value }))
+                        updateConsent({ fullName: event.target.value })
                       }
                     />
                   </div>
@@ -792,11 +1087,10 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
                       method={consent.signatureMethod}
                       value={consent.signatureData}
                       onChange={(method, value) =>
-                        setConsent((current) => ({
-                          ...current,
+                        updateConsent({
                           signatureMethod: method,
-                          signatureData: value,
-                        }))
+                          signatureData: value
+                        })
                       }
                     />
                   </div>
@@ -817,7 +1111,7 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
                             name="pr-completed-self"
                             checked={consent.completedSelf === option}
                             onChange={() =>
-                              setConsent((current) => ({ ...current, completedSelf: option }))
+                              updateConsent({ completedSelf: option })
                             }
                           />
                           {option}
@@ -848,7 +1142,7 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
                           className="form-control"
                           value={consent.assistantName}
                           onChange={(event) =>
-                            setConsent((current) => ({ ...current, assistantName: event.target.value }))
+                            updateConsent({ assistantName: event.target.value })
                           }
                         />
                       </div>
@@ -861,7 +1155,7 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
                           className="form-select"
                           value={consent.assistantRelationship}
                           onChange={(event) =>
-                            setConsent((current) => ({ ...current, assistantRelationship: event.target.value }))
+                            updateConsent({ assistantRelationship: event.target.value })
                           }
                         >
                           <option value="">Select one option</option>
@@ -880,7 +1174,7 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
                             className="form-control"
                             value={consent.assistantRelationshipOther}
                             onChange={(event) =>
-                              setConsent((current) => ({ ...current, assistantRelationshipOther: event.target.value }))
+                              updateConsent({ assistantRelationshipOther: event.target.value })
                             }
                           />
                         </div>
@@ -891,7 +1185,7 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
                           options={consentDefinition?.assistanceTypeOptions}
                           value={consent.assistanceTypes}
                           onChange={(assistanceTypes) =>
-                            setConsent((current) => ({ ...current, assistanceTypes }))
+                            updateConsent({ assistanceTypes })
                           }
                         />
                       </div>
@@ -905,7 +1199,7 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
                             className="form-control"
                             value={consent.assistanceTypeOther}
                             onChange={(event) =>
-                              setConsent((current) => ({ ...current, assistanceTypeOther: event.target.value }))
+                              updateConsent({ assistanceTypeOther: event.target.value })
                             }
                           />
                         </div>
@@ -919,7 +1213,7 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
                           className="form-control"
                           value={consent.assistanceLanguage}
                           onChange={(event) =>
-                            setConsent((current) => ({ ...current, assistanceLanguage: event.target.value }))
+                            updateConsent({ assistanceLanguage: event.target.value })
                           }
                         />
                       </div>
@@ -929,11 +1223,10 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
                           method={consent.assistantSignatureMethod}
                           value={consent.assistantSignatureData}
                           onChange={(method, value) =>
-                            setConsent((current) => ({
-                              ...current,
+                            updateConsent({
                               assistantSignatureMethod: method,
-                              assistantSignatureData: value,
-                            }))
+                              assistantSignatureData: value
+                            })
                           }
                         />
                       </div>
@@ -969,17 +1262,21 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
   }
 
   if (stage === "review") {
+    const documentQuestions = questions.filter(
+      (question) => question.responseType === "FILE" && isQuestionVisible(question, answers)
+    );
     return (
       <main id="main-content" tabIndex="-1">
         <section className="ss-form-hero">
           <div className="container">
-            <span className="ss-small-label light">Final step</span>
+            <span className="ss-small-label light">Final page</span>
             <h1 tabIndex="-1" ref={headingRef}>Review and submit</h1>
-            <p>Please confirm that you have completed all five modules and uploaded the required documents.</p>
+            <p>Check your details below. You can open any earlier page from the progress bar to change an answer.</p>
           </div>
         </section>
         <section className="container py-5">
-          <article className="ss-section-card mx-auto" style={{ maxWidth: "900px" }}>
+          {progressHeader}
+          <article className="ss-section-card mx-auto" style={{ maxWidth: "960px" }}>
             <h2>Participant registration summary</h2>
             <div className="ss-status-summary-grid mt-4" role="list">
               <div role="listitem">
@@ -995,10 +1292,31 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
                 <strong>{modules.length}</strong>
               </div>
               <div role="listitem">
-                <span>Documents ready</span>
-                <strong>{Object.values(files).filter(Boolean).length}</strong>
+                <span>Documents uploaded</span>
+                <strong>{documentQuestions.filter((question) => savedDocuments[question.documentField]).length} of {documentQuestions.length}</strong>
               </div>
             </div>
+
+            <h3 className="h5 mt-4">Your documents</h3>
+            <ul className="pr-document-list">
+              {documentQuestions.map((question) => {
+                const saved = savedDocuments[question.documentField];
+                return (
+                  <li key={question.questionCode} className={saved ? "ready" : "missing"}>
+                    <i className={`bi ${saved ? "bi-file-earmark-check" : "bi-file-earmark-x"}`} aria-hidden="true" />
+                    <span>
+                      <strong>{question.questionText}</strong>
+                      <small>{saved ? `${saved.name} · ${formatFileSize(saved.sizeBytes)}` : "Not uploaded yet"}</small>
+                    </span>
+                    {!saved && (
+                      <button type="button" className="pr-link-button" onClick={() => goToStep(1)}>
+                        Upload
+                      </button>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
 
             <div className="alert alert-info mt-4" role="note">
               After submission, the programme team will verify your registration details and supporting documents. You will not be able to submit this form a second time using the same invitation.
@@ -1009,15 +1327,8 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
             )}
 
             <div className="d-flex flex-wrap gap-3">
-              <button
-                type="button"
-                className="btn ss-btn-outline"
-                onClick={() => {
-                  setStage("form");
-                  setActiveModule(modules.length - 1);
-                }}
-              >
-                Back to form
+              <button type="button" className="btn ss-btn-outline" onClick={() => goToStep(reviewStep - 1)}>
+                Previous page
               </button>
               <button
                 type="button"
@@ -1038,140 +1349,132 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
     <main id="main-content" tabIndex="-1">
       <section className="ss-form-hero">
         <div className="container">
-          <span className="ss-small-label light">Participant Registration · Step {activeModule + 1} of {modules.length}</span>
+          <span className="ss-small-label light">Participant Registration · Page {currentStep + 1} of {progressSteps.length}</span>
           <h1 tabIndex="-1" ref={headingRef}>{currentModule?.title}</h1>
           {currentModule?.intro && <p>{currentModule.intro}</p>}
         </div>
       </section>
 
       <section className="container py-5">
-        <div className="row g-4">
-          <div className="col-12 col-xl-9">
-            <section className="ss-section-card">
-              {currentModule?.note && (
-                <div className="alert alert-info" role="note">{currentModule.note}</div>
-              )}
+        {progressHeader}
+        <section className="ss-section-card mx-auto" style={{ maxWidth: "1100px" }}>
+          {currentModule?.note && (
+            <div className="alert alert-info" role="note">{currentModule.note}</div>
+          )}
 
-              <div className="row g-4">
-                {currentQuestions.map((question) => {
-                  const labelId = `${question.questionCode}-registration-label`;
-                  const helpId = question.helpText
-                    ? `${question.questionCode}-registration-help`
-                    : undefined;
-                  const errorId = `${question.questionCode}-registration-error`;
-                  const error = errors[question.questionCode];
-                  const questionText = pipeQuestionText(question, answers);
-                  const wide = ["MULTI_SELECT", "FILE"].includes(question.responseType) ||
-                    question.questionCode === "M3_15";
+          <div className="row g-4">
+            {currentQuestions.map((question) => {
+              const labelId = `${question.questionCode}-registration-label`;
+              const helpId = question.helpText
+                ? `${question.questionCode}-registration-help`
+                : undefined;
+              const errorId = `${question.questionCode}-registration-error`;
+              const error = errors[question.questionCode];
+              const questionText = pipeQuestionText(question, answers);
+              const wide = ["MULTI_SELECT", "FILE"].includes(question.responseType) ||
+                question.questionCode === "M3_15";
+              const savedDocument = savedDocuments[question.documentField];
+              const uploadingName = uploading[question.documentField];
+              const fileStatusId = `${question.questionCode}-registration-file-status`;
 
-                  return (
-                    <div key={question.questionCode} className={wide ? "col-12" : "col-12 col-lg-6"}>
-                      <div
-                        id={`${question.questionCode}-registration-card`}
-                        className={`ss-question-card h-100 ${wide ? "wide" : ""} ${error ? "has-error" : ""}`}
-                      >
-                        <label className="form-label" id={labelId} htmlFor={question.questionCode}>
-                          <span>{questionText}</span>
-                          {question.required ? (
-                            <strong className="ss-required-chip">Required</strong>
-                          ) : (
-                            <em className="ss-optional-chip">Optional</em>
-                          )}
-                        </label>
+              return (
+                <div key={question.questionCode} className={wide ? "col-12" : "col-12 col-lg-6"}>
+                  <div
+                    id={`${question.questionCode}-registration-card`}
+                    className={`ss-question-card h-100 ${wide ? "wide" : ""} ${error ? "has-error" : ""}`}
+                  >
+                    <label className="form-label" id={labelId} htmlFor={question.questionCode}>
+                      <span>{questionText}</span>
+                      {question.required ? (
+                        <strong className="ss-required-chip">Required</strong>
+                      ) : (
+                        <em className="ss-optional-chip">Optional</em>
+                      )}
+                    </label>
 
-                        {question.helpText && (
-                          <p id={helpId} className="ss-question-help">{question.helpText}</p>
-                        )}
+                    {question.helpText && (
+                      <p id={helpId} className="ss-question-help">{question.helpText}</p>
+                    )}
 
-                        {question.questionCode === "M3_15" && (
-                          <div className="border rounded-3 p-3 mb-3 bg-light" aria-label="Step ladder from 1 poorest to 10 richest">
-                            <div className="d-flex justify-content-between small">
-                              <strong>1 · Poorest</strong>
-                              <span>2</span><span>3</span><span>4</span><span>5</span>
-                              <span>6</span><span>7</span><span>8</span><span>9</span>
-                              <strong>10 · Richest</strong>
-                            </div>
-                          </div>
-                        )}
-
-                        {question.responseType === "FILE" ? (
-                          <>
-                            <input
-                              id={question.questionCode}
-                              className={`form-control ${error ? "is-invalid" : ""}`}
-                              type="file"
-                              accept=".pdf,.jpg,.jpeg,.png"
-                              aria-labelledby={labelId}
-                              aria-describedby={[helpId, error ? errorId : null].filter(Boolean).join(" ") || undefined}
-                              aria-invalid={error ? "true" : "false"}
-                              aria-required={question.required ? "true" : "false"}
-                              onChange={(event) =>
-                                handleFileChange(question, event.target.files?.[0] || null)
-                              }
-                            />
-                            <small className="d-block text-muted mt-2">
-                              One file only. PDF, JPG or PNG. Maximum 10 MB.
-                            </small>
-                            {files[question.documentField] && (
-                              <small className="d-block mt-2">
-                                Selected: <strong>{files[question.documentField].name}</strong>
-                              </small>
-                            )}
-                          </>
-                        ) : (
-                          <QuestionField
-                            question={{ ...question, questionText }}
-                            value={answers[question.questionCode]}
-                            answers={answers}
-                            error={error}
-                            labelId={labelId}
-                            helpId={helpId}
-                            errorId={errorId}
-                            onAnswerChange={handleAnswerChange}
-                            onMultiSelectChange={handleMultiSelectChange}
-                          />
-                        )}
-
-                        {error && (
-                          <div id={errorId} className="invalid-feedback d-block">
-                            {error}
-                          </div>
-                        )}
+                    {question.questionCode === "M3_15" && (
+                      <div className="border rounded-3 p-3 mb-3 bg-light" aria-label="Step ladder from 1 poorest to 10 richest">
+                        <div className="d-flex justify-content-between small">
+                          <strong>1 · Poorest</strong>
+                          <span>2</span><span>3</span><span>4</span><span>5</span>
+                          <span>6</span><span>7</span><span>8</span><span>9</span>
+                          <strong>10 · Richest</strong>
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    )}
 
-              <div className="d-flex flex-wrap justify-content-between gap-3 mt-4 pt-4 border-top">
-                <button type="button" className="btn ss-btn-outline" onClick={previousModule}>
-                  {activeModule === 0 ? "Back to consent" : "Previous module"}
-                </button>
-                <button type="button" className="btn ss-btn-primary" onClick={continueModule}>
-                  {activeModule === modules.length - 1 ? "Review registration" : "Continue"}
-                </button>
-              </div>
-            </section>
+                    {question.responseType === "FILE" ? (
+                      <>
+                        <div id={fileStatusId} className="pr-file-status" aria-live="polite">
+                          {uploadingName ? (
+                            <span className="uploading">
+                              <span className="spinner-border spinner-border-sm" aria-hidden="true" /> Uploading {uploadingName}…
+                            </span>
+                          ) : savedDocument ? (
+                            <span className="saved">
+                              <i className="bi bi-file-earmark-check" aria-hidden="true" /> Uploaded: <strong>{savedDocument.name}</strong>
+                              {savedDocument.sizeBytes ? ` (${formatFileSize(savedDocument.sizeBytes)})` : ""}
+                            </span>
+                          ) : null}
+                        </div>
+                        <input
+                          id={question.questionCode}
+                          className={`form-control ${error ? "is-invalid" : ""}`}
+                          type="file"
+                          accept=".pdf,.jpg,.jpeg,.png"
+                          aria-labelledby={labelId}
+                          aria-describedby={[helpId, fileStatusId, error ? errorId : null].filter(Boolean).join(" ")}
+                          aria-invalid={error ? "true" : "false"}
+                          aria-required={question.required && !savedDocument ? "true" : "false"}
+                          disabled={Boolean(uploadingName)}
+                          onChange={(event) => {
+                            handleFileChange(question, event.target.files?.[0] || null);
+                            event.target.value = "";
+                          }}
+                        />
+                        <small className="d-block text-muted mt-2">
+                          {savedDocument ? "Choose another file only if you want to replace it. " : ""}
+                          One file only. PDF, JPG or PNG. Maximum 10 MB.
+                        </small>
+                      </>
+                    ) : (
+                      <QuestionField
+                        question={{ ...question, questionText }}
+                        value={answers[question.questionCode]}
+                        answers={answers}
+                        error={error}
+                        labelId={labelId}
+                        helpId={helpId}
+                        errorId={errorId}
+                        onAnswerChange={handleAnswerChange}
+                        onMultiSelectChange={handleMultiSelectChange}
+                      />
+                    )}
+
+                    {error && (
+                      <div id={errorId} className="invalid-feedback d-block">
+                        {error}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
 
-          <div className="col-12 col-xl-3">
-            <aside className="ss-help-card">
-              <span className="ss-small-label dark">Registration progress</span>
-              <ol className="mb-0">
-                {modules.map((module, index) => (
-                  <li key={module.title} className={index === activeModule ? "fw-semibold" : ""}>
-                    {module.title.replace(/^Module \d+:\s*/, "")}
-                  </li>
-                ))}
-              </ol>
-              {invitation?.expiresAt && (
-                <p className="small mt-3 mb-0">
-                  This secure invitation remains valid until {new Date(invitation.expiresAt).toLocaleDateString()}.
-                </p>
-              )}
-            </aside>
+          <div className="d-flex flex-wrap justify-content-between gap-3 mt-4 pt-4 border-top">
+            <button type="button" className="btn ss-btn-outline" onClick={previousModule}>
+              {activeModule === 0 ? "Back to consent" : "Previous page"}
+            </button>
+            <button type="button" className="btn ss-btn-primary" onClick={continueModule}>
+              {activeModule === modules.length - 1 ? "Save and review" : "Save and continue"}
+            </button>
           </div>
-        </div>
+        </section>
       </section>
     </main>
   );

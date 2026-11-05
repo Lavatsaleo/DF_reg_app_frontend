@@ -81,6 +81,57 @@
   -webkit-text-stroke: 0.5px currentColor;
 }
 
+/* Application reference filter: applies across every applicant workspace. */
+.committee-page .cw-reference-filter {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.committee-page .cw-search {
+  position: relative;
+  display: block;
+}
+
+.committee-page .cw-search input {
+  width: 100%;
+  min-width: 250px;
+  min-height: 44px;
+  padding: 0 14px 0 40px !important;
+  font-weight: 600;
+}
+
+.committee-page .cw-search > .bi {
+  position: absolute;
+  top: 50%;
+  left: 14px;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: var(--ss-muted, #55514d);
+}
+
+.committee-page .cw-reference-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin: -6px 0 20px;
+  padding: 8px 14px;
+  background: var(--ss-soft, #fff4cc);
+  border: 1px solid var(--ss-yellow, #ffc81f);
+  border-radius: 10px;
+}
+
+.committee-page .cw-reference-strip span {
+  flex: 1 1 240px;
+}
+
+.committee-page .cw-reference-strip .cw-link-button {
+  min-height: 32px;
+}
+
 /* Tiles */
 .committee-page .cw-tile-grid {
   display: grid;
@@ -350,8 +401,10 @@
     flex-direction: column;
   }
 
-  .committee-page .cw-select select {
+  .committee-page .cw-select select,
+  .committee-page .cw-search input {
     width: 100%;
+    min-width: 0;
   }
 
   .committee-page .cw-tile {

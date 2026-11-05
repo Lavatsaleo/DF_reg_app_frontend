@@ -30,6 +30,27 @@ function withCountry(path, country) {
   return `${path}${path.includes("?") ? "&" : "?"}country=${encodeURIComponent(country)}`;
 }
 
+// Matches a typed (possibly partial) application reference or participant code, ignoring case and spaces.
+function matchesReference(term, ...values) {
+  if (!term) return true;
+  return values.some((value) => String(value || "").toUpperCase().replace(/\s+/g, "").includes(term));
+}
+
+function ReferenceNoMatch({ reference, what, onClear }) {
+  return (
+    <section className="committee-section-card">
+      <div className="committee-empty-state">
+        <i className="bi bi-search" aria-hidden="true" />
+        <h2>No {what} match “{reference}”</h2>
+        <p>Check the reference, try fewer characters, or look in another workspace.</p>
+        <button type="button" className="btn committee-small-action" onClick={onClear}>
+          Clear reference filter
+        </button>
+      </div>
+    </section>
+  );
+}
+
 const EMPTY_MEMBER_FORM = {
   fullName: "",
   email: "",
@@ -1079,6 +1100,7 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
   const [activeSection, setActiveSection] = useState(readSectionFromHash);
   const [countryFilter, setCountryFilter] = useState(readSavedCountryFilter);
   const [showAddMember, setShowAddMember] = useState(false);
+  const [referenceFilter, setReferenceFilter] = useState("");
   const sectionRef = useRef(null);
   const lastOpenedTile = useRef("");
 
@@ -1514,16 +1536,33 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
   }
 
   const plural = (count, one, many) => `${count} ${count === 1 ? one : many}`;
-  const openReviewCount = userRole === "COMMITTEE_MEMBER"
-    ? assignments.filter((assignment) => OPEN_ASSIGNMENT_STATUSES.includes(assignment.status)).length
+  const referenceTerm = referenceFilter.toUpperCase().replace(/\s+/g, "");
+  const clearReferenceFilter = () => setReferenceFilter("");
+  const shownAssignments = assignments.filter((assignment) =>
+    matchesReference(referenceTerm, assignment.applicant?.applicationReference, assignment.applicant?.participantCode)
+  );
+  const shownUnassigned = unassignedApplicants.filter((applicant) =>
+    matchesReference(referenceTerm, applicant.applicationReference, applicant.participantCode)
+  );
+  const shownDelivery = {
+    ...skillsEmailDelivery,
+    records: (skillsEmailDelivery.records || []).filter((row) => matchesReference(referenceTerm, row.applicationReference)),
+  };
+  const shownSelectedRows = selectedReport.rows.filter((row) =>
+    matchesReference(referenceTerm, row.applicationReference, row.participantCode)
+  );
+  // The overview totals cover everything, so a reference search counts from the loaded list instead.
+  const countFromList = userRole === "COMMITTEE_MEMBER" || Boolean(referenceTerm);
+  const openReviewCount = countFromList
+    ? shownAssignments.filter((assignment) => OPEN_ASSIGNMENT_STATUSES.includes(assignment.status)).length
     : overview?.assignedPending || 0;
-  const completedCount = userRole === "COMMITTEE_MEMBER"
-    ? assignments.filter((assignment) => assignment.status === "COMPLETED").length
+  const completedCount = countFromList
+    ? shownAssignments.filter((assignment) => assignment.status === "COMPLETED").length
     : overview?.completedReviews || 0;
-  const deliveryRecords = (skillsEmailDelivery.records || []).filter((row) => row.status !== "TEST_COMPLETED");
+  const deliveryRecords = shownDelivery.records.filter((row) => row.status !== "TEST_COMPLETED");
   const deliveryAttention = deliveryRecords.filter((row) => DELIVERY_ATTENTION_STATUSES.includes(row.status)).length;
   const reviewsInProgress = members.reduce((sum, member) => sum + (member.workload?.pending || 0), 0);
-  const registrationsOutstanding = selectedReport.rows.filter(
+  const registrationsOutstanding = shownSelectedRows.filter(
     (row) => row.participantRegistration?.applicable && row.participantRegistration.status !== "SUBMITTED"
   ).length;
   const scopeLabel = canFilterByCountry
@@ -1546,10 +1585,10 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
       title: "Waiting for a reviewer",
       icon: "bi-hourglass-split",
       tone: "orange",
-      count: unassignedApplicants.length,
-      caption: unassignedApplicants.length ? "Completed the test, no reviewer yet" : "Everyone has a reviewer",
+      count: shownUnassigned.length,
+      caption: shownUnassigned.length ? "Completed the test, no reviewer yet" : referenceTerm ? "No match for this reference" : "Everyone has a reviewer",
       description: "Assign applicants who finished the Basic IT Skills Test to a committee member.",
-      attention: unassignedApplicants.length > 0,
+      attention: shownUnassigned.length > 0,
       visible: canViewUnassignedApplicants && userRole !== "VIEWER",
     },
     {
@@ -1568,7 +1607,7 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
       title: "Selected participants",
       icon: "bi-patch-check",
       tone: "green",
-      count: selectedReport.rows.length,
+      count: shownSelectedRows.length,
       caption: registrationsOutstanding ? `${registrationsOutstanding} still to register` : "Ready for verification",
       description: "Verify selected participants, export the list and resend registration links.",
       visible: canViewSelectedReport,
@@ -1637,6 +1676,24 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
           )}
 
           <div className="cw-toolbar-actions">
+            <label className="cw-reference-filter">
+              <span>Application reference</span>
+              <span className="cw-search">
+                <i className="bi bi-search" aria-hidden="true" />
+                <input
+                  type="search"
+                  value={referenceFilter}
+                  onChange={(event) => setReferenceFilter(event.target.value)}
+                  placeholder="e.g. APP-DF-2026-…"
+                  autoComplete="off"
+                  spellCheck={false}
+                  aria-describedby="cw-reference-hint"
+                />
+              </span>
+              <span id="cw-reference-hint" className="visually-hidden">
+                Filters reviews, the waiting list, test invitations and selected participants. Participant IDs also match.
+              </span>
+            </label>
             {canFilterByCountry && (
               <label className="cw-country-filter">
                 <span>Country</span>
@@ -1665,6 +1722,19 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
             </button>
           </div>
         </div>
+
+        {referenceTerm && (
+          <div className="cw-reference-strip" role="status">
+            <i className="bi bi-funnel" aria-hidden="true" />
+            <span>
+              Showing only applications matching <strong>{referenceFilter.trim()}</strong>
+              {currentSection && ["members", "admins"].includes(currentSection.id) ? ". This workspace isn't filtered by reference." : "."}
+            </span>
+            <button type="button" className="cw-link-button" onClick={clearReferenceFilter}>
+              Clear
+            </button>
+          </div>
+        )}
 
         {!currentSection ? (
           <div className="cw-tile-grid">
@@ -1782,14 +1852,16 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
                     </form>
 
                     <div className="committee-assignment-list">
-                      {assignments.length === 0 ? (
+                      {shownAssignments.length === 0 && referenceTerm ? (
+                        <ReferenceNoMatch reference={referenceFilter.trim()} what="assigned applications" onClear={clearReferenceFilter} />
+                      ) : shownAssignments.length === 0 ? (
                         <div className="committee-empty-state">
                           <i className="bi bi-inboxes" aria-hidden="true" />
                           <h3>No assignments yet</h3>
                           <p>Add committee members, then run auto-assignment after applicants complete the Basic IT Skills Test.</p>
                         </div>
                       ) : (
-                        assignments.map((assignment) => (
+                        shownAssignments.map((assignment) => (
                           <AssignmentCard
                             key={assignment.id}
                             assignment={assignment}
@@ -1808,14 +1880,16 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
               )}
 
               {currentSection.id === "waiting" && (
-                unassignedApplicants.length > 0 ? (
+                shownUnassigned.length > 0 ? (
                   <ApplicantsWaitingPanel
-                    applicants={unassignedApplicants}
+                    applicants={shownUnassigned}
                     onAssignApplicant={handleAssignApplicant}
                     assigningApplicantId={assigningApplicantId}
                     onAutoAssignAll={handleAutoAssign}
                     assigningAll={assigning}
                   />
+                ) : referenceTerm ? (
+                  <ReferenceNoMatch reference={referenceFilter.trim()} what="waiting applicants" onClear={clearReferenceFilter} />
                 ) : (
                   <section className="committee-section-card">
                     <div className="committee-empty-state">
@@ -1828,21 +1902,29 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
               )}
 
               {currentSection.id === "invitations" && (
+                referenceTerm && deliveryRecords.length === 0 ? (
+                  <ReferenceNoMatch reference={referenceFilter.trim()} what="test invitations" onClear={clearReferenceFilter} />
+                ) : (
                 <SkillsTestDeliveryPanel
-                  delivery={skillsEmailDelivery}
+                  delivery={shownDelivery}
                   onResend={handleResendSkillsTestInvitation}
                   sendingReference={sendingTestEmailReference}
                 />
+                )
               )}
 
               {currentSection.id === "selected" && (
+                referenceTerm && shownSelectedRows.length === 0 ? (
+                  <ReferenceNoMatch reference={referenceFilter.trim()} what="selected participants" onClear={clearReferenceFilter} />
+                ) : (
                 <SelectedParticipantsReport
-                  rows={selectedReport.rows}
+                  rows={shownSelectedRows}
                   scope={selectedReport.reportScope}
                   generatedAt={selectedReport.generatedAt}
                   onResendRegistration={handleResendParticipantRegistration}
                   resendingRegistrationId={resendingRegistrationId}
                 />
+                )
               )}
 
               {currentSection.id === "members" && (
