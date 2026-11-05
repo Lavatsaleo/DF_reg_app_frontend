@@ -92,6 +92,43 @@ function formatDate(value) {
   }
 }
 
+// Tell the applicant what actually happened to their test email instead of always saying it was sent.
+function SkillsTestInvitationNote({ invitation }) {
+  const expired = Boolean(invitation?.expired) || invitation?.status === "EXPIRED";
+  const sent = ["SENT", "OPENED"].includes(invitation?.status);
+  const contactTeam = "Please contact the programme team so they can check your email address and send you a new link.";
+
+  let icon = "bi-envelope-check";
+  let message;
+
+  if (!invitation) {
+    icon = "bi-envelope-exclamation";
+    message = `You are eligible, but your Basic IT skills test link has not been created yet. ${contactTeam}`;
+  } else if (expired) {
+    icon = "bi-envelope-exclamation";
+    message = `Your Basic IT skills test link expired on ${formatDate(invitation.expiresAt)}. ${contactTeam}`;
+  } else if (!sent) {
+    icon = "bi-envelope-exclamation";
+    message = `You are eligible, but we could not send the Basic IT skills test link to your email address. ${contactTeam}`;
+  } else {
+    const recipient = invitation.emailTo ? ` to ${invitation.emailTo}` : " to your email address";
+    const when = invitation.sentAt ? ` on ${formatDate(invitation.sentAt)}` : "";
+    message = `You are eligible. We sent the secure Basic IT skills test link${recipient}${when}. If you cannot find it, check your spam or junk folder.`;
+  }
+
+  return (
+    <div className="ss-status-note" role="note">
+      <i className={`bi ${icon}`} aria-hidden="true" />
+      <div>
+        <p className="mb-2">{message}</p>
+        {sent && !expired && invitation.expiresAt && (
+          <p className="mb-0">Link expires: {formatDate(invitation.expiresAt)}.</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function getReferenceFromResult(result) {
   return (
     result?.applicationReference ||
@@ -210,15 +247,7 @@ function StatusResultCard({ result }) {
       )}
 
       {result?.requiresBasicSkillsTest && (
-        <div className="ss-status-note" role="note">
-          <i className="bi bi-envelope-check" aria-hidden="true" />
-          <div>
-            <p className="mb-2">You are eligible. Please open the Basic IT skills test using the secure invitation link sent to your email address.</p>
-            {result?.testInvitation?.expiresAt && (
-              <p className="mb-0">Invitation expires: {formatDate(result.testInvitation.expiresAt)}.</p>
-            )}
-          </div>
-        </div>
+        <SkillsTestInvitationNote invitation={result?.testInvitation} />
       )}
 
       {status === "PARTICIPANT_REGISTRATION_PENDING" && (
