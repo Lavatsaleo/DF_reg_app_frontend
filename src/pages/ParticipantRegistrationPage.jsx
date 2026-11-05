@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
+import ConsentReadSection from "../components/ConsentReadSection";
 import ElectronicSignature from "../components/ElectronicSignature";
 import QuestionField from "../components/QuestionField";
 import { API_BASE_URL } from "../config/api";
@@ -82,22 +83,25 @@ function pipeQuestionText(question, answers) {
   return String(question.questionText || "").replaceAll("[period from M3.7]", period);
 }
 
-function ConsentOption({ name, options, value, onChange }) {
+function ConsentOption({ name, question, options, value, onChange, isOptionLocked = () => false }) {
   return (
     <fieldset className="border-0 p-0 mb-4">
-      <legend className="fs-6 fw-semibold mb-3">Do you consent to the collection and use of your information as described above?</legend>
+      <legend className="fs-6 fw-semibold mb-3">{question}</legend>
       <div className="d-grid gap-2">
         {(options || []).map((option, index) => {
           const id = `${name}-${index}`;
+          const locked = isOptionLocked(option);
           return (
-            <label key={option} htmlFor={id} className={`ss-option-pill ${value === option ? "selected" : ""}`}>
+            <label key={option} htmlFor={id} className={`ss-option-pill ${value === option ? "selected" : ""} ${locked ? "is-locked" : ""}`}>
               <input
                 id={id}
                 type="radio"
                 name={name}
                 checked={value === option}
+                disabled={locked}
                 onChange={() => onChange(option)}
               />
+              {locked && <i className="bi bi-lock" aria-hidden="true" />}
               <span>{option}</span>
             </label>
           );
@@ -167,6 +171,12 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
   const [supportSubmitting, setSupportSubmitting] = useState(false);
   const [supportMessage, setSupportMessage] = useState("");
   const headingRef = useRef(null);
+  const consentDecisionHeadingRef = useRef(null);
+  // Consent comes before the registration pages: read and decide, then the assistance question.
+  const [consentStep, setConsentStep] = useState("decide");
+  const [consentSectionsRead, setConsentSectionsRead] = useState([]);
+  const [openConsentSection, setOpenConsentSection] = useState("introduction");
+  const [consentUnlockMessage, setConsentUnlockMessage] = useState("");
 
   const [consent, setConsent] = useState({
     decision: "",
@@ -264,7 +274,7 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
       headingRef.current?.scrollIntoView({ block: "start" });
     });
     return () => window.cancelAnimationFrame(frame);
-  }, [stage, activeModule, savedForLater]);
+  }, [stage, activeModule, savedForLater, consentStep]);
 
   const draftPayload = useMemo(() => ({
     stage: ["form", "review"].includes(stage) ? stage : "consent",
@@ -433,7 +443,7 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
     });
   }
 
-  function validateConsent() {
+  function validateConsentDecision() {
     const consentDefinition = formData?.consent;
     if (!consentDefinition) return "Consent information is unavailable.";
 
@@ -444,6 +454,14 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
     if (!consent.fullName.trim() || !consent.signatureData) {
       return "Please complete your full name and electronic signature.";
     }
+
+    return "";
+  }
+
+  function validateConsent() {
+    const decisionMessage = validateConsentDecision();
+    if (decisionMessage) return decisionMessage;
+    const consentDefinition = formData.consent;
 
     if (!consent.completedSelf) {
       return "Please indicate whether you completed the consent section yourself.";
@@ -478,6 +496,20 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
     return "";
   }
 
+  // Consent step 1: the decision and signature.
+  function continueFromConsentDecision() {
+    const message = validateConsentDecision();
+    if (message) {
+      setSubmitMessage(message);
+      return;
+    }
+    setSubmitMessage("");
+    setConsentStep("assistance");
+    markChanged();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  // Consent step 2: assistance. Only now do the registration pages start.
   function continueFromConsent() {
     const message = validateConsent();
     if (message) {
@@ -488,6 +520,28 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
     goToStep(1);
   }
 
+  function markConsentSectionRead(sectionKey, sectionKeys) {
+    const nextRead = consentSectionsRead.includes(sectionKey) ? consentSectionsRead : [...consentSectionsRead, sectionKey];
+    setConsentSectionsRead(nextRead);
+    const nextUnread = sectionKeys.find((key) => !nextRead.includes(key));
+    setOpenConsentSection(nextUnread || null);
+
+    if (nextUnread) {
+      // The confirm button disappears once clicked; keep keyboard and screen reader users at the next section.
+      window.requestAnimationFrame(() => {
+        const nextToggle = document.querySelector(`[aria-controls="df-consent-read-${nextUnread}"]`);
+        nextToggle?.focus({ preventScroll: true });
+        nextToggle?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      });
+    } else {
+      setConsentUnlockMessage("You have read all the consent information. You can now make your consent decision.");
+      window.requestAnimationFrame(() => {
+        consentDecisionHeadingRef.current?.focus({ preventScroll: true });
+        consentDecisionHeadingRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    }
+  }
+
   // Pages are numbered consent (0), each module (1..n), then review (n + 1).
   function goToStep(index) {
     const reviewIndex = modules.length + 1;
@@ -495,7 +549,9 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
     setErrors({});
     setSubmitMessage("");
     if (next === 0) {
+      // Going back from the first page returns to the last consent step.
       setStage("consent");
+      setConsentStep("assistance");
     } else if (next === reviewIndex) {
       setStage("review");
     } else {
@@ -508,15 +564,7 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
   }
 
   function openStepFromProgress(index) {
-    if (index > furthestStep) return;
-    // Leaving the consent page forwards still needs a complete consent.
-    if (stage === "consent" && index > 0) {
-      const message = validateConsent();
-      if (message) {
-        setSubmitMessage(message);
-        return;
-      }
-    }
+    if (index < 1 || index > furthestStep) return;
     goToStep(index);
   }
 
@@ -781,6 +829,7 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
     ...modules.map((module) => getModuleStepLabel(module.title)),
     "Review",
   ];
+  const pageCount = progressSteps.length - 1;
   const savedDocumentCount = Object.values(savedDocuments).filter(Boolean).length;
 
   if (savedForLater) {
@@ -862,8 +911,9 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
       </div>
 
       <nav className="ss-survey-stepper" aria-label="Registration pages">
-        <ol style={{ "--df-step-count": progressSteps.length }}>
+        <ol style={{ "--df-step-count": pageCount }}>
           {progressSteps.map((label, index) => {
+            if (index === 0) return null;
             const isCurrent = index === currentStep;
             const isComplete = index < furthestStep && !isCurrent;
             const canOpen = index <= furthestStep && !isCurrent;
@@ -876,7 +926,7 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
                   aria-current={isCurrent ? "step" : undefined}
                 >
                   <span className="ss-survey-step-dot" aria-hidden="true">
-                    {isComplete ? <i className="bi bi-check2" /> : index + 1}
+                    {isComplete ? <i className="bi bi-check2" /> : index}
                   </span>
                   <span>
                     {label}
@@ -892,47 +942,31 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
       </nav>
 
       <div className="ss-survey-mobile-progress">
-        <span>Page {currentStep + 1} of {progressSteps.length}</span>
+        <span>Page {currentStep} of {pageCount}</span>
         <strong>{progressSteps[currentStep]}</strong>
       </div>
     </div>
   );
 
   if (stage === "consent") {
-    return (
-      <main id="main-content" tabIndex="-1">
-        <section className="ss-form-hero">
-          <div className="container">
-            <span className="ss-small-label light">Digital Futures · Participant Registration</span>
-            <h1 tabIndex="-1" ref={headingRef}>Participant Registration &amp; Baseline Survey</h1>
-            <p>
-              {applicant?.firstName ? `Hello ${applicant.firstName}. ` : ""}
-              This secure form is linked to your approved {formatPathway(applicant?.pathway)} application.
-            </p>
-          </div>
-        </section>
-
-        <section className="container py-5">
-          {progressHeader}
-          <article className="ss-section-card mx-auto" style={{ maxWidth: "960px" }}>
-            <span className="ss-small-label dark">Consent</span>
-            <h2>{consentDefinition?.introductionTitle}</h2>
-            {(consentDefinition?.introduction || []).map((paragraph) => (
-              <p key={paragraph}>{paragraph}</p>
-            ))}
-
-            <h3 className="h5 mt-4">{consentDefinition?.whatThisFormInvolvesTitle}</h3>
-            {(consentDefinition?.whatThisFormInvolves || []).map((paragraph) => (
-              <p key={paragraph}>{paragraph}</p>
-            ))}
-
-            <h3 className="h5 mt-4">{consentDefinition?.whyWeCollectTitle}</h3>
-
-            <h3 className="h5 mt-4">{consentDefinition?.howWeProtectTitle}</h3>
-            {(consentDefinition?.howWeProtect || []).map((paragraph) => (
-              <p key={paragraph}>{paragraph}</p>
-            ))}
-
+    const showAssistance = consentStep === "assistance";
+    const consentSections = [
+      {
+        key: "introduction",
+        title: consentDefinition?.introductionTitle,
+        body: (consentDefinition?.introduction || []).map((paragraph) => <p key={paragraph}>{paragraph}</p>),
+      },
+      {
+        key: "involves",
+        title: consentDefinition?.whatThisFormInvolvesTitle,
+        body: (consentDefinition?.whatThisFormInvolves || []).map((paragraph) => <p key={paragraph}>{paragraph}</p>),
+      },
+      {
+        key: "protect",
+        title: consentDefinition?.howWeProtectTitle,
+        body: (
+          <>
+            {(consentDefinition?.howWeProtect || []).map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
             <p className="mb-1">For more detail, see:</p>
             <ul>
               {(consentDefinition?.dataProtectionLinks || []).map((item) => (
@@ -941,321 +975,426 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
                 </li>
               ))}
             </ul>
-
-            <details className="df-consent-details mt-4">
-              <summary>{consentDefinition?.rightsTitle}</summary>
-              <div className="df-consent-details-body">
-                <ul>
-                  {(consentDefinition?.rights || []).map((item) => <li key={item}>{item}</li>)}
-                </ul>
-                <p>{consentDefinition?.rightsClosing}</p>
-              </div>
-            </details>
-
-            <details className="df-consent-details mt-3">
-              <summary>{consentDefinition?.safetyTitle}</summary>
-              <div className="df-consent-details-body">
-                {(consentDefinition?.safety || []).map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
-                <p>
-                  <a href={consentDefinition?.speakUpUrl} target="_blank" rel="noreferrer">
-                    {consentDefinition?.speakUpUrl}
-                  </a>
-                </p>
-              </div>
-            </details>
-
-            <details className="df-consent-details mt-3">
-              <summary>{consentDefinition?.questionsTitle}</summary>
-              <div className="df-consent-details-body">
-                <p>{consentDefinition?.questions}</p>
-              </div>
-            </details>
-
-            <hr className="my-4" />
-            <h2>{consentDefinition?.consentTitle}</h2>
-            <p>{consentDefinition?.consentIntro}</p>
-            <p className="fw-semibold">{consentDefinition?.consentLead}</p>
+          </>
+        ),
+      },
+      {
+        key: "rights",
+        title: consentDefinition?.rightsTitle,
+        body: (
+          <>
             <ul>
-              {(consentDefinition?.consentBullets || []).map((item) => <li key={item}>{item}</li>)}
+              {(consentDefinition?.rights || []).map((item) => <li key={item}>{item}</li>)}
             </ul>
+            <p>{consentDefinition?.rightsClosing}</p>
+          </>
+        ),
+      },
+      {
+        key: "safety",
+        title: consentDefinition?.safetyTitle,
+        body: (
+          <>
+            {(consentDefinition?.safety || []).map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
+            <p>
+              <a href={consentDefinition?.speakUpUrl} target="_blank" rel="noreferrer">
+                {consentDefinition?.speakUpUrl}
+              </a>
+            </p>
+          </>
+        ),
+      },
+      {
+        key: "questions",
+        title: consentDefinition?.questionsTitle,
+        body: <p>{consentDefinition?.questions}</p>,
+      },
+    ];
+    const consentSectionKeys = consentSections.map((section) => section.key);
+    // Someone returning to a decision they already made is not sent back through the reading steps.
+    // Asking for an explanation is not a decision, so it does not unlock Yes or No.
+    const consentDecisionUnlocked =
+      consentSectionKeys.every((key) => consentSectionsRead.includes(key)) ||
+      Boolean(consent.decision && consent.decision !== consentDefinition?.supportRequestOption);
 
-            <ConsentOption
-              name="participant-registration-consent"
-              options={consentDefinition?.consentOptions}
-              value={consent.decision}
-              onChange={(decision) => {
-                updateConsent({ decision });
-                setSubmitMessage("");
-                setSupportMessage("");
-              }}
-            />
+    return (
+      <main id="main-content" tabIndex="-1">
+        <section className="ss-form-hero">
+          <div className="container">
+            <span className="ss-small-label light">Digital Futures · Participant Registration</span>
+            <h1 tabIndex="-1" ref={headingRef}>Participant Registration &amp; Baseline Survey</h1>
+            <p>
+              {applicant?.firstName ? `Hello ${applicant.firstName}. ` : ""}
+              {showAssistance
+                ? "Please confirm whether you completed the consent section yourself or received assistance."
+                : `This secure form is linked to your approved ${formatPathway(applicant?.pathway)} application. Please read the consent information carefully before deciding.`}
+            </p>
+          </div>
+        </section>
 
-            {consent.decision === consentDefinition?.consentDeniedOption && (
-              <div className="alert ss-alert-error" role="alert">
-                If you do not consent, the participant registration form cannot proceed.
-              </div>
-            )}
+        <section className="container py-5">
+          {resumedAt && (
+            <div className="pr-resume-note mx-auto" role="status" style={{ maxWidth: "1100px" }}>
+              <i className="bi bi-arrow-counterclockwise" aria-hidden="true" />
+              <span>Welcome back. We've kept what you saved on {formatLongDate(resumedAt)}.</span>
+              <button type="button" className="pr-link-button" onClick={() => setResumedAt(null)}>
+                Dismiss
+              </button>
+            </div>
+          )}
 
-            {supportRequested && (
-              <section className="border rounded-4 p-4 bg-light">
-                <h3 className="h5">Request an explanation before deciding</h3>
-                <p>{consentDefinition?.supportRequestInstruction}</p>
-                <div className="row g-3">
-                  <div className="col-12 col-md-6">
-                    <label className="form-label fw-semibold" htmlFor="pr-support-name">Full name</label>
-                    <input
-                      id="pr-support-name"
-                      className="form-control"
-                      value={consent.supportName}
-                      onChange={(event) =>
-                        updateConsent({ supportName: event.target.value })
-                      }
-                    />
+          <div className="row justify-content-center">
+            <div className={showAssistance ? "col-12 col-xl-9" : "col-12"}>
+              {showAssistance ? (
+                <article className="ss-section-card">
+                  <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-start gap-3 mb-3">
+                    <div>
+                      <span className="ss-small-label dark">Consent · Step 2 of 2 · Assistance</span>
+                      <h2 className="mt-2">Help with the consent section</h2>
+                    </div>
+                    <button
+                      type="button"
+                      className="btn btn-sm ss-btn-outline text-nowrap flex-shrink-0 align-self-start"
+                      onClick={() => {
+                        setSubmitMessage("");
+                        setConsentStep("decide");
+                      }}
+                    >
+                      Back to consent
+                    </button>
                   </div>
-                  <div className="col-12 col-md-6">
-                    <label className="form-label fw-semibold" htmlFor="pr-support-phone">Contact number</label>
-                    <input
-                      id="pr-support-phone"
-                      className="form-control"
-                      type="tel"
-                      value={consent.supportPhone}
-                      onChange={(event) =>
-                        updateConsent({ supportPhone: event.target.value })
-                      }
-                    />
-                  </div>
-                  <div className="col-12">
-                    <label className="form-label fw-semibold" htmlFor="pr-support-accommodation">
-                      Any reasonable accommodation requirements
-                    </label>
-                    <textarea
-                      id="pr-support-accommodation"
-                      className="form-control"
-                      rows={3}
-                      value={consent.supportAccommodation}
-                      onChange={(event) =>
-                        updateConsent({ supportAccommodation: event.target.value })
-                      }
-                    />
-                  </div>
-                </div>
-                {supportMessage && (
-                  <div className="alert ss-alert-info mt-3 mb-0" role="status">{supportMessage}</div>
-                )}
-                <button
-                  type="button"
-                  className="btn ss-btn-primary mt-3"
-                  disabled={supportSubmitting}
-                  onClick={submitSupportRequest}
-                >
-                  {supportSubmitting ? "Saving request..." : "Request programme support"}
-                </button>
-              </section>
-            )}
 
-            {consentGranted && (
-              <section className="border-top pt-4 mt-4">
-                <div className="row g-3">
-                  <div className="col-12 col-md-8">
-                    <label className="form-label fw-semibold" htmlFor="pr-consent-name">
-                      Full name (required field)
-                    </label>
-                    <input
-                      id="pr-consent-name"
-                      className="form-control"
-                      value={consent.fullName}
-                      onChange={(event) =>
-                        updateConsent({ fullName: event.target.value })
-                      }
-                    />
-                  </div>
-                  <div className="col-12 col-md-4">
-                    <label className="form-label fw-semibold" htmlFor="pr-consent-date">
-                      Date (automatically generated)
-                    </label>
-                    <input
-                      id="pr-consent-date"
-                      className="form-control"
-                      type="date"
-                      value={consent.signedDate}
-                      readOnly
-                    />
-                  </div>
-                  <div className="col-12">
-                    <ElectronicSignature
-                      label="Signature"
-                      method={consent.signatureMethod}
-                      value={consent.signatureData}
-                      onChange={(method, value) =>
-                        updateConsent({
-                          signatureMethod: method,
-                          signatureData: value
-                        })
-                      }
-                    />
-                  </div>
-                </div>
+                  <fieldset className="border-0 p-0 mb-4">
+                    <legend className="fs-6 fw-semibold mb-3">{consentDefinition?.assistanceQuestion}</legend>
+                    <div className="d-grid gap-2">
+                      {(consentDefinition?.assistanceOptions || []).map((option, index) => {
+                        const id = `pr-completed-self-${index}`;
+                        return (
+                          <label key={option} htmlFor={id} className={`ss-option-pill ${consent.completedSelf === option ? "selected" : ""}`}>
+                            <input
+                              id={id}
+                              type="radio"
+                              name="pr-completed-self"
+                              checked={consent.completedSelf === option}
+                              onChange={() => updateConsent({ completedSelf: option })}
+                            />
+                            {option}
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </fieldset>
 
-                <fieldset className="border-0 p-0 mt-4">
-                  <legend className="fs-6 fw-semibold">
-                    {consentDefinition?.assistanceQuestion}
-                  </legend>
-                  <div className="d-grid gap-2">
-                    {(consentDefinition?.assistanceOptions || []).map((option, index) => {
-                      const id = `pr-completed-self-${index}`;
-                      return (
-                        <label key={option} htmlFor={id} className={`ss-option-pill ${consent.completedSelf === option ? "selected" : ""}`}>
+                  {assistanceRequired && (
+                    <div className="border rounded-4 p-4 mb-4 bg-light">
+                      <h3 className="h5">{consentDefinition?.assistanceStepTitle}</h3>
+                      <p>{consentDefinition?.assistanceIntro}</p>
+                      <p className="fw-semibold">I confirm that:</p>
+                      <ul>
+                        {(consentDefinition?.assistanceConfirmationBullets || []).map((item) => (
+                          <li key={item}>{item}</li>
+                        ))}
+                      </ul>
+
+                      <div className="row g-3">
+                        <div className="col-12">
+                          <label className="form-label fw-semibold" htmlFor="pr-assistant-name">
+                            Full name (required field)
+                          </label>
                           <input
-                            id={id}
-                            type="radio"
-                            name="pr-completed-self"
-                            checked={consent.completedSelf === option}
-                            onChange={() =>
-                              updateConsent({ completedSelf: option })
+                            id="pr-assistant-name"
+                            className="form-control"
+                            value={consent.assistantName}
+                            onChange={(event) => updateConsent({ assistantName: event.target.value })}
+                          />
+                        </div>
+                        <div className="col-12">
+                          <label className="form-label fw-semibold" htmlFor="pr-assistant-relationship">
+                            Relationship to the applicant (required field)
+                          </label>
+                          <select
+                            id="pr-assistant-relationship"
+                            className="form-select"
+                            value={consent.assistantRelationship}
+                            onChange={(event) => updateConsent({ assistantRelationship: event.target.value })}
+                          >
+                            <option value="">Select one option</option>
+                            {(consentDefinition?.relationshipOptions || []).map((option) => (
+                              <option key={option} value={option}>{option}</option>
+                            ))}
+                          </select>
+                        </div>
+                        {containsOther(consent.assistantRelationship) && (
+                          <div className="col-12">
+                            <label className="form-label fw-semibold" htmlFor="pr-assistant-relationship-other">
+                              Other relationship, please specify (required field)
+                            </label>
+                            <input
+                              id="pr-assistant-relationship-other"
+                              className="form-control"
+                              value={consent.assistantRelationshipOther}
+                              onChange={(event) => updateConsent({ assistantRelationshipOther: event.target.value })}
+                            />
+                          </div>
+                        )}
+                        <div className="col-12">
+                          <fieldset>
+                            <legend className="fs-6 fw-semibold">Type of assistance provided (select all that apply)</legend>
+                            <AssistanceMultiSelect
+                              options={consentDefinition?.assistanceTypeOptions}
+                              value={consent.assistanceTypes}
+                              onChange={(assistanceTypes) => updateConsent({ assistanceTypes })}
+                            />
+                          </fieldset>
+                        </div>
+                        {containsOther(consent.assistanceTypes) && (
+                          <div className="col-12">
+                            <label className="form-label fw-semibold" htmlFor="pr-assistance-other">
+                              Other assistance, please specify (required field)
+                            </label>
+                            <input
+                              id="pr-assistance-other"
+                              className="form-control"
+                              value={consent.assistanceTypeOther}
+                              onChange={(event) => updateConsent({ assistanceTypeOther: event.target.value })}
+                            />
+                          </div>
+                        )}
+                        <div className="col-12">
+                          <label className="form-label fw-semibold" htmlFor="pr-assistance-language">
+                            Language/communication method e.g. Swahili, Hausa, Sign language etc (required field)
+                          </label>
+                          <input
+                            id="pr-assistance-language"
+                            className="form-control"
+                            value={consent.assistanceLanguage}
+                            onChange={(event) => updateConsent({ assistanceLanguage: event.target.value })}
+                          />
+                        </div>
+                        <div className="col-12">
+                          <ElectronicSignature
+                            label="Signature"
+                            method={consent.assistantSignatureMethod}
+                            value={consent.assistantSignatureData}
+                            onChange={(method, value) =>
+                              updateConsent({ assistantSignatureMethod: method, assistantSignatureData: value })
                             }
                           />
-                          {option}
-                        </label>
-                      );
-                    })}
-                  </div>
-                </fieldset>
+                        </div>
+                        <div className="col-12 col-md-6">
+                          <label className="form-label fw-semibold" htmlFor="pr-assistance-date">
+                            Date (automatically generated)
+                          </label>
+                          <input
+                            id="pr-assistance-date"
+                            className="form-control"
+                            type="date"
+                            value={consent.assistanceDate}
+                            readOnly
+                            aria-readonly="true"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
-                {assistanceRequired && (
-                  <section className="border rounded-4 p-4 mt-4 bg-light">
-                    <h3 className="h5">{consentDefinition?.assistanceStepTitle}</h3>
-                    <p>{consentDefinition?.assistanceIntro}</p>
-                    <p className="fw-semibold">I confirm that:</p>
-                    <ul>
-                      {(consentDefinition?.assistanceConfirmationBullets || []).map((item) => (
-                        <li key={item}>{item}</li>
+                  {submitMessage && <div className="alert ss-alert-error" role="alert">{submitMessage}</div>}
+
+                  <button type="button" className="btn ss-btn-primary" onClick={continueFromConsent}>
+                    Continue to registration questions <i className="bi bi-arrow-right" aria-hidden="true" />
+                  </button>
+                </article>
+              ) : (
+                <div className="df-consent-layout">
+                  <article className="ss-section-card df-consent-info">
+                    <span className="ss-small-label dark">Consent · Step 1 of 2</span>
+                    <h2 className="mt-2">Before you decide</h2>
+                    <p className="df-consent-lead">
+                      Here is a short summary. Then read the sections below and confirm each one to unlock your consent decision.
+                    </p>
+
+                    <ul className="df-consent-glance">
+                      {(consentDefinition?.atAGlance || []).map((item) => (
+                        <li key={item.text}>
+                          <i className={`bi ${item.icon}`} aria-hidden="true" />
+                          <span>{item.text}</span>
+                        </li>
                       ))}
                     </ul>
 
-                    <div className="row g-3">
-                      <div className="col-12">
-                        <label className="form-label fw-semibold" htmlFor="pr-assistant-name">
-                          Full name
-                        </label>
-                        <input
-                          id="pr-assistant-name"
-                          className="form-control"
-                          value={consent.assistantName}
-                          onChange={(event) =>
-                            updateConsent({ assistantName: event.target.value })
-                          }
-                        />
+                    {consentSections.map((section, index, all) => (
+                      <ConsentReadSection
+                        key={section.key}
+                        sectionKey={section.key}
+                        index={index}
+                        title={section.title}
+                        isOpen={openConsentSection === section.key}
+                        isRead={consentSectionsRead.includes(section.key)}
+                        isLast={index === all.length - 1}
+                        onToggle={() =>
+                          setOpenConsentSection((current) => (current === section.key ? null : section.key))
+                        }
+                        onMarkRead={() => markConsentSectionRead(section.key, consentSectionKeys)}
+                      >
+                        {section.body}
+                      </ConsentReadSection>
+                    ))}
+                  </article>
+
+                  <article className="ss-section-card df-consent-decision" aria-labelledby="pr-consent-decision-title">
+                    <h2 id="pr-consent-decision-title" tabIndex="-1" ref={consentDecisionHeadingRef}>
+                      {consentDefinition?.consentTitle}
+                    </h2>
+                    <p className="visually-hidden" role="status" aria-live="polite">{consentUnlockMessage}</p>
+                    {!consentDecisionUnlocked && (
+                      <div className="df-consent-lock" role="note">
+                        <i className="bi bi-lock" aria-hidden="true" />
+                        <div>
+                          <strong>Read the consent information first</strong>
+                          <p className="mb-2">
+                            Read each section on this page and confirm it. Your consent choices unlock when all {consentSectionKeys.length} are done.
+                          </p>
+                          <div className="df-consent-progress" aria-hidden="true">
+                            <span style={{ width: `${(consentSectionsRead.length / consentSectionKeys.length) * 100}%` }} />
+                          </div>
+                          <small>{consentSectionsRead.length} of {consentSectionKeys.length} sections read</small>
+                        </div>
                       </div>
-                      <div className="col-12">
-                        <label className="form-label fw-semibold" htmlFor="pr-assistant-relationship">
-                          Relationship to the applicant
-                        </label>
-                        <select
-                          id="pr-assistant-relationship"
-                          className="form-select"
-                          value={consent.assistantRelationship}
-                          onChange={(event) =>
-                            updateConsent({ assistantRelationship: event.target.value })
-                          }
+                    )}
+                    <p>{consentDefinition?.consentIntro}</p>
+                    <p className="fw-semibold">{consentDefinition?.consentLead}</p>
+                    <ul className="df-consent-confirm-list">
+                      {(consentDefinition?.consentBullets || []).map((item) => <li key={item}>{item}</li>)}
+                    </ul>
+
+                    <ConsentOption
+                      name="participant-registration-consent"
+                      question={consentDefinition?.consentQuestion}
+                      options={consentDefinition?.consentOptions}
+                      value={consent.decision}
+                      isOptionLocked={(option) => !consentDecisionUnlocked && option !== consentDefinition?.supportRequestOption}
+                      onChange={(decision) => {
+                        updateConsent({ decision });
+                        setSubmitMessage("");
+                        setSupportMessage("");
+                      }}
+                    />
+
+                    {consent.decision === consentDefinition?.consentDeniedOption && (
+                      <div className="alert ss-alert-error" role="alert">
+                        <h3 className="h5">Consent is required to continue</h3>
+                        <p>If you do not consent, the participant registration form cannot proceed.</p>
+                        <button type="button" className="btn ss-btn-outline" onClick={onBackHome}>
+                          Back to home
+                        </button>
+                      </div>
+                    )}
+
+                    {supportRequested && (
+                      <div className="border rounded-4 p-4 bg-light">
+                        <h3 className="h5">Request an explanation before deciding</h3>
+                        <p>{consentDefinition?.supportRequestInstruction}</p>
+                        <div className="row g-3">
+                          <div className="col-12">
+                            <label className="form-label fw-semibold" htmlFor="pr-support-name">Full name (required field)</label>
+                            <input
+                              id="pr-support-name"
+                              className="form-control"
+                              aria-required="true"
+                              value={consent.supportName}
+                              onChange={(event) => updateConsent({ supportName: event.target.value })}
+                            />
+                          </div>
+                          <div className="col-12 col-md-6">
+                            <label className="form-label fw-semibold" htmlFor="pr-support-phone">Contact number (required field)</label>
+                            <input
+                              id="pr-support-phone"
+                              className="form-control"
+                              type="tel"
+                              aria-required="true"
+                              value={consent.supportPhone}
+                              onChange={(event) => updateConsent({ supportPhone: event.target.value })}
+                            />
+                          </div>
+                          <div className="col-12">
+                            <label className="form-label fw-semibold" htmlFor="pr-support-accommodation">
+                              Any reasonable accommodation requirements
+                            </label>
+                            <textarea
+                              id="pr-support-accommodation"
+                              className="form-control"
+                              rows={3}
+                              value={consent.supportAccommodation}
+                              onChange={(event) => updateConsent({ supportAccommodation: event.target.value })}
+                            />
+                          </div>
+                        </div>
+                        {supportMessage && (
+                          <div className="alert ss-alert-info mt-3 mb-0" role="status">{supportMessage}</div>
+                        )}
+                        <button
+                          type="button"
+                          className="btn ss-btn-primary mt-3"
+                          disabled={supportSubmitting}
+                          onClick={submitSupportRequest}
                         >
-                          <option value="">Select one option</option>
-                          {(consentDefinition?.relationshipOptions || []).map((option) => (
-                            <option key={option} value={option}>{option}</option>
-                          ))}
-                        </select>
+                          {supportSubmitting ? "Saving request..." : "Request programme support"}
+                        </button>
                       </div>
-                      {containsOther(consent.assistantRelationship) && (
-                        <div className="col-12">
-                          <label className="form-label fw-semibold" htmlFor="pr-assistant-relationship-other">
-                            Other relationship, please specify
-                          </label>
-                          <input
-                            id="pr-assistant-relationship-other"
-                            className="form-control"
-                            value={consent.assistantRelationshipOther}
-                            onChange={(event) =>
-                              updateConsent({ assistantRelationshipOther: event.target.value })
-                            }
-                          />
+                    )}
+
+                    {consentGranted && (
+                      <div className="border-top pt-4 mt-4">
+                        <div className="row g-3 mb-3">
+                          <div className="col-12">
+                            <label className="form-label fw-semibold" htmlFor="pr-consent-name">
+                              Full name (required field)
+                            </label>
+                            <input
+                              id="pr-consent-name"
+                              className="form-control"
+                              value={consent.fullName}
+                              onChange={(event) => updateConsent({ fullName: event.target.value })}
+                            />
+                          </div>
+                          <div className="col-12 col-sm-6">
+                            <label className="form-label fw-semibold" htmlFor="pr-consent-date">
+                              Date (automatically generated)
+                            </label>
+                            <input
+                              id="pr-consent-date"
+                              className="form-control"
+                              type="date"
+                              value={consent.signedDate}
+                              readOnly
+                              aria-readonly="true"
+                            />
+                          </div>
                         </div>
-                      )}
-                      <div className="col-12">
-                        <p className="form-label fw-semibold mb-2">Type of assistance provided</p>
-                        <AssistanceMultiSelect
-                          options={consentDefinition?.assistanceTypeOptions}
-                          value={consent.assistanceTypes}
-                          onChange={(assistanceTypes) =>
-                            updateConsent({ assistanceTypes })
-                          }
-                        />
-                      </div>
-                      {containsOther(consent.assistanceTypes) && (
-                        <div className="col-12">
-                          <label className="form-label fw-semibold" htmlFor="pr-assistance-other">
-                            Other assistance, please specify
-                          </label>
-                          <input
-                            id="pr-assistance-other"
-                            className="form-control"
-                            value={consent.assistanceTypeOther}
-                            onChange={(event) =>
-                              updateConsent({ assistanceTypeOther: event.target.value })
-                            }
-                          />
-                        </div>
-                      )}
-                      <div className="col-12">
-                        <label className="form-label fw-semibold" htmlFor="pr-assistance-language">
-                          Language/communication method e.g. Swahili, Hausa, Sign language etc
-                        </label>
-                        <input
-                          id="pr-assistance-language"
-                          className="form-control"
-                          value={consent.assistanceLanguage}
-                          onChange={(event) =>
-                            updateConsent({ assistanceLanguage: event.target.value })
-                          }
-                        />
-                      </div>
-                      <div className="col-12">
+
                         <ElectronicSignature
                           label="Signature"
-                          method={consent.assistantSignatureMethod}
-                          value={consent.assistantSignatureData}
+                          method={consent.signatureMethod}
+                          value={consent.signatureData}
                           onChange={(method, value) =>
-                            updateConsent({
-                              assistantSignatureMethod: method,
-                              assistantSignatureData: value
-                            })
+                            updateConsent({ signatureMethod: method, signatureData: value })
                           }
                         />
-                      </div>
-                      <div className="col-12 col-md-5">
-                        <label className="form-label fw-semibold" htmlFor="pr-assistance-date">
-                          Date (automatically generated)
-                        </label>
-                        <input
-                          id="pr-assistance-date"
-                          className="form-control"
-                          type="date"
-                          value={consent.assistanceDate}
-                          readOnly
-                        />
-                      </div>
-                    </div>
-                  </section>
-                )}
 
-                {submitMessage && (
-                  <div className="alert ss-alert-error mt-4" role="alert">{submitMessage}</div>
-                )}
+                        {submitMessage && (
+                          <div className="alert ss-alert-error mt-3" role="alert">{submitMessage}</div>
+                        )}
 
-                <button type="button" className="btn ss-btn-primary mt-4" onClick={continueFromConsent}>
-                  Continue to registration questions
-                </button>
-              </section>
-            )}
-          </article>
+                        <button type="button" className="btn ss-btn-primary mt-4" onClick={continueFromConsentDecision}>
+                          Next <i className="bi bi-arrow-right" aria-hidden="true" />
+                        </button>
+                      </div>
+                    )}
+                  </article>
+                </div>
+              )}
+            </div>
+          </div>
         </section>
       </main>
     );
@@ -1349,7 +1488,7 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
     <main id="main-content" tabIndex="-1">
       <section className="ss-form-hero">
         <div className="container">
-          <span className="ss-small-label light">Participant Registration · Page {currentStep + 1} of {progressSteps.length}</span>
+          <span className="ss-small-label light">Participant Registration · Page {currentStep} of {pageCount}</span>
           <h1 tabIndex="-1" ref={headingRef}>{currentModule?.title}</h1>
           {currentModule?.intro && <p>{currentModule.intro}</p>}
         </div>
