@@ -169,7 +169,7 @@ function ContactValue({ value }) {
 }
 
 function ConsentCountryContacts({ consent, residenceCountry, type }) {
-  const countries = getConsentContactCountries({ detectedCountry: "", residenceCountry });
+  const countries = getConsentContactCountries({ residenceCountry });
   const contacts = buildContactSnapshot(consent, countries);
   const isSafeguarding = type === "safeguarding";
 
@@ -488,10 +488,7 @@ function ContextualApplicationPage({
     }
 
     const signedDate = answers.CONSENT_SIGNED_DATE || localDateString();
-    const contactCountries = getConsentContactCountries({
-      detectedCountry: "",
-      residenceCountry,
-    });
+    const contactCountries = getConsentContactCountries({ residenceCountry });
     const snapshot = buildContactSnapshot(consentDocument, contactCountries);
 
     onAnswerChange({ questionCode: "CONSENT_VERSION" }, consentDocument.version);
