@@ -1,11 +1,34 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import { API_BASE_URL } from "../config/api";
 import { formatPathwayLabel, formatStatusLabel } from "../utils/displayLabels";
 import "./CommitteeDashboardPage.css";
+import "./CommitteeWorkspace.css";
 
 const COUNTRY_OPTIONS = ["Kenya", "Nigeria", "Ghana", "Zambia"];
+const SECTION_IDS = ["review", "waiting", "invitations", "selected", "members", "admins"];
+const COUNTRY_FILTER_KEY = "df-committee-country-filter";
+const OPEN_ASSIGNMENT_STATUSES = ["ASSIGNED", "IN_REVIEW"];
+const DELIVERY_ATTENTION_STATUSES = ["EMAIL_FAILED", "NOT_CREATED", "PENDING", "EXPIRED"];
+
+function readSectionFromHash() {
+  const id = window.location.hash.replace("#", "");
+  return SECTION_IDS.includes(id) ? id : "";
+}
+
+function readSavedCountryFilter() {
+  try {
+    return window.localStorage.getItem(COUNTRY_FILTER_KEY) || "";
+  } catch {
+    return "";
+  }
+}
+
+function withCountry(path, country) {
+  if (!country) return path;
+  return `${path}${path.includes("?") ? "&" : "?"}country=${encodeURIComponent(country)}`;
+}
 
 const EMPTY_MEMBER_FORM = {
   fullName: "",
@@ -141,20 +164,6 @@ function getApplicantSubtitle(applicant) {
   ]
     .filter(Boolean)
     .join(" · ");
-}
-
-function StatCard({ label, value, icon, tone = "blue" }) {
-  return (
-    <div className={`committee-stat-card committee-stat-${tone}`}>
-      <span aria-hidden="true">
-        <i className={`bi ${icon}`} />
-      </span>
-      <div>
-        <strong>{value}</strong>
-        <p>{label}</p>
-      </div>
-    </div>
-  );
 }
 
 function MemberWorkloadCard({ member, canManage, onToggleActive, onCreateLogin, creatingLoginForMemberId }) {
@@ -565,6 +574,7 @@ function ApplicantsWaitingPanel({ applicants, onAssignApplicant, assigningApplic
 function AssignmentCard({ assignment, members, canReassign, onSelect, onReassign, activeAssignmentId, reassigning }) {
   const [toMemberId, setToMemberId] = useState(assignment.committeeMember?.id || "");
   const [reason, setReason] = useState("");
+  const [showReassign, setShowReassign] = useState(false);
   const isActive = activeAssignmentId === assignment.id;
   const applicant = assignment.applicant;
   const test = applicant?.skillsTest;
@@ -589,7 +599,25 @@ function AssignmentCard({ assignment, members, canReassign, onSelect, onReassign
         )}
       </div>
 
-      {canReassign && (
+      <div className="cw-assignment-actions">
+        <button type="button" className="btn committee-small-action" onClick={() => onSelect(assignment)}>
+          <i className="bi bi-file-earmark-text" aria-hidden="true" />
+          {assignment.status === "COMPLETED" ? " View review" : " Open review"}
+        </button>
+        {canReassign && assignment.status !== "COMPLETED" && (
+          <button
+            type="button"
+            className="cw-link-button"
+            aria-expanded={showReassign}
+            onClick={() => setShowReassign((current) => !current)}
+          >
+            <i className={`bi ${showReassign ? "bi-chevron-up" : "bi-arrow-left-right"}`} aria-hidden="true" />
+            {showReassign ? " Cancel reassignment" : " Reassign"}
+          </button>
+        )}
+      </div>
+
+      {canReassign && showReassign && (
         <div className="committee-reassign-row">
           <select aria-label="Reassign to committee member" value={toMemberId} onChange={(event) => setToMemberId(event.target.value)}>
             <option value="">Reassign to...</option>
@@ -1048,7 +1076,11 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
   const [resendingRegistrationId, setResendingRegistrationId] = useState("");
   const [skillsEmailDelivery, setSkillsEmailDelivery] = useState({ records: [], totals: {}, note: "" });
   const [sendingTestEmailReference, setSendingTestEmailReference] = useState("");
-
+  const [activeSection, setActiveSection] = useState(readSectionFromHash);
+  const [countryFilter, setCountryFilter] = useState(readSavedCountryFilter);
+  const [showAddMember, setShowAddMember] = useState(false);
+  const sectionRef = useRef(null);
+  const lastOpenedTile = useRef("");
 
   const userRole = staffUser?.role || "";
   const isSuperAdmin = userRole === "ADMIN";
@@ -1058,6 +1090,10 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
   const canViewUnassignedApplicants = ["ADMIN", "COUNTRY_ADMIN", "COMMITTEE_CHAIRPERSON", "VIEWER"].includes(userRole);
   const canViewSelectedReport = ["ADMIN", "COMMITTEE_CHAIRPERSON"].includes(userRole);
   const canReassignApplicants = canManageCommittee;
+  const canViewDelivery = ["ADMIN", "COUNTRY_ADMIN"].includes(userRole);
+  // Only super admins work across countries; everyone else is fixed to their own on the server.
+  const canFilterByCountry = isSuperAdmin;
+  const scopedCountry = canFilterByCountry ? countryFilter : "";
 
   const selectedAssignmentFromList = useMemo(() => {
     if (!selectedAssignment?.id) return selectedAssignment;
@@ -1084,14 +1120,15 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
       if (filterMemberId && !["COMMITTEE_MEMBER"].includes(userRole)) query.set("memberId", filterMemberId);
       if (filterStatus) query.set("status", filterStatus);
       if (search.trim()) query.set("search", search.trim());
+      if (scopedCountry) query.set("country", scopedCountry);
 
       const requests = [
-        axios.get(`${API_BASE_URL}/api/committee/overview`),
+        axios.get(withCountry(`${API_BASE_URL}/api/committee/overview`, scopedCountry)),
         axios.get(`${API_BASE_URL}/api/committee/assignments?${query.toString()}`),
       ];
 
       if (canViewUnassignedApplicants) {
-        requests.push(axios.get(`${API_BASE_URL}/api/committee/unassigned-ready`));
+        requests.push(axios.get(withCountry(`${API_BASE_URL}/api/committee/unassigned-ready`, scopedCountry)));
       }
 
       const [overviewResponse, assignmentsResponse, unassignedResponse] = await Promise.all(requests);
@@ -1104,7 +1141,7 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
       }
 
       if (canViewSelectedReport) {
-        selectedReportResponse = await axios.get(`${API_BASE_URL}/api/committee/selected-report`);
+        selectedReportResponse = await axios.get(withCountry(`${API_BASE_URL}/api/committee/selected-report`, scopedCountry));
       }
 
       setOverview({
@@ -1115,11 +1152,11 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
       setMembers(overviewResponse.data?.members || []);
       setAssignments(assignmentsResponse.data?.assignments || []);
       setUnassignedApplicants(canViewUnassignedApplicants ? (unassignedResponse?.data?.applicants || []) : []);
-      setCountryAdmins(staffUsers.filter((user) => user.role === "COUNTRY_ADMIN"));
-      if (["ADMIN", "COUNTRY_ADMIN"].includes(userRole)) {
+      setCountryAdmins(staffUsers.filter((user) => user.role === "COUNTRY_ADMIN" && (!scopedCountry || user.country === scopedCountry)));
+      if (canViewDelivery) {
         try {
           const deliveryResponse = await axios.get(
-            `${API_BASE_URL}/api/basic-skills-test/invitations/delivery-report`
+            withCountry(`${API_BASE_URL}/api/basic-skills-test/invitations/delivery-report`, scopedCountry)
           );
           setSkillsEmailDelivery(deliveryResponse.data || { records: [], totals: {}, note: "" });
         } catch (deliveryError) {
@@ -1141,7 +1178,54 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
   useEffect(() => {
     loadCommitteeData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scopedCountry]);
+
+  useEffect(() => {
+    function handleHashChange() {
+      setActiveSection(readSectionFromHash());
+    }
+    window.addEventListener("popstate", handleHashChange);
+    window.addEventListener("hashchange", handleHashChange);
+    return () => {
+      window.removeEventListener("popstate", handleHashChange);
+      window.removeEventListener("hashchange", handleHashChange);
+    };
   }, []);
+
+  // Opening a workspace moves focus into it; going back returns focus to the tile that opened it.
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      if (activeSection) {
+        sectionRef.current?.focus({ preventScroll: true });
+        sectionRef.current?.scrollIntoView({ block: "start", behavior: "instant" });
+      } else if (lastOpenedTile.current) {
+        document.getElementById(`committee-tile-${lastOpenedTile.current}`)?.focus();
+      }
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [activeSection]);
+
+  function openSection(id) {
+    lastOpenedTile.current = id;
+    setActiveSection(id);
+    window.history.pushState(null, "", `${window.location.pathname}${window.location.search}#${id}`);
+  }
+
+  function showAllSections() {
+    setActiveSection("");
+    window.history.pushState(null, "", `${window.location.pathname}${window.location.search}`);
+  }
+
+  function handleCountryFilterChange(country) {
+    setCountryFilter(country);
+    setFilterMemberId("");
+    try {
+      if (country) window.localStorage.setItem(COUNTRY_FILTER_KEY, country);
+      else window.localStorage.removeItem(COUNTRY_FILTER_KEY);
+    } catch {
+      // The filter still works for this visit without storage.
+    }
+  }
   useEffect(() => {
     if (!selectedAssignment?.id) return undefined;
 
@@ -1281,7 +1365,10 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
     setError("");
 
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/committee/auto-assign`);
+      const response = await axios.post(
+        `${API_BASE_URL}/api/committee/auto-assign`,
+        scopedCountry ? { country: scopedCountry } : {}
+      );
       setMessage(response.data?.message || "Automatic assignment completed.");
       await loadCommitteeData();
     } catch (assignError) {
@@ -1426,6 +1513,90 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
     }
   }
 
+  const plural = (count, one, many) => `${count} ${count === 1 ? one : many}`;
+  const openReviewCount = userRole === "COMMITTEE_MEMBER"
+    ? assignments.filter((assignment) => OPEN_ASSIGNMENT_STATUSES.includes(assignment.status)).length
+    : overview?.assignedPending || 0;
+  const completedCount = userRole === "COMMITTEE_MEMBER"
+    ? assignments.filter((assignment) => assignment.status === "COMPLETED").length
+    : overview?.completedReviews || 0;
+  const deliveryRecords = (skillsEmailDelivery.records || []).filter((row) => row.status !== "TEST_COMPLETED");
+  const deliveryAttention = deliveryRecords.filter((row) => DELIVERY_ATTENTION_STATUSES.includes(row.status)).length;
+  const reviewsInProgress = members.reduce((sum, member) => sum + (member.workload?.pending || 0), 0);
+  const registrationsOutstanding = selectedReport.rows.filter(
+    (row) => row.participantRegistration?.applicable && row.participantRegistration.status !== "SUBMITTED"
+  ).length;
+  const scopeLabel = canFilterByCountry
+    ? countryFilter ? `Showing ${countryFilter}` : "Showing all countries"
+    : currentUserCountry ? `Showing ${currentUserCountry}` : "Showing your assigned applicants";
+
+  const sections = [
+    {
+      id: "review",
+      title: userRole === "COMMITTEE_MEMBER" ? "My reviews" : "Review board",
+      icon: "bi-clipboard2-check",
+      tone: "teal",
+      count: openReviewCount,
+      caption: `${plural(openReviewCount, "review", "reviews")} open · ${completedCount} completed`,
+      description: "Open assigned applications, record decisions and reassign reviews.",
+      visible: true,
+    },
+    {
+      id: "waiting",
+      title: "Waiting for a reviewer",
+      icon: "bi-hourglass-split",
+      tone: "orange",
+      count: unassignedApplicants.length,
+      caption: unassignedApplicants.length ? "Completed the test, no reviewer yet" : "Everyone has a reviewer",
+      description: "Assign applicants who finished the Basic IT Skills Test to a committee member.",
+      attention: unassignedApplicants.length > 0,
+      visible: canViewUnassignedApplicants && userRole !== "VIEWER",
+    },
+    {
+      id: "invitations",
+      title: "Test invitations",
+      icon: "bi-envelope-paper",
+      tone: "red",
+      count: deliveryAttention,
+      caption: deliveryAttention ? `${plural(deliveryAttention, "email needs", "emails need")} attention` : `${deliveryRecords.length} waiting on applicants`,
+      description: "Check Basic IT Skills Test emails and resend failed or expired links.",
+      attention: deliveryAttention > 0,
+      visible: canViewDelivery,
+    },
+    {
+      id: "selected",
+      title: "Selected participants",
+      icon: "bi-patch-check",
+      tone: "green",
+      count: selectedReport.rows.length,
+      caption: registrationsOutstanding ? `${registrationsOutstanding} still to register` : "Ready for verification",
+      description: "Verify selected participants, export the list and resend registration links.",
+      visible: canViewSelectedReport,
+    },
+    {
+      id: "members",
+      title: "Committee members",
+      icon: "bi-people",
+      tone: "yellow",
+      count: overview?.activeMembers || 0,
+      caption: `Active · ${plural(reviewsInProgress, "review", "reviews")} in progress`,
+      description: canManageCommittee ? "See each member's workload, add members and manage logins." : "See each member's workload.",
+      visible: true,
+    },
+    {
+      id: "admins",
+      title: "Country admins",
+      icon: "bi-person-gear",
+      tone: "ink",
+      count: countryAdmins.length,
+      caption: `${plural(countryAdmins.length, "country admin", "country admins")} set up`,
+      description: "Add the admins who manage committees in each country.",
+      visible: isSuperAdmin,
+    },
+  ];
+  const visibleSections = sections.filter((section) => section.visible);
+  const currentSection = visibleSections.find((section) => section.id === activeSection) || null;
+
   return (
     <main id="main-content" className="page committee-page">
       <section className="committee-hero">
@@ -1434,9 +1605,9 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
             <i className="bi bi-arrow-left" aria-hidden="true" /> Back to portal
           </button>
           <p className="eyebrow">Internal review workspace</p>
-          <h1>Committee Review & Assignment Board</h1>
+          <h1>Committee workspace</h1>
           <p>
-            Add committee members, monitor workload, automatically assign applicants, reassign reviews, and record committee decisions.
+            Review applications, balance the committee's workload and follow up on participants, all in one place.
           </p>
         </div>
         <div className="committee-hero-card">
@@ -1450,183 +1621,303 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
       </section>
 
       <section className="committee-shell">
-        {message && <div className="alert alert-success mb-3">{message}</div>}
-        {error && <div className="alert alert-error mb-3">{error}</div>}
+        {message && <div className="alert alert-success mb-3" role="status">{message}</div>}
+        {error && <div className="alert alert-error mb-3" role="alert">{error}</div>}
 
-        <div className="committee-stat-grid">
-          <StatCard label="Active members" value={overview?.activeMembers || 0} icon="bi-people" />
-          <StatCard label="Ready for review" value={overview?.readyForReview || 0} icon="bi-person-check" tone="green" />
-          <StatCard label="Unassigned" value={overview?.unassignedReadyForReview || 0} icon="bi-diagram-3" tone="orange" />
-          <StatCard label="Completed reviews" value={overview?.completedReviews || 0} icon="bi-clipboard2-check" tone="purple" />
-        </div>
-
-        <div className="committee-action-bar">
-          <div>
-            <h2>Chairperson oversight</h2>
-            <p>Use automatic assignment to distribute new applicants to the active member with the lightest workload within the same country.</p>
-          </div>
-          <div className="d-flex flex-wrap gap-2">
-            <button type="button" className="btn committee-secondary-action" onClick={loadCommitteeData} disabled={loading}>
-              <i className="bi bi-arrow-clockwise" aria-hidden="true" /> Refresh
+        <div className="cw-toolbar">
+          {currentSection ? (
+            <button type="button" className="cw-back" onClick={showAllSections}>
+              <i className="bi bi-grid-3x2-gap" aria-hidden="true" /> All workspaces
             </button>
-            {canManageCommittee && (
-              <button type="button" className="btn committee-primary-action" onClick={handleAutoAssign} disabled={assigning}>
-                <i className="bi bi-magic" aria-hidden="true" /> {assigning ? "Assigning..." : "Auto-assign ready applicants"}
-              </button>
-            )}
-          </div>
-        </div>
+          ) : (
+            <div>
+              <h2 className="cw-toolbar-title">Workspaces</h2>
+              <p className="cw-toolbar-sub">{scopeLabel}. Choose a tile to open it.</p>
+            </div>
+          )}
 
-        {unassignedApplicants.length > 0 && (
-          <div className="committee-unassigned-strip">
-            <i className="bi bi-info-circle" aria-hidden="true" />
-            <span>
-              {unassignedApplicants.length} applicant{unassignedApplicants.length === 1 ? "" : "s"} completed the test and still {unassignedApplicants.length === 1 ? "needs" : "need"} to be assigned. They are listed below under <strong>Applicants who need to be assigned</strong>.
-            </span>
-          </div>
-        )}
-
-        <ApplicantsWaitingPanel
-          applicants={unassignedApplicants}
-          onAssignApplicant={handleAssignApplicant}
-          assigningApplicantId={assigningApplicantId}
-          onAutoAssignAll={handleAutoAssign}
-          assigningAll={assigning}
-        />
-
-        {["ADMIN", "COUNTRY_ADMIN"].includes(userRole) && (
-          <SkillsTestDeliveryPanel
-            delivery={skillsEmailDelivery}
-            onResend={handleResendSkillsTestInvitation}
-            sendingReference={sendingTestEmailReference}
-          />
-        )}
-
-        {canViewSelectedReport && (
-          <SelectedParticipantsReport
-            rows={selectedReport.rows}
-            scope={selectedReport.reportScope}
-            generatedAt={selectedReport.generatedAt}
-            onResendRegistration={handleResendParticipantRegistration}
-            resendingRegistrationId={resendingRegistrationId}
-          />
-        )}
-
-        <div className="committee-layout">
-          <div className="committee-management-grid">
-            {isSuperAdmin && (
-              <AddCountryAdminForm
-                adminForm={countryAdminForm}
-                onChange={(field, value) => setCountryAdminForm((current) => ({ ...current, [field]: value }))}
-                onSubmit={handleAddCountryAdmin}
-                submitting={addingCountryAdmin}
-                countries={countries}
-                countryAdmins={countryAdmins}
-              />
-            )}
-
-            {canManageCommittee && (
-              <AddMemberForm
-                memberForm={memberForm}
-                onChange={(field, value) => setMemberForm((current) => ({ ...current, [field]: value }))}
-                onSubmit={handleAddMember}
-                submitting={addingMember}
-                countries={countries}
-                canChooseCountry={isSuperAdmin}
-                currentUserCountry={currentUserCountry}
-              />
-            )}
-
-            <section className="committee-section-card committee-workload-card">
-              <div className="committee-section-header">
-                <div>
-                  <span className="ss-small-label dark">Members</span>
-                  <h2>Committee workload</h2>
-                  <p>Monitor active members and keep assignments balanced.</p>
-                </div>
-              </div>
-              <div className="committee-member-list">
-                {members.length === 0 ? (
-                  <p className="committee-empty-text">No committee members have been added yet.</p>
-                ) : (
-                  members.map((member) => (
-                    <MemberWorkloadCard
-                      key={member.id}
-                      member={member}
-                      canManage={canManageCommittee}
-                      onToggleActive={handleToggleMember}
-                      onCreateLogin={handleCreateMemberLogin}
-                      creatingLoginForMemberId={creatingLoginForMemberId}
-                    />
-                  ))
-                )}
-              </div>
-            </section>
-          </div>
-
-          <section className="committee-section-card committee-board-card">
-            <div className="committee-section-header with-filters">
-              <div>
-                <span className="ss-small-label dark">Assignment board</span>
-                <h2>Applicants assigned for review</h2>
-                <p>Select an applicant only when you are ready to review their details.</p>
-              </div>
-              <div className="committee-filter-grid">
-                <input
-                  type="search"
-                  aria-label="Search assignments"
-                  value={search}
-                  onChange={(event) => setSearch(event.target.value)}
-                  placeholder={isSuperAdmin ? "Search name, ID, phone, or reference" : "Search anonymous ID, reference, pathway, or status"}
-                />
-                {userRole !== "COMMITTEE_MEMBER" && (
-                  <select aria-label="Filter by committee member" value={filterMemberId} onChange={(event) => setFilterMemberId(event.target.value)}>
-                    <option value="">All members</option>
-                    {members.map((member) => (
-                      <option key={member.id} value={member.id}>{member.fullName}</option>
+          <div className="cw-toolbar-actions">
+            {canFilterByCountry && (
+              <label className="cw-country-filter">
+                <span>Country</span>
+                <span className="cw-select">
+                  <select
+                    value={countryFilter}
+                    onChange={(event) => handleCountryFilterChange(event.target.value)}
+                  >
+                    <option value="">All countries</option>
+                    {countries.map((country) => (
+                      <option key={country} value={country}>{country}</option>
                     ))}
                   </select>
-                )}
-                <select aria-label="Filter by review status" value={filterStatus} onChange={(event) => setFilterStatus(event.target.value)}>
-                  <option value="">All statuses</option>
-                  <option value="ASSIGNED">Assigned</option>
-                  <option value="IN_REVIEW">In review</option>
-                  <option value="COMPLETED">Completed</option>
-                </select>
-                <button type="button" className="btn committee-small-action" onClick={loadCommitteeData}>
-                  Apply
-                </button>
-              </div>
-            </div>
-
-            <div className="committee-board-grid">
-              <div className="committee-assignment-list">
-                {assignments.length === 0 ? (
-                  <div className="committee-empty-state">
-                    <i className="bi bi-inboxes" aria-hidden="true" />
-                    <h3>No assignments yet</h3>
-                    <p>Add committee members, then run auto-assignment after applicants complete the Basic IT Skills Test.</p>
-                  </div>
-                ) : (
-                  assignments.map((assignment) => (
-                    <AssignmentCard
-                      key={assignment.id}
-                      assignment={assignment}
-                      members={members}
-                      canReassign={canReassignApplicants}
-                      activeAssignmentId={selectedAssignmentFromList?.id}
-                      reassigning={reassigning}
-                      onSelect={openReviewModal}
-                      onReassign={handleReassign}
-                    />
-                  ))
-                )}
-              </div>
-
-
-            </div>
-          </section>
+                  <i className="bi bi-chevron-down" aria-hidden="true" />
+                </span>
+              </label>
+            )}
+            <button
+              type="button"
+              className="btn committee-secondary-action"
+              onClick={loadCommitteeData}
+              disabled={loading}
+            >
+              <i className={`bi bi-arrow-clockwise ${loading ? "cw-spin" : ""}`} aria-hidden="true" />
+              {loading ? " Refreshing..." : " Refresh"}
+            </button>
+          </div>
         </div>
+
+        {!currentSection ? (
+          <div className="cw-tile-grid">
+            {visibleSections.map((section) => (
+              <button
+                key={section.id}
+                id={`committee-tile-${section.id}`}
+                type="button"
+                className={`cw-tile cw-tone-${section.tone} ${section.attention ? "needs-attention" : ""}`}
+                onClick={() => openSection(section.id)}
+              >
+                <span className="cw-tile-head">
+                  <span className="cw-tile-icon" aria-hidden="true">
+                    <i className={`bi ${section.icon}`} />
+                  </span>
+                  {section.attention && (
+                    <span className="cw-tile-flag">
+                      <i className="bi bi-exclamation-circle-fill" aria-hidden="true" /> Needs action
+                    </span>
+                  )}
+                </span>
+                <span className="cw-tile-count">{overview ? section.count : "–"}</span>
+                <span className="cw-tile-title">{section.title}</span>
+                <span className="cw-tile-caption">{section.caption}</span>
+                <span className="cw-tile-description">{section.description}</span>
+                <span className="cw-tile-open" aria-hidden="true">
+                  Open <i className="bi bi-arrow-right" />
+                </span>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <>
+            <nav className="cw-tabs" aria-label="Committee workspaces">
+              {visibleSections.map((section) => (
+                <button
+                  key={section.id}
+                  type="button"
+                  className={`cw-tab ${section.id === currentSection.id ? "active" : ""}`}
+                  aria-current={section.id === currentSection.id ? "page" : undefined}
+                  onClick={() => openSection(section.id)}
+                >
+                  <i className={`bi ${section.icon}`} aria-hidden="true" />
+                  <span>{section.title}</span>
+                  <span className={`cw-tab-count ${section.attention ? "attention" : ""}`}>{section.count}</span>
+                </button>
+              ))}
+            </nav>
+
+            <section
+              ref={sectionRef}
+              tabIndex={-1}
+              className="cw-section"
+              aria-label={currentSection.title}
+            >
+              {currentSection.id === "review" && (
+                <>
+                  {canManageCommittee && unassignedApplicants.length > 0 && (
+                    <div className="committee-unassigned-strip">
+                      <i className="bi bi-info-circle" aria-hidden="true" />
+                      <span>
+                        {unassignedApplicants.length} applicant{unassignedApplicants.length === 1 ? " has" : "s have"} completed the test and still {unassignedApplicants.length === 1 ? "needs" : "need"} a reviewer.
+                      </span>
+                      <button type="button" className="btn committee-small-action" onClick={() => openSection("waiting")}>
+                        View waiting list
+                      </button>
+                    </div>
+                  )}
+
+                  <section className="committee-section-card committee-board-card">
+                    <div className="committee-section-header with-filters">
+                      <div>
+                        <span className="ss-small-label dark">Assignment board</span>
+                        <h2>Applicants assigned for review</h2>
+                        <p>Open an applicant only when you are ready to review their details.</p>
+                      </div>
+                      {canManageCommittee && (
+                        <button type="button" className="btn committee-primary-action" onClick={handleAutoAssign} disabled={assigning}>
+                          <i className="bi bi-magic" aria-hidden="true" /> {assigning ? "Assigning..." : "Auto-assign ready applicants"}
+                        </button>
+                      )}
+                    </div>
+
+                    <form
+                      className="committee-filter-grid cw-filter-bar"
+                      onSubmit={(event) => {
+                        event.preventDefault();
+                        loadCommitteeData();
+                      }}
+                    >
+                      <input
+                        type="search"
+                        aria-label="Search assignments"
+                        value={search}
+                        onChange={(event) => setSearch(event.target.value)}
+                        placeholder={isSuperAdmin ? "Search name, ID, phone, or reference" : "Search anonymous ID, reference, pathway, or status"}
+                      />
+                      {userRole !== "COMMITTEE_MEMBER" && (
+                        <select aria-label="Filter by committee member" value={filterMemberId} onChange={(event) => setFilterMemberId(event.target.value)}>
+                          <option value="">All members</option>
+                          {members.map((member) => (
+                            <option key={member.id} value={member.id}>{member.fullName}</option>
+                          ))}
+                        </select>
+                      )}
+                      <select aria-label="Filter by review status" value={filterStatus} onChange={(event) => setFilterStatus(event.target.value)}>
+                        <option value="">All statuses</option>
+                        <option value="ASSIGNED">Assigned</option>
+                        <option value="IN_REVIEW">In review</option>
+                        <option value="COMPLETED">Completed</option>
+                      </select>
+                      <button type="submit" className="btn committee-small-action">
+                        <i className="bi bi-funnel" aria-hidden="true" /> Apply
+                      </button>
+                    </form>
+
+                    <div className="committee-assignment-list">
+                      {assignments.length === 0 ? (
+                        <div className="committee-empty-state">
+                          <i className="bi bi-inboxes" aria-hidden="true" />
+                          <h3>No assignments yet</h3>
+                          <p>Add committee members, then run auto-assignment after applicants complete the Basic IT Skills Test.</p>
+                        </div>
+                      ) : (
+                        assignments.map((assignment) => (
+                          <AssignmentCard
+                            key={assignment.id}
+                            assignment={assignment}
+                            members={members}
+                            canReassign={canReassignApplicants}
+                            activeAssignmentId={selectedAssignmentFromList?.id}
+                            reassigning={reassigning}
+                            onSelect={openReviewModal}
+                            onReassign={handleReassign}
+                          />
+                        ))
+                      )}
+                    </div>
+                  </section>
+                </>
+              )}
+
+              {currentSection.id === "waiting" && (
+                unassignedApplicants.length > 0 ? (
+                  <ApplicantsWaitingPanel
+                    applicants={unassignedApplicants}
+                    onAssignApplicant={handleAssignApplicant}
+                    assigningApplicantId={assigningApplicantId}
+                    onAutoAssignAll={handleAutoAssign}
+                    assigningAll={assigning}
+                  />
+                ) : (
+                  <section className="committee-section-card">
+                    <div className="committee-empty-state">
+                      <i className="bi bi-check2-circle" aria-hidden="true" />
+                      <h2>Nobody is waiting</h2>
+                      <p>Every applicant who has completed the Basic IT Skills Test has a reviewer.</p>
+                    </div>
+                  </section>
+                )
+              )}
+
+              {currentSection.id === "invitations" && (
+                <SkillsTestDeliveryPanel
+                  delivery={skillsEmailDelivery}
+                  onResend={handleResendSkillsTestInvitation}
+                  sendingReference={sendingTestEmailReference}
+                />
+              )}
+
+              {currentSection.id === "selected" && (
+                <SelectedParticipantsReport
+                  rows={selectedReport.rows}
+                  scope={selectedReport.reportScope}
+                  generatedAt={selectedReport.generatedAt}
+                  onResendRegistration={handleResendParticipantRegistration}
+                  resendingRegistrationId={resendingRegistrationId}
+                />
+              )}
+
+              {currentSection.id === "members" && (
+                <section className="committee-section-card committee-workload-card">
+                  <div className="committee-section-header with-filters">
+                    <div>
+                      <span className="ss-small-label dark">Members</span>
+                      <h2>Committee workload</h2>
+                      <p>Monitor active members and keep assignments balanced.</p>
+                    </div>
+                    {canManageCommittee && (
+                      <button
+                        type="button"
+                        className={`btn ${showAddMember ? "committee-secondary-action" : "committee-primary-action"}`}
+                        aria-expanded={showAddMember}
+                        aria-controls="committee-add-member"
+                        onClick={() => {
+                          if (!showAddMember && isSuperAdmin && countryFilter && !memberForm.country) {
+                            setMemberForm((current) => ({ ...current, country: countryFilter }));
+                          }
+                          setShowAddMember((current) => !current);
+                        }}
+                      >
+                        <i className={`bi ${showAddMember ? "bi-x-lg" : "bi-person-plus"}`} aria-hidden="true" />
+                        {showAddMember ? " Close form" : " Add committee member"}
+                      </button>
+                    )}
+                  </div>
+
+                  {canManageCommittee && showAddMember && (
+                    <div id="committee-add-member" className="cw-inline-form">
+                      <AddMemberForm
+                        memberForm={memberForm}
+                        onChange={(field, value) => setMemberForm((current) => ({ ...current, [field]: value }))}
+                        onSubmit={handleAddMember}
+                        submitting={addingMember}
+                        countries={countries}
+                        canChooseCountry={isSuperAdmin}
+                        currentUserCountry={currentUserCountry}
+                      />
+                    </div>
+                  )}
+
+                  <div className="committee-member-list">
+                    {members.length === 0 ? (
+                      <p className="committee-empty-text">No committee members have been added yet.</p>
+                    ) : (
+                      members.map((member) => (
+                        <MemberWorkloadCard
+                          key={member.id}
+                          member={member}
+                          canManage={canManageCommittee}
+                          onToggleActive={handleToggleMember}
+                          onCreateLogin={handleCreateMemberLogin}
+                          creatingLoginForMemberId={creatingLoginForMemberId}
+                        />
+                      ))
+                    )}
+                  </div>
+                </section>
+              )}
+
+              {currentSection.id === "admins" && (
+                <AddCountryAdminForm
+                  adminForm={countryAdminForm}
+                  onChange={(field, value) => setCountryAdminForm((current) => ({ ...current, [field]: value }))}
+                  onSubmit={handleAddCountryAdmin}
+                  submitting={addingCountryAdmin}
+                  countries={countries}
+                  countryAdmins={countryAdmins}
+                />
+              )}
+            </section>
+          </>
+        )}
 
         {selectedAssignmentFromList && (
           <div

@@ -613,21 +613,24 @@ function ContextualApplicationPage({
                 <label className="visually-hidden" htmlFor="country-of-residence">
                   Country of residence
                 </label>
-                <select
-                  id="country-of-residence"
-                  className="form-select form-select-lg"
-                  value={residenceCountry}
-                  onChange={(event) => {
-                    onAnswerChange({ questionCode: "COUNTRY" }, event.target.value);
-                    setEntryError("");
-                  }}
-                  aria-required="true"
-                >
-                  <option value="">Country of residence</option>
-                  {PROGRAMME_COUNTRIES.map((country) => (
-                    <option key={country} value={country}>{country}</option>
-                  ))}
-                </select>
+                <div className="ss-select-with-icon">
+                  <select
+                    id="country-of-residence"
+                    className="form-select form-select-lg"
+                    value={residenceCountry}
+                    onChange={(event) => {
+                      onAnswerChange({ questionCode: "COUNTRY" }, event.target.value);
+                      setEntryError("");
+                    }}
+                    aria-required="true"
+                  >
+                    <option value="">Country of residence</option>
+                    {PROGRAMME_COUNTRIES.map((country) => (
+                      <option key={country} value={country}>{country}</option>
+                    ))}
+                  </select>
+                  <i className="bi bi-chevron-down" aria-hidden="true" />
+                </div>
               </div>
 
               {entryError && (

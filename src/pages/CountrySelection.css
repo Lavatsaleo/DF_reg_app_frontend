@@ -30,6 +30,30 @@
   font-size: 1.125rem;
   padding-left: 1rem;
 }
+/* A clear chevron so the field reads as a dropdown; the browser's own arrow is hidden. */
+.ss-select-with-icon {
+  position: relative;
+}
+.ss-select-with-icon .form-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: none !important;
+  padding-right: 3.25rem !important;
+  cursor: pointer;
+}
+.ss-select-with-icon > .bi {
+  position: absolute;
+  top: 50%;
+  right: 1.1rem;
+  transform: translateY(-50%);
+  font-size: 1.15rem;
+  color: #111111;
+  pointer-events: none;
+  -webkit-text-stroke: 0.5px currentColor;
+}
+@media (forced-colors: active) {
+  .ss-select-with-icon > .bi { color: CanvasText; }
+}
 .ss-country-page.df-country-simple .ss-country-actions {
   width: min(100%, 465px);
   margin: 1.5rem auto 0;
