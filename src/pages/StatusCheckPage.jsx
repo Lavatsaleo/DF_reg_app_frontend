@@ -200,15 +200,29 @@ function StatusResultCard({ result }) {
         </div>
       </div>
 
+      {result?.limitedView && (
+        <div className="ss-status-note" role="note">
+          <i className="bi bi-shield-lock" aria-hidden="true" />
+          <p>
+            For your privacy, a search by mobile number shows your progress only. Search with the application
+            reference from your confirmation email (it starts with APP-DF) to see your full details.
+          </p>
+        </div>
+      )}
+
       <div className="ss-status-summary-grid" role="list">
-        <div role="listitem">
-          <span>Application reference</span>
-          <strong>{reference || "Not available"}</strong>
-        </div>
-        <div role="listitem">
-          <span>Unique participant ID</span>
-          <strong>{result?.participantCode || "Not available"}</strong>
-        </div>
+        {!result?.limitedView && (
+          <>
+            <div role="listitem">
+              <span>Application reference</span>
+              <strong>{reference || "Not available"}</strong>
+            </div>
+            <div role="listitem">
+              <span>Unique participant ID</span>
+              <strong>{result?.participantCode || "Not available"}</strong>
+            </div>
+          </>
+        )}
         <div role="listitem">
           <span>Application review</span>
           <strong>{getScreeningLabel(result)}</strong>
@@ -241,7 +255,9 @@ function StatusResultCard({ result }) {
         <div className="ss-status-note" role="note">
           <i className="bi bi-journal-check" aria-hidden="true" />
           <p>
-            Basic IT skills test submitted. Score: {result.skillsTest.score}/{result.skillsTest.maxScore} ({result.skillsTest.percentage}%).
+            Basic IT skills test submitted.
+            {result.skillsTest.score !== undefined &&
+              ` Score: ${result.skillsTest.score}/${result.skillsTest.maxScore} (${result.skillsTest.percentage}%).`}
           </p>
         </div>
       )}

@@ -112,7 +112,9 @@ function getParticipantReportFileName(scope) {
 }
 
 function csvValue(value) {
-  const text = value === null || value === undefined ? "" : String(value);
+  let text = value === null || value === undefined ? "" : String(value);
+  // Applicant-entered text starting with = + - @ would run as a formula in Excel; prefix it so it stays text.
+  if (/^[=+\-@\t\r]/.test(text)) text = `'${text}`;
   return `"${text.replace(/"/g, '""')}"`;
 }
 
@@ -237,10 +239,10 @@ function MemberWorkloadCard({ member, canManage, onToggleActive, onCreateLogin, 
             <input
               type="password"
               aria-label={`Temporary password for ${member.fullName}`}
-              minLength="8"
+              minLength="10"
               value={temporaryPassword}
               onChange={(event) => setTemporaryPassword(event.target.value)}
-              placeholder="Temporary password, minimum 8 characters"
+              placeholder="Temporary password, minimum 10 characters"
               required
             />
             <button
@@ -322,10 +324,10 @@ function AddCountryAdminForm({ adminForm, onChange, onSubmit, submitting, countr
           Temporary password
           <input
             type="password"
-            minLength="8"
+            minLength="10"
             value={adminForm.password}
             onChange={(event) => onChange("password", event.target.value)}
-            placeholder="Minimum 8 characters"
+            placeholder="Minimum 10 characters"
             required
           />
         </label>
@@ -440,10 +442,10 @@ function AddMemberForm({ memberForm, onChange, onSubmit, submitting, countries, 
           Temporary password
           <input
             type="password"
-            minLength="8"
+            minLength="10"
             value={memberForm.temporaryPassword}
             onChange={(event) => onChange("temporaryPassword", event.target.value)}
-            placeholder="Minimum 8 characters"
+            placeholder="Minimum 10 characters"
             required
           />
         </label>

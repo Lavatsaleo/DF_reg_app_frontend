@@ -15,8 +15,8 @@ function ResetPasswordPage({ token, onBackToSignIn }) {
     setMessage("");
     setError("");
 
-    if (password.length < 8) {
-      setError("Use a password with at least 8 characters.");
+    if (password.length < 10) {
+      setError("Use a password with at least 10 characters.");
       return;
     }
 

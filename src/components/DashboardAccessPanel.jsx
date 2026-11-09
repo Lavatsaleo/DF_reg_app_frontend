@@ -31,7 +31,7 @@ export default function DashboardAccessPanel({ token, onSessionExpired }) {
     <form onSubmit={createUser} className="df-dashboard-user-form">
       <label>Full name<input className="form-control" required value={form.fullName} onChange={e => setForm({ ...form, fullName: e.target.value })} autoComplete="name" /></label>
       <label>Email<input className="form-control" type="email" required value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} autoComplete="off" /></label>
-      <label>Temporary password<input className="form-control" type="password" minLength={8} required value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} autoComplete="new-password" /></label>
+      <label>Temporary password<input className="form-control" type="password" minLength={10} required value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} autoComplete="new-password" /></label>
       <label>Country access<select className="form-select" value={form.country} onChange={e => setForm({ ...form, country: e.target.value })}><option value="">All four countries</option>{['Kenya', 'Nigeria', 'Ghana', 'Zambia'].map(c => <option key={c}>{c}</option>)}</select></label>
       <button type="submit" className="btn ss-btn-primary" disabled={busy}>{busy ? 'Creating…' : 'Create dashboard user'}</button>
     </form>
