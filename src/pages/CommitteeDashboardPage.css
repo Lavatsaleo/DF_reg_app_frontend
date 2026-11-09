@@ -243,7 +243,7 @@
 
 .committee-page .ss-small-label.dark {
   color: #111827;
-  letter-spacing: 0.15em;
+  letter-spacing: 0.01em;
 }
 
 .committee-unassigned-strip {
@@ -422,7 +422,7 @@
 }
 
 .committee-danger-ghost {
-  color: var(--ss-danger);
+  color: var(--df-red-text);
   background: #fef2f2;
   border-color: #fecaca;
 }
@@ -574,7 +574,7 @@
   color: var(--ss-muted);
   font-size: 0.82rem;
   font-weight: 900;
-  text-transform: uppercase;
+  text-transform: none;
   letter-spacing: 0.04em;
 }
 
@@ -984,7 +984,7 @@
   padding: 0.35rem 0.7rem;
   font-size: 0.78rem;
   font-weight: 800;
-  text-transform: uppercase;
+  text-transform: none;
   letter-spacing: 0.03em;
 }
 
@@ -1209,8 +1209,8 @@
   color: #64748b;
   font-size: 0.78rem;
   font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  text-transform: none;
+  letter-spacing: 0.01em;
 }
 
 .staff-login-card-header h2 {
@@ -1402,7 +1402,7 @@
   font-size: 0.78rem;
   font-weight: 950;
   letter-spacing: 0.04em;
-  text-transform: uppercase;
+  text-transform: none;
   white-space: nowrap;
 }
 
@@ -1744,4 +1744,28 @@
 
 .committee-review-dialog .committee-panel-header h2 {
   overflow-wrap: anywhere;
+}
+
+/* The decision choices are a labelled group of toggle buttons. */
+.committee-decision-fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.committee-decision-fieldset legend {
+  float: none;
+  width: auto;
+  margin: 0;
+  padding: 0;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+/* Wrapper for the review dialog, rendered outside the page: workspace styles only, no page layout. */
+.committee-page.committee-review-portal {
+  min-height: 0 !important;
+  padding: 0 !important;
+  background: none !important;
 }

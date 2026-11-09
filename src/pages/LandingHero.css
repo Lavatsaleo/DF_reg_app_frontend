@@ -1,5 +1,5 @@
-/* Landing hero: brand gradient band. Heading on top; intro, application journey and "About" on the left;
-   a rotating photo blended into the background on the right.
+/* Landing hero: brand gradient band. Heading on top; intro, the two main actions and "About" on the left;
+   one photo blended into the background on the right.
    Text is #111 throughout, which keeps at least 7:1 contrast on every brand colour used behind it. */
 
 .df-hero-band {
@@ -10,7 +10,7 @@
   color: #111111;
 }
 
-/* Background: one gradient layer per theme, cross-faded as slides change. */
+/* Background: the brand gradient. */
 .df-hero-band-bg {
   position: absolute;
   inset: 0;
@@ -69,94 +69,45 @@
   line-height: 1.6;
 }
 
-/* Application journey: six numbered steps; the first and last are links into the site. */
-.df-hero-journey-title {
-  margin: 0 0 0.75rem;
-  color: #111111;
-  font-family: Arial, Helvetica, sans-serif !important;
-  font-size: 1.15rem !important;
-  font-weight: 800 !important;
-  letter-spacing: 0 !important;
-}
-
-.df-hero-journey {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.6rem;
-  margin: 0 0 1.75rem;
-  padding: 0;
-  list-style: none;
-}
-
-.df-hero-journey li {
+/* The two main actions: start an application or check an existing one. */
+.df-hero-actions {
   display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 0 0 0.9rem;
 }
 
-.df-hero-step {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+.df-hero-actions .df-hero-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   gap: 0.5rem;
-  width: 100%;
-  min-height: 96px;
-  padding: 0.8rem 0.9rem 0.9rem;
-  color: #111111 !important;
-  background: rgba(255, 255, 255, 0.88);
-  border: 2px solid transparent;
-  border-radius: 14px;
-  font: inherit;
-  text-align: left;
-  text-decoration: none !important;
-}
-
-.df-hero-step-number {
-  display: grid;
-  place-items: center;
-  width: 1.9rem;
-  height: 1.9rem;
-  border-radius: 50%;
-  background: #111111;
-  color: #ffc81f;
-  font-size: 0.9rem;
+  min-height: 52px;
+  padding: 0.8rem 1.5rem;
+  font-size: 1.05rem;
   font-weight: 800;
 }
 
-.df-hero-step-title {
-  font-size: 0.95rem;
-  font-weight: 700;
-  line-height: 1.3;
-}
-
-.df-hero-step-icon {
-  position: absolute;
-  top: 0.85rem;
-  right: 0.85rem;
-  font-size: 1.15rem;
-}
-
-/* The link step must beat the site-wide link rules (olive colour, inline-block padding). */
-.df-hero-journey a.df-hero-step {
-  display: flex;
-  padding: 0.8rem 0.9rem 0.9rem;
-  color: #111111 !important;
-}
-
-/* Clickable steps look like actions: solid white with a black outline and arrow. */
-.df-hero-step.is-action {
+.df-hero-actions .ss-btn-outline.df-hero-action {
   background: #ffffff;
-  border-color: #111111;
-  cursor: pointer;
 }
 
-.df-hero-step.is-action:hover {
-  background: #fff4cc;
-}
-
-.df-hero-step.is-action:focus-visible {
+.df-hero-actions .df-hero-action:focus-visible {
   outline: 3px solid #111111;
   outline-offset: 3px;
   box-shadow: 0 0 0 6px #ffffff;
+}
+
+.df-hero-one-pathway {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  max-width: 38rem;
+  margin: 0 0 1.75rem;
+  color: #111111;
+  font-size: 0.98rem;
+  font-weight: 600;
+  line-height: 1.5;
 }
 
 /* About Digital Futures: a calm white panel so programme information reads separately from the steps. */
@@ -206,31 +157,13 @@
 }
 
 .df-hero-countries i {
-  color: #d22a2f;
+  color: var(--df-red-text);
 }
 
-/* Photo carousel: no frame; the photo blends into the band like part of the background. */
-.df-hero-carousel {
+/* Photo: no frame; it blends into the band like part of the background. */
+.df-hero-photo {
   position: relative;
   margin-top: 2rem;
-}
-
-.df-hero-slides {
-  display: grid;
-}
-
-/* Slides share one grid cell so swapping never shifts the layout. */
-.df-hero-slide {
-  grid-area: 1 / 1;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.8s ease, visibility 0s linear 0.8s;
-}
-
-.df-hero-slide.is-active {
-  opacity: 1;
-  visibility: visible;
-  transition: opacity 0.8s ease, visibility 0s;
 }
 
 .df-hero-slide-photo {
@@ -252,127 +185,6 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transform: scale(1.04);
-  transition: transform 7s ease-out;
-}
-
-.df-hero-slide.is-active .df-hero-slide-photo img {
-  transform: scale(1);
-}
-
-.df-hero-carousel-controls {
-  position: absolute;
-  left: 50%;
-  bottom: 1rem;
-  z-index: 3;
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.3rem 0.5rem;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.92);
-  box-shadow: 0 8px 22px rgba(17, 17, 17, 0.14);
-  transform: translateX(-50%);
-}
-
-.df-hero-control {
-  width: 44px;
-  height: 44px;
-  display: grid;
-  place-items: center;
-  border: 2px solid #111111;
-  border-radius: 50%;
-  background: #ffffff;
-  color: #111111;
-  font-size: 1.15rem;
-  cursor: pointer;
-}
-
-.df-hero-control:hover {
-  background: #fff4cc;
-}
-
-.df-hero-control-play {
-  margin-left: 0.3rem;
-  background: #111111;
-  color: #ffffff;
-}
-
-.df-hero-control-play:hover {
-  background: #333333;
-}
-
-.df-hero-control:focus-visible,
-.df-hero-dot:focus-visible {
-  outline: 3px solid #111111;
-  outline-offset: 3px;
-  box-shadow: 0 0 0 6px #ffffff;
-}
-
-.df-hero-dots {
-  display: flex;
-  gap: 0.2rem;
-}
-
-/* Each dot is a 44px target; the bar inside shows progress on the active slide. */
-.df-hero-dot {
-  width: 44px;
-  height: 44px;
-  display: grid;
-  place-items: center;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  cursor: pointer;
-}
-
-.df-hero-dot span {
-  position: relative;
-  display: block;
-  width: 28px;
-  height: 8px;
-  overflow: hidden;
-  border-radius: 999px;
-  background: rgba(17, 17, 17, 0.28);
-}
-
-.df-hero-dot.is-active span {
-  width: 40px;
-  background: rgba(17, 17, 17, 0.35);
-}
-
-.df-hero-dot.is-active span::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: #111111;
-}
-
-.df-hero-dot.is-timing span::after {
-  transform-origin: left;
-  animation: df-hero-progress linear forwards;
-  animation-duration: inherit;
-}
-
-@keyframes df-hero-progress {
-  from { transform: scaleX(0); }
-  to { transform: scaleX(1); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .df-hero-band-layer,
-  .df-hero-slide,
-  .df-hero-slide-photo img {
-    transition: none !important;
-  }
-
-  .df-hero-slide-photo img {
-    transform: none !important;
-  }
-}
-
-html.ss-reduce-motion .df-hero-slide-photo img {
-  transform: none !important;
 }
 
 /* Wide screens: copy on the left half; the photo fills the right half to the screen edge and band bottom. */
@@ -394,18 +206,13 @@ html.ss-reduce-motion .df-hero-slide-photo img {
     max-width: calc(50% - 2rem);
   }
 
-  .df-hero-carousel {
+  .df-hero-photo {
     position: absolute;
     top: 0;
     right: 0;
     bottom: 0;
     width: 50%;
     margin: 0;
-  }
-
-  .df-hero-slides,
-  .df-hero-slide {
-    height: 100%;
   }
 
   .df-hero-slide-photo {
@@ -419,16 +226,11 @@ html.ss-reduce-motion .df-hero-slide-photo img {
     -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000000 24%), linear-gradient(180deg, transparent 0%, #000000 14%);
     -webkit-mask-composite: source-in;
   }
-
-  .df-hero-carousel-controls {
-    left: 58%;
-    bottom: 1.5rem;
-  }
 }
 
 @media (max-width: 575.98px) {
-  .df-hero-journey {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .df-hero-actions .df-hero-action {
+    width: 100%;
   }
 
   .df-hero-about {
@@ -443,19 +245,14 @@ html.ss-high-contrast .df-hero-band-layer {
 html.ss-high-contrast .df-hero-band,
 html.ss-high-contrast .df-hero-band-title,
 html.ss-high-contrast .df-hero-band-intro,
-html.ss-high-contrast .df-hero-journey-title {
+html.ss-high-contrast .df-hero-one-pathway {
   color: #ffffff !important;
 }
 
-html.ss-high-contrast .df-hero-step,
 html.ss-high-contrast .df-hero-about {
   color: #ffffff !important;
   background: #000000;
   border: 2px solid #ffffff;
-}
-
-html.ss-high-contrast .df-hero-step.is-action {
-  border-color: #ffc81f;
 }
 
 html.ss-high-contrast .df-hero-about {
@@ -471,14 +268,6 @@ html.ss-high-contrast .df-hero-countries li {
   background: #000000;
   border-color: #ffffff;
   color: #ffffff;
-}
-
-html.ss-high-contrast .df-hero-dot span {
-  background: rgba(255, 255, 255, 0.45);
-}
-
-html.ss-high-contrast .df-hero-dot.is-active span::after {
-  background: #ffc81f;
 }
 
 /* Hero and pathway sections each had generous padding, leaving a large empty band between them. */
@@ -497,105 +286,6 @@ html.ss-high-contrast .df-hero-dot.is-active span::after {
 .df-home-clean .df-clean-pathway-card .btn {
   width: 100%;
   max-width: none;
-}
-
-/* Programme partners footer */
-.df-hero-partners {
-  padding: clamp(1.75rem, 3vw, 2.5rem) 0;
-  background: #ffffff;
-  border-top: 1px solid var(--df-border);
-}
-
-.df-hero-partners-inner {
-  display: grid;
-  grid-template-columns: minmax(180px, 0.3fr) minmax(0, 1fr);
-  align-items: center;
-  gap: 2rem;
-}
-
-.df-hero-partners .df-eyebrow {
-  margin-bottom: 0.25rem;
-}
-
-.df-hero-partners h2 {
-  margin: 0;
-  font-family: Arial, Helvetica, sans-serif !important;
-  font-size: 1.35rem !important;
-  font-weight: 700 !important;
-  letter-spacing: 0 !important;
-}
-
-.df-hero-partners-logos {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 1.25rem 2rem;
-}
-
-.df-hero-partners .df-partnership {
-  margin: 0;
-  padding: 0;
-  border: 0;
-  max-width: none;
-}
-
-.df-hero-partners-divider {
-  width: 1px;
-  align-self: stretch;
-  min-height: 48px;
-  background: var(--df-border);
-}
-
-.df-hero-partners .df-partner-logo img {
-  width: auto;
-}
-
-/* Logos differ in shape: a wide wordmark, a square lock-up and a three-logo strip. */
-.df-hero-partners .df-sightsavers-partner img {
-  height: 38px;
-}
-
-.df-hero-partners .df-mastercard-partner img {
-  height: 88px;
-}
-
-.df-hero-partners .df-sightsavers-partner,
-.df-hero-partners .df-mastercard-partner {
-  width: auto;
-}
-
-.df-hero-partners-strip {
-  display: block;
-  width: min(100%, 400px);
-  height: auto;
-}
-
-@media (max-width: 767.98px) {
-  .df-hero-partners-inner {
-    grid-template-columns: 1fr;
-    gap: 1.25rem;
-  }
-
-  .df-hero-partners-logos {
-    justify-content: flex-start;
-  }
-
-  .df-hero-partners-divider {
-    display: none;
-  }
-}
-
-html.ss-high-contrast .df-hero-partners {
-  background: #000000;
-  border-color: #ffffff;
-}
-
-/* Logos keep a white plate so their own colours stay legible in high contrast. */
-html.ss-high-contrast .df-hero-partners-logos {
-  padding: 0.75rem 1rem;
-  background: #ffffff;
-  border-radius: 10px;
 }
 
 /* Pathway card sub-heading ("This pathway may suit you if…") reads as an introduction, not small print. */

@@ -184,8 +184,8 @@ textarea {
   display: block;
   color: rgba(255, 255, 255, 0.72);
   font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
+  text-transform: none;
+  letter-spacing: 0.01em;
   font-size: 0.75rem;
 }
 
@@ -251,8 +251,8 @@ textarea {
   width: fit-content;
   color: var(--ss-gold);
   font-weight: 950;
-  text-transform: uppercase;
-  letter-spacing: 0.13em;
+  text-transform: none;
+  letter-spacing: 0.01em;
   font-size: 0.74rem;
 }
 
@@ -468,7 +468,7 @@ textarea {
 }
 
 .form-label strong {
-  color: var(--ss-danger);
+  color: var(--df-red-text);
 }
 
 .form-control,
@@ -1770,7 +1770,7 @@ body.ss-large-text .ss-review-card-header h3 {
   color: var(--ss-muted);
   font-size: 0.82rem;
   font-weight: 800;
-  text-transform: uppercase;
+  text-transform: none;
   letter-spacing: 0.04em;
   margin-bottom: 0.45rem;
 }
@@ -2044,7 +2044,7 @@ body.ss-large-text .ss-review-card-header h3 {
   font-size: 0.78rem;
   font-weight: 850;
   letter-spacing: 0.04em;
-  text-transform: uppercase;
+  text-transform: none;
   margin-bottom: 0.35rem;
 }
 
@@ -2251,8 +2251,9 @@ html:not(.ss-high-contrast) .ss-btn-outline {
   text-shadow: none;
 }
 
+/* Icons follow the button text: yellow on white was only 1.5:1 (graphics need 3:1). */
 html:not(.ss-high-contrast) .ss-btn-outline i {
-  color: var(--ss-gold);
+  color: inherit;
 }
 
 html:not(.ss-high-contrast) .ss-btn-outline:hover,
@@ -3243,7 +3244,7 @@ body {
   font-size: 0.68rem;
   font-weight: 950;
   letter-spacing: 0.03em;
-  text-transform: uppercase;
+  text-transform: none;
   font-style: normal;
 }
 

@@ -225,6 +225,25 @@ function SkillsTestPage({ initialToken = "", onBackHome, onCheckStatus }) {
     });
   }
 
+  // Enter must never submit the whole test. On an answer it selects that answer and moves on to
+  // the next question, which is what screen reader users expect; only the Submit button submits.
+  function handleTestKeyDown(event) {
+    if (event.key !== "Enter" || event.isComposing) return;
+    const target = event.target;
+    if (!(target instanceof HTMLInputElement)) return;
+    event.preventDefault();
+    if (target.type !== "radio") return;
+
+    target.click();
+    const questions = Array.from(event.currentTarget.querySelectorAll(".ss-skills-question"));
+    const next = questions[questions.indexOf(target.closest(".ss-skills-question")) + 1];
+    const nextControl = next
+      ? next.querySelector("input:checked") || next.querySelector("input")
+      : event.currentTarget.querySelector('button[type="submit"]');
+    nextControl?.focus();
+    nextControl?.scrollIntoView({ block: "center" });
+  }
+
   async function handleSubmitTest(event) {
     event.preventDefault();
 
@@ -367,7 +386,7 @@ function SkillsTestPage({ initialToken = "", onBackHome, onCheckStatus }) {
                 <ResultPanel attempt={attempt} applicant={applicant} onCheckStatus={onCheckStatus} />
               </div>
             ) : test?.questions?.length > 0 ? (
-              <form className="ss-skills-card mt-4" onSubmit={handleSubmitTest} noValidate>
+              <form className="ss-skills-card mt-4" onSubmit={handleSubmitTest} onKeyDown={handleTestKeyDown} noValidate>
                 <div className="d-flex flex-column flex-lg-row justify-content-between gap-3 mb-4">
                   <div>
                     <span className="ss-small-label dark">Step 2</span>

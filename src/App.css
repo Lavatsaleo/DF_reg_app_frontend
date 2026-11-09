@@ -82,8 +82,8 @@ body {
 .eyebrow {
   margin: 0 0 8px;
   font-size: 0.82rem;
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
+  text-transform: none;
+  letter-spacing: 0.01em;
   font-weight: 850;
   color: #b9e8ff;
 }
@@ -330,7 +330,7 @@ label {
 }
 
 .question-card label strong {
-  color: #dc2626;
+  color: var(--df-red-text);
 }
 
 input,
@@ -985,7 +985,7 @@ button:disabled {
   color: #52606d;
   font-size: 0.82rem;
   font-weight: 850;
-  text-transform: uppercase;
+  text-transform: none;
   letter-spacing: 0.04em;
 }
 

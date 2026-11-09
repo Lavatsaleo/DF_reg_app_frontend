@@ -4,7 +4,7 @@
 .ss-skills-page .ss-skills-hero::after { background: var(--df-teal) !important; }
 .ss-skills-page .ss-skills-hero h1 { color: var(--df-black) !important; }
 .ss-skills-page .ss-skills-hero p { color: var(--df-muted) !important; }
-.ss-skills-page .ss-skills-hero .ss-small-label.light { color: var(--df-red) !important; }
+.ss-skills-page .ss-skills-hero .ss-small-label.light { color: var(--df-red-text) !important; }
 .ss-skills-page .ss-selected-card,
 .ss-skills-page .ss-skills-card,
 .ss-skills-page .ss-skills-result-card,

@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import axios from "axios";
 import AccessibilityMenu from "./components/AccessibilityMenu";
 import AppNavbar from "./components/AppNavbar";
+import ConfirmDialog from "./components/ConfirmDialog";
+import SiteFooter from "./components/SiteFooter";
 import LandingPage from "./pages/LandingPage";
 import ContextualApplicationPage from "./pages/ContextualApplicationPage";
 import StatusCheckPage from "./pages/StatusCheckPage";
@@ -91,6 +93,11 @@ function App() {
   const [skillsTestToken, setSkillsTestToken] = useState(initialSkillsTestToken);
   const [participantRegistrationToken, setParticipantRegistrationToken] = useState(initialParticipantRegistrationToken);
   const [staffSession, setStaffSession] = useState(loadInitialStaffSession);
+  // A pathway switch waiting for the applicant to confirm in the dialog.
+  const [pendingSwitch, setPendingSwitch] = useState(null);
+  const [switchError, setSwitchError] = useState("");
+  // Where focus should land after the next view change, when not the page heading.
+  const focusTargetAfterViewChange = useRef("");
 
   useEffect(() => {
     configureAxiosAuth(staffSession?.token || "");
@@ -161,6 +168,13 @@ function App() {
     previousView.current = currentView;
     const frame = window.requestAnimationFrame(() => {
       const main = document.getElementById("main-content");
+      const requested = focusTargetAfterViewChange.current && document.getElementById(focusTargetAfterViewChange.current);
+      focusTargetAfterViewChange.current = "";
+      if (requested) {
+        requested.scrollIntoView({ block: "start" });
+        requested.focus({ preventScroll: true });
+        return;
+      }
       if (!main || main.contains(document.activeElement)) return;
       const heading = main.querySelector("h1") || main;
       if (!heading.hasAttribute("tabindex")) heading.setAttribute("tabindex", "-1");
@@ -188,6 +202,18 @@ function App() {
     setSkillsTestToken("");
     setParticipantRegistrationToken("");
     // Keep the selected pathway and all draft answers while returning to the homepage.
+  }
+
+  // "Application Portal" always does something visible: it opens the pathway choices and moves focus there.
+  function handleShowPortal() {
+    if (currentView === "home") {
+      const section = document.getElementById("pathways");
+      section?.scrollIntoView({ block: "start" });
+      section?.focus({ preventScroll: true });
+      return;
+    }
+    focusTargetAfterViewChange.current = "pathways";
+    handleShowHome();
   }
 
   function handleStartNewApplication() {
@@ -271,30 +297,38 @@ function App() {
       );
 
     if (switchingDraft) {
-      const confirmed = window.confirm(
-        "Switching pathways will start a different application. Save your current progress on this device and switch?"
-      );
-      if (!confirmed) return;
-
-      // The normal autosave is debounced; persist answers synchronously before switching.
-      try {
-        const storageKey = "sightsavers-registration-draft-" + registration.selectedPathway.id;
-        window.localStorage.setItem(storageKey, JSON.stringify({
-          answers: registration.answers,
-          documentType: registration.documentType,
-          draftReference: registration.draftReference,
-          currentStep: registration.currentStep,
-          savedAt: new Date().toISOString(),
-        }));
-      } catch {
-        window.alert("Unable to save the current draft on this device. Please stay on this pathway and try again.");
-        return;
-      }
+      setSwitchError("");
+      setPendingSwitch(pathway);
+      return;
     }
 
+    openPathway(pathway);
+  }
+
+  function openPathway(pathway) {
     registration.handlePathwaySelect(pathway);
     navigateTo("/apply/" + PATHWAY_SLUGS[pathway.id]);
     setCurrentView("application");
+  }
+
+  function confirmPathwaySwitch() {
+    // The normal autosave is debounced; persist answers synchronously before switching.
+    try {
+      const storageKey = "sightsavers-registration-draft-" + registration.selectedPathway.id;
+      window.localStorage.setItem(storageKey, JSON.stringify({
+        answers: registration.answers,
+        documentType: registration.documentType,
+        draftReference: registration.draftReference,
+        currentStep: registration.currentStep,
+        savedAt: new Date().toISOString(),
+      }));
+    } catch {
+      setSwitchError("We could not save your current application on this device. Please stay on this pathway and try again.");
+      return;
+    }
+    const pathway = pendingSwitch;
+    setPendingSwitch(null);
+    openPathway(pathway);
   }
 
   const showStatusButton = !(
@@ -312,6 +346,7 @@ function App() {
         selectedPathway={registration.selectedPathway}
         currentView={currentView === "staff-login" ? "committee" : currentView}
         onBackToPathways={handleShowHome}
+        onShowPortal={handleShowPortal}
         onCheckStatus={handleShowStatus}
         showStatusButton={showStatusButton}
         onShowCommittee={staffSession?.user?.role === "VIEWER" ? undefined : handleShowCommittee}
@@ -408,6 +443,25 @@ function App() {
           onStepChange={registration.handleCurrentStepChange}
         />
       )}
+
+      {!["staff-login", "dashboard", "committee", "consents"].includes(currentView) && <SiteFooter />}
+
+      <ConfirmDialog
+        open={Boolean(pendingSwitch)}
+        title="Switch to a different pathway?"
+        confirmLabel={pendingSwitch ? `Save and switch to ${pendingSwitch.title}` : "Save and switch"}
+        cancelLabel={registration.selectedPathway ? `Stay on ${registration.selectedPathway.title}` : "Stay on this pathway"}
+        error={switchError}
+        onConfirm={confirmPathwaySwitch}
+        onCancel={() => setPendingSwitch(null)}
+      >
+        <p>
+          You have started an application for {registration.selectedPathway?.title}. You can apply for one pathway only.
+        </p>
+        <p>
+          If you switch, we will save your current answers on this device so you can come back to them, and start a new application for {pendingSwitch?.title}.
+        </p>
+      </ConfirmDialog>
     </>
   );
 }

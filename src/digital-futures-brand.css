@@ -10,6 +10,9 @@
   --df-orange: #ff671b;
   --df-yellow: #ffc81f;
   --df-red: #d22a2f;
+  /* Text in red uses a darker shade: the brand red is only 4.4:1 on the grey and pink backgrounds,
+     below the 4.5:1 needed for small text. This keeps at least 6.2:1 on every page background. */
+  --df-red-text: #a8201f;
   --df-green: #8db92e;
   --df-teal: #4fcdb0;
   --df-black: #111111;
@@ -125,7 +128,7 @@ button {
 }
 
 a {
-  color: var(--df-red);
+  color: var(--df-red-text);
   font-weight: 700;
   overflow-wrap: anywhere;
   word-break: break-word;
@@ -261,7 +264,7 @@ textarea:focus-visible,
 }
 
 .ss-accessibility-title i {
-  color: var(--df-red) !important;
+  color: var(--df-red-text) !important;
 }
 
 .ss-accessibility-actions {
@@ -316,7 +319,7 @@ textarea:focus-visible,
 .df-eyebrow {
   display: inline-block;
   margin-bottom: 1rem;
-  color: var(--df-red);
+  color: var(--df-red-text);
   font-size: 0.94rem;
   font-weight: 700;
   line-height: 1.2;
@@ -331,7 +334,7 @@ textarea:focus-visible,
 }
 
 .df-hero-title span {
-  color: var(--df-red);
+  color: var(--df-red-text);
 }
 
 .df-hero-intro {
@@ -580,7 +583,7 @@ textarea:focus-visible,
 .df-step-number {
   display: block;
   margin-bottom: 1.2rem;
-  color: var(--df-red);
+  color: var(--df-red-text);
   font-family: "Arial Black", Arial, sans-serif;
   font-size: 1.4rem;
 }
@@ -775,7 +778,7 @@ textarea:focus-visible,
 .ss-form-hero .ss-small-label.light,
 .ss-status-hero .ss-small-label.light,
 .ss-confirmation-hero .ss-small-label.light {
-  color: var(--df-red) !important;
+  color: var(--df-red-text) !important;
 }
 
 .ss-form-hero .ss-btn-outline,
@@ -789,7 +792,7 @@ textarea:focus-visible,
 .ss-small-label,
 .ss-small-label.dark,
 .ss-small-label.light {
-  color: var(--df-red) !important;
+  color: var(--df-red-text) !important;
   font-size: 0.88rem !important;
   font-weight: 700 !important;
   text-transform: none !important;
@@ -879,7 +882,7 @@ textarea:focus-visible,
 }
 
 .ss-quick-facts i {
-  color: var(--df-red) !important;
+  color: var(--df-red-text) !important;
 }
 
 .form-label,
@@ -967,7 +970,7 @@ legend {
 }
 
 .ss-contact-value {
-  color: var(--df-red) !important;
+  color: var(--df-red-text) !important;
   font-weight: 700 !important;
   overflow-wrap: anywhere !important;
   word-break: break-word !important;
@@ -1065,7 +1068,7 @@ legend {
 .ss-feedback-panel-header i,
 .ss-status-note i,
 .ss-eligibility-note i {
-  color: var(--df-red) !important;
+  color: var(--df-red-text) !important;
 }
 
 .ss-timeline-item > span,

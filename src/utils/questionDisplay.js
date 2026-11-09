@@ -70,8 +70,12 @@ export function resolveQuestionHelpText(question, answers = {}) {
   }
 
   if (code === "EDUCATION_LEVEL") {
+    const byCountry = question?.metadata?.eligibilityByCountry;
+    const rules = byCountry ? byCountry[country] || byCountry.default : null;
     return getMetadataCountryValue(question, answers, "helpTextByCountry") ||
-      "Choose the highest level of education you have completed.";
+      (rules?.education
+        ? "Only the qualifications that meet this pathway's requirement are listed. If yours is not listed, choose Other and tell us what it is."
+        : "Choose the highest level of education you have completed.");
   }
 
   if (code === "ACCESSIBILITY_NEEDS") {

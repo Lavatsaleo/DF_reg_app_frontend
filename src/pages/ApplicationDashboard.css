@@ -1,7 +1,7 @@
 .df-dashboard-page { background: var(--df-bg, #f3f1ef); color: var(--df-black, #111); min-height: 85vh; }
 .df-dashboard-shell { width: 100%; max-width: none; margin: 0; padding: 32px clamp(16px, 2.5vw, 48px) 24px; }
 .df-dashboard-header { display: flex; justify-content: space-between; gap: 28px; align-items: center; margin-bottom: 32px; }
-.df-dashboard-eyebrow { color: var(--df-red); font-size: .75rem; letter-spacing: .12em; font-weight: 800; }
+.df-dashboard-eyebrow { color: var(--df-red-text); font-size: .75rem; letter-spacing: 0.01em; font-weight: 800; }
 .df-dashboard-header h1 { font-size: clamp(2rem, 3.3vw, 3.25rem); letter-spacing: -.04em; font-weight: 850; margin: 10px 0; }
 .df-dashboard-header h1 > span { color: var(--df-orange); }
 .df-dashboard-header p { color: var(--df-muted); margin: 0; }
@@ -35,7 +35,7 @@
 .df-dashboard-chart-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; margin-bottom: 24px; }
 .df-dashboard-card { background: var(--df-white); border: 1px solid var(--df-border); border-radius: 20px; padding: 28px; min-width: 0; }
 .df-card-heading { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 24px; }
-.df-card-heading span:not(.df-count-pill) { font-size: .67rem; font-weight: 800; letter-spacing: .12em; color: var(--df-muted); }
+.df-card-heading span:not(.df-count-pill) { font-size: .67rem; font-weight: 800; letter-spacing: 0.01em; color: var(--df-muted); }
 .df-card-heading h2 { font-size: 1.3rem; font-weight: 800; letter-spacing: -.025em; margin: 8px 0 0; }
 .df-card-heading p { color: var(--df-muted); font-size: .85rem; margin: 10px 0 0; }
 .df-card-heading > i { color: var(--df-muted); font-size: 1.35rem; }
@@ -216,7 +216,7 @@ html.ss-high-contrast .df-trend-grid line { stroke: #fff; }
 .df-region-outline.selected { stroke-width: 3; }
 .df-map-annotations { pointer-events: none; }
 .df-map-annotations text { paint-order: stroke; stroke-linejoin: round; }
-.df-map-neighbour { fill: #8d857c; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; text-anchor: middle; dominant-baseline: middle; stroke: #f2efea; stroke-width: 0; }
+.df-map-neighbour { fill: #8d857c; font-weight: 700; letter-spacing: 0.01em; text-transform: none; text-anchor: middle; dominant-baseline: middle; stroke: #f2efea; stroke-width: 0; }
 .df-map-lake-label { fill: #4b7c91; font-style: italic; font-weight: 600; text-anchor: middle; dominant-baseline: middle; stroke: #c3dce7; stroke-width: 0; }
 .df-map-capital rect { fill: #ffffff; stroke: #111111; }
 .df-map-capital text { fill: #111111; font-weight: 800; stroke: #ffffff; }
@@ -251,14 +251,14 @@ html.ss-high-contrast .df-trend-grid line { stroke: #fff; }
 .df-map-rank-bar { grid-area: bar; height: 6px; border-radius: 3px; background: #ece8e4; overflow: hidden; }
 .df-map-rank-bar > span { display: block; height: 100%; border-radius: 3px; transition: width .45s ease; }
 .df-region-profile-head { display: flex; justify-content: space-between; align-items: start; gap: 10px; margin-bottom: 12px; }
-.df-region-profile-head span { font-size: .72rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--df-muted); }
+.df-region-profile-head span { font-size: .72rem; font-weight: 800; letter-spacing: 0.01em; text-transform: none; color: var(--df-muted); }
 .df-region-profile-head h3 { font-size: 1.35rem; letter-spacing: -.02em; }
 .df-region-profile-head h3:focus { outline: none; }
 .df-region-profile-head .btn { font-size: .74rem; padding: 5px 9px; min-height: 34px; white-space: nowrap; }
 .df-region-profile-total { display: grid; gap: 2px; padding: 12px 14px; background: var(--df-white); border: 1px solid var(--df-border); border-radius: 12px; margin-bottom: 16px; }
 .df-region-profile-total strong { font-size: 2rem; letter-spacing: -.03em; line-height: 1.1; }
 .df-region-profile-total span { font-size: .78rem; color: var(--df-muted); }
-.df-region-profile h4 { font-size: .74rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--df-muted); margin: 16px 0 8px; }
+.df-region-profile h4 { font-size: .74rem; font-weight: 800; letter-spacing: 0.01em; text-transform: none; color: var(--df-muted); margin: 16px 0 8px; }
 .df-region-profile-legend { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 4px; font-size: .8rem; }
 .df-region-profile-legend li { display: flex; align-items: center; gap: 7px; }
 .df-region-profile-legend strong { margin-left: auto; font-variant-numeric: tabular-nums; }

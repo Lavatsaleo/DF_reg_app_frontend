@@ -125,11 +125,24 @@ export default function ApplicationRegionMap({ regions, countries, months = [], 
     }
     setHovered({ country, name, x, y, flip: x > box.width * 0.6 });
   }
-  function select(country, name, fromList = false) {
+  // Keyboard and ranking-list selections move focus to the region profile below, so screen reader
+  // users hear the result; a mouse click leaves focus where it is.
+  function select(country, name, moveFocus = false) {
     setSelected({ country, name });
     setHovered(null);
-    // From the ranking list, move focus to the profile heading; on the map, keep focus on the region.
-    if (fromList) window.requestAnimationFrame(() => titleRef.current?.focus());
+    if (moveFocus) window.requestAnimationFrame(() => {
+      titleRef.current?.focus({ preventScroll: true });
+      titleRef.current?.scrollIntoView({ block: "nearest" });
+    });
+  }
+
+  // Closing the profile returns focus to the region on the map that opened it.
+  function closeProfile() {
+    const key = selected ? `${selected.country}|${selected.name}` : "";
+    setSelected(null);
+    window.requestAnimationFrame(() => {
+      wrapRef.current?.querySelector(`[data-region="${CSS.escape(key)}"]`)?.focus();
+    });
   }
   function changeMeasure(id) {
     setMeasureId(id);
@@ -202,7 +215,7 @@ export default function ApplicationRegionMap({ regions, countries, months = [], 
               rankedInCountry={ranked.filter(r => r.country === selectedRegion.country).length}
               countryTotal={regions.filter(r => r.country === selectedRegion.country).reduce((n, r) => n + r.count, 0)}
               titleRef={titleRef}
-              onClose={() => setSelected(null)}
+              onClose={closeProfile}
               onZoom={() => mapRefs.current[selectedRegion.country]?.zoomTo(selectedRegion.name)}
             />
           ) : (

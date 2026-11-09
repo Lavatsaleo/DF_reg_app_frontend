@@ -213,6 +213,12 @@ export function useRegistrationForm() {
       } catch (error) {
         if (!isCurrentSave) return;
         const apiMessage = error.response?.data?.message;
+        // Tell the applicant straight away, before they fill in the rest of the form.
+        if (error.response?.status === 409 && error.response?.data?.reasonCode === "APPLICATION_EXISTS") {
+          setDraftSaveStatus("existing_application");
+          setDraftSaveMessage(apiMessage);
+          return;
+        }
         setDraftSaveStatus("error");
         setDraftSaveMessage(apiMessage || "Draft is still saved on this device, but it could not be saved to the portal.");
       }

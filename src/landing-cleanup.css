@@ -35,7 +35,7 @@
 }
 
 .df-clean-hero-title span {
-  color: var(--df-red);
+  color: var(--df-red-text);
 }
 
 .df-clean-hero-intro {
@@ -148,7 +148,7 @@
 }
 
 .df-open-badge span {
-  color: var(--df-red);
+  color: var(--df-red-text);
   font-size: 0.82rem;
   font-weight: 700;
 }
@@ -299,7 +299,7 @@
 }
 
 .df-coming-soon-kicker {
-  color: var(--df-red);
+  color: var(--df-red-text);
   font-size: 0.82rem;
   font-weight: 700;
 }

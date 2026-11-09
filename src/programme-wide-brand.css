@@ -95,7 +95,7 @@
 .ss-small-label,
 .ss-small-label.dark,
 .ss-small-label.light {
-  color: var(--df-red) !important;
+  color: var(--df-red-text) !important;
 }
 
 .ss-draft-status,
@@ -204,7 +204,7 @@
 
 .ss-review-intro i,
 .ss-submit-once-note i {
-  color: var(--df-red) !important;
+  color: var(--df-red-text) !important;
 }
 
 /* Question cards and form controls */
@@ -322,7 +322,7 @@
 }
 
 .ss-voice-btn i {
-  color: var(--df-red) !important;
+  color: var(--df-red-text) !important;
 }
 
 .ss-signature-shell,
@@ -501,7 +501,7 @@
 
 .ss-reader-voice-control > i {
   flex: 0 0 auto;
-  color: var(--df-red);
+  color: var(--df-red-text);
 }
 
 .ss-reader-voice-select {
@@ -1083,4 +1083,127 @@ main li > a:only-child {
   .df-consent-progress span {
     transition: none;
   }
+}
+
+/* Site footer: the approved partner lock-up on white, as supplied. */
+.df-site-footer {
+  padding: clamp(1.25rem, 3vw, 2rem) 0;
+  background: #ffffff;
+  border-top: 1px solid var(--df-border);
+}
+
+.df-site-footer-lockup {
+  display: block;
+  width: 100%;
+  max-width: 1000px;
+  height: auto;
+}
+
+/* Logos keep their white plate so their own colours stay legible in high contrast. */
+html.ss-high-contrast .df-site-footer {
+  background: #000000;
+  border-color: #ffffff;
+}
+
+html.ss-high-contrast .df-site-footer-lockup {
+  padding: 0.75rem 1rem;
+  background: #ffffff;
+  border-radius: 10px;
+}
+
+/* Confirmation dialog (replaces browser pop-ups so focus moves into it). */
+.df-confirm-dialog {
+  width: min(32rem, calc(100vw - 2rem));
+  padding: 1.5rem;
+  border: 2px solid #111111;
+  border-radius: 14px;
+  background: #ffffff;
+  color: #111111;
+  box-shadow: 0 24px 60px rgba(17, 17, 17, 0.3);
+}
+
+.df-confirm-dialog::backdrop {
+  background: rgba(17, 17, 17, 0.55);
+}
+
+.df-confirm-dialog-title {
+  margin: 0 0 0.75rem;
+  font-family: Arial, Helvetica, sans-serif !important;
+  font-size: 1.35rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0 !important;
+}
+
+.df-confirm-dialog-body p {
+  margin: 0 0 0.75rem;
+  line-height: 1.55;
+}
+
+.df-confirm-dialog-error {
+  margin: 0 0 0.75rem;
+  color: var(--df-red-text);
+  font-weight: 700;
+}
+
+.df-confirm-dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+html.ss-high-contrast .df-confirm-dialog {
+  background: #000000;
+  color: #ffffff;
+  border-color: #ffffff;
+}
+
+/* Status page: help for applicants who can't find their invitation email. */
+.ss-status-help-block {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--df-border);
+}
+
+.ss-status-help-block h3 {
+  margin: 0 0 0.4rem;
+  font-family: Arial, Helvetica, sans-serif !important;
+  font-weight: 800 !important;
+  letter-spacing: 0 !important;
+}
+
+.ss-status-help-error {
+  color: var(--df-red-text);
+  font-weight: 700;
+}
+
+/* Shown as soon as the mobile number matches a submitted application. */
+.ss-existing-application-alert {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+/* Every dropdown shows a clear arrow so it reads as a choice list. The form-field rules above use the
+   background shorthand, which removed Bootstrap's arrow. */
+.form-select:not([multiple]):not([size]) {
+  padding-right: 2.75rem !important;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23111111' stroke-linecap='round' stroke-linejoin='round' stroke-width='2.5' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 1rem center !important;
+  background-size: 16px 12px !important;
+}
+
+html.ss-high-contrast .form-select:not([multiple]):not([size]) {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2.5' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+}
+
+/* The country selector draws its own chevron icon. */
+.ss-select-with-icon .form-select:not([multiple]):not([size]) {
+  background-image: none !important;
+}
+
+/* Buttons inside status notes keep their own icon colour, not the note's accent icon colour. */
+.ss-status-note .btn i {
+  color: inherit !important;
 }

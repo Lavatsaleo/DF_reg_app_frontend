@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import axios from "axios";
 import { API_BASE_URL } from "../config/api";
 import { formatPathwayLabel, formatStatusLabel } from "../utils/displayLabels";
@@ -10,6 +11,12 @@ const COUNTRY_OPTIONS = ["Kenya", "Nigeria", "Ghana", "Zambia"];
 const SECTION_IDS = ["review", "waiting", "invitations", "selected", "members", "admins"];
 const COUNTRY_FILTER_KEY = "df-committee-country-filter";
 const OPEN_ASSIGNMENT_STATUSES = ["ASSIGNED", "IN_REVIEW"];
+
+// Status codes read as sentence case ("IN_REVIEW" -> "In review"), never all capitals.
+function formatCode(value, fallback) {
+  const text = String(value || fallback).replace(/_/g, " ").toLowerCase();
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
 const DELIVERY_ATTENTION_STATUSES = ["EMAIL_FAILED", "NOT_CREATED", "PENDING", "EXPIRED"];
 
 function readSectionFromHash() {
@@ -94,7 +101,7 @@ function formatDate(value) {
 
 function formatDecision(value) {
   const found = REVIEW_DECISIONS.find((decision) => decision.value === value);
-  return found?.label || String(value || "Pending").replace(/_/g, " ");
+  return found?.label || formatCode(value, "Pending");
 }
 
 function formatYesNo(value) {
@@ -610,7 +617,7 @@ function AssignmentCard({ assignment, members, canReassign, onSelect, onReassign
           <small>{getApplicantSubtitle(applicant)}</small>
         </button>
         <span className={`committee-assignment-status status-${assignment.status?.toLowerCase()}`}>
-          {String(assignment.status || "Assigned").replace(/_/g, " ")}
+          {formatCode(assignment.status, "Assigned")}
         </span>
       </div>
 
@@ -623,7 +630,12 @@ function AssignmentCard({ assignment, members, canReassign, onSelect, onReassign
       </div>
 
       <div className="cw-assignment-actions">
-        <button type="button" className="btn committee-small-action" onClick={() => onSelect(assignment)}>
+        <button
+          id={`committee-open-review-${assignment.id}`}
+          type="button"
+          className="btn committee-small-action"
+          onClick={() => onSelect(assignment)}
+        >
           <i className="bi bi-file-earmark-text" aria-hidden="true" />
           {assignment.status === "COMPLETED" ? " View review" : " Open review"}
         </button>
@@ -758,7 +770,7 @@ function SelectedParticipantsReport({
                   <td>
                     {row.participantRegistration?.applicable ? (
                       <>
-                        <strong>{String(row.participantRegistration.status || "NOT_SENT").replace(/_/g, " ")}</strong>
+                        <strong>{formatCode(row.participantRegistration.status, "NOT_SENT")}</strong>
                         {row.participantRegistration.sentAt && (
                           <small>SMTP accepted {formatDate(row.participantRegistration.sentAt)}</small>
                         )}
@@ -846,7 +858,7 @@ function SkillsTestDeliveryPanel({ delivery, onResend, sendingReference }) {
                   <td>{row.country}</td>
                   <td>{row.emailTo || "Email missing"}</td>
                   <td>
-                    <strong>{String(row.status || "Unknown").replace(/_/g, " ")}</strong>
+                    <strong>{formatCode(row.status, "Unknown")}</strong>
                     {row.emailError && (
                       <small>{row.emailError}</small>
                     )}
@@ -891,6 +903,20 @@ function ReviewPanel({
 }) {
   const [decision, setDecision] = useState("SELECTED");
   const [comments, setComments] = useState("");
+  const [panelStatus, setPanelStatus] = useState("");
+  const decisionGroupRef = useRef(null);
+
+  // "Start review" disappears once the review starts, so move focus to the decision choices
+  // instead of letting it fall back to the page behind the dialog.
+  async function startReview() {
+    const started = await onStartReview(assignment.id);
+    if (!started) return;
+    setPanelStatus("Review started. Choose a committee decision below.");
+    window.requestAnimationFrame(() => {
+      const selected = decisionGroupRef.current?.querySelector('[aria-pressed="true"]');
+      (selected || decisionGroupRef.current?.querySelector("button"))?.focus();
+    });
+  }
 
   useEffect(() => {
     setDecision("SELECTED");
@@ -1027,20 +1053,23 @@ function ReviewPanel({
             <button
               type="button"
               className="btn committee-secondary-action"
-              onClick={() => onStartReview(assignment.id)}
+              onClick={startReview}
             >
               <i className="bi bi-play-circle" aria-hidden="true" /> Start review
             </button>
           )}
 
-          <label>
-            Committee decision
-            <div className="committee-decision-grid">
+          <p className="visually-hidden" role="status">{panelStatus}</p>
+
+          <fieldset className="committee-decision-fieldset">
+            <legend>Committee decision</legend>
+            <div className="committee-decision-grid" ref={decisionGroupRef}>
               {REVIEW_DECISIONS.map((item) => (
                 <button
                   key={item.value}
                   type="button"
                   className={`committee-decision-option ${decision === item.value ? "selected" : ""}`}
+                  aria-pressed={decision === item.value}
                   onClick={() => setDecision(item.value)}
                 >
                   <i className={`bi ${item.icon}`} aria-hidden="true" />
@@ -1048,7 +1077,7 @@ function ReviewPanel({
                 </button>
               ))}
             </div>
-          </label>
+          </fieldset>
 
           <label>
             Review comments
@@ -1250,11 +1279,20 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
       // The filter still works for this visit without storage.
     }
   }
+  // Escape is handled in an effect that only re-runs when the dialog opens, so it reads the latest close function.
+  const closeReviewModalRef = useRef(null);
+  useEffect(() => {
+    closeReviewModalRef.current = closeReviewModal;
+  });
+
   useEffect(() => {
     if (!selectedAssignment?.id) return undefined;
 
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    // The page behind the dialog can't be reached by keyboard or screen reader while it is open.
+    const appRoot = document.getElementById("root");
+    if (appRoot) appRoot.inert = true;
     const focusFrame = window.requestAnimationFrame(() => {
       document.getElementById("committee-review-close-button")?.focus();
     });
@@ -1262,8 +1300,7 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
     function handleModalKeys(event) {
       if (event.key === "Escape") {
         event.preventDefault();
-        setSelectedAssignment(null);
-        setApplicationDetail(null);
+        closeReviewModalRef.current?.();
       }
 
       if (event.key === "Tab") {
@@ -1293,6 +1330,7 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
     window.addEventListener("keydown", handleModalKeys);
     return () => {
       window.cancelAnimationFrame(focusFrame);
+      if (appRoot) appRoot.inert = false;
       document.body.style.overflow = previousOverflow;
       window.removeEventListener("keydown", handleModalKeys);
     };
@@ -1447,8 +1485,10 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
       setMessage(response.data?.message || "Review started.");
       setSelectedAssignment(response.data?.assignment || selectedAssignment);
       await loadCommitteeData();
+      return true;
     } catch (startError) {
       handleApiError(startError, "Failed to start review.");
+      return false;
     }
   }
 
@@ -1459,9 +1499,12 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
 
     try {
       const response = await axios.post(`${API_BASE_URL}/api/committee/assignments/${assignmentId}/review`, reviewPayload);
+      // The decision is done: close the review and return to the board, where the message is announced.
+      closeReviewModal();
       setMessage(response.data?.message || "Committee decision saved.");
-      setSelectedAssignment(response.data?.assignment || selectedAssignment);
       await loadCommitteeData();
+      // The board re-renders after reloading, so return focus once the application's button is back.
+      focusReviewOpener(assignmentId);
     } catch (reviewError) {
       handleApiError(reviewError, "Failed to submit committee review.");
     } finally {
@@ -1470,9 +1513,18 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
   }
 
   function closeReviewModal() {
+    const assignmentId = selectedAssignment?.id;
     setSelectedAssignment(null);
     setApplicationDetail(null);
     setApplicationDetailError("");
+    focusReviewOpener(assignmentId);
+  }
+
+  // Focus goes back to the application's "Open review" button on the board.
+  function focusReviewOpener(assignmentId) {
+    window.requestAnimationFrame(() => {
+      document.getElementById(`committee-open-review-${assignmentId}`)?.focus();
+    });
   }
 
   async function openReviewModal(assignment) {
@@ -2003,7 +2055,9 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
           </>
         )}
 
-        {selectedAssignmentFromList && (
+        {selectedAssignmentFromList && createPortal(
+          // The wrapper keeps the workspace colours and type now that the dialog sits outside the page.
+          <div className="committee-page committee-review-portal">
           <div
             className="committee-review-backdrop"
             onMouseDown={(event) => {
@@ -2047,6 +2101,8 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
               </div>
             </div>
           </div>
+          </div>,
+          document.body
         )}
       </section>
     </main>

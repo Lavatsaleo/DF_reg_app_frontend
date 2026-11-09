@@ -80,7 +80,7 @@ small {
 }
 
 a {
-  color: var(--ss-raspberry);
+  color: var(--df-red-text);
   font-weight: 700;
   text-decoration: underline;
   text-underline-offset: 2px;
@@ -144,7 +144,7 @@ textarea:focus-visible,
 .ss-nav-back {
   background: #ffffff !important;
   border: 1px solid var(--ss-raspberry) !important;
-  color: var(--ss-raspberry) !important;
+  color: var(--df-red-text) !important;
   border-radius: var(--ss-radius) !important;
   font-weight: 700 !important;
 }
@@ -152,7 +152,7 @@ textarea:focus-visible,
 .ss-nav-status:hover,
 .ss-nav-back:hover {
   background: #f8edf3 !important;
-  color: var(--ss-raspberry) !important;
+  color: var(--df-red-text) !important;
 }
 
 .ss-committee-corner {
@@ -229,7 +229,7 @@ textarea:focus-visible,
   border-bottom: 5px solid var(--ss-yellow) !important;
   border-radius: 0 !important;
   background: transparent !important;
-  color: var(--ss-raspberry) !important;
+  color: var(--df-red-text) !important;
   box-shadow: none !important;
   font-size: 0.95rem !important;
   font-weight: 700 !important;
@@ -248,7 +248,7 @@ textarea:focus-visible,
 }
 
 .ss-title span {
-  color: var(--ss-raspberry) !important;
+  color: var(--df-red-text) !important;
 }
 
 .ss-subtitle {
@@ -363,7 +363,7 @@ textarea:focus-visible,
 }
 
 .ss-small-label {
-  color: var(--ss-raspberry) !important;
+  color: var(--df-red-text) !important;
   font-weight: 700 !important;
   font-size: 0.86rem !important;
   letter-spacing: 0 !important;
@@ -471,14 +471,14 @@ textarea:focus-visible,
 .ss-btn-primary:hover,
 .ss-submit-btn:hover:not(:disabled) {
   background: #ffffff !important;
-  color: var(--ss-raspberry) !important;
+  color: var(--df-red-text) !important;
   border-color: var(--ss-raspberry) !important;
   transform: none !important;
 }
 
 .ss-btn-outline {
   background: #ffffff !important;
-  color: var(--ss-raspberry) !important;
+  color: var(--df-red-text) !important;
   border: 2px solid var(--ss-raspberry) !important;
   border-radius: var(--ss-radius) !important;
   box-shadow: none !important;
@@ -487,7 +487,7 @@ textarea:focus-visible,
 
 .ss-btn-outline:hover {
   background: #f8edf3 !important;
-  color: var(--ss-raspberry) !important;
+  color: var(--df-red-text) !important;
 }
 
 .ss-btn-muted {

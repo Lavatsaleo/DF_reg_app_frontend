@@ -102,7 +102,7 @@
 .ss-feedback-panel-header i,
 .ss-status-note i,
 .ss-eligibility-note i {
-  color: var(--ss-raspberry) !important;
+  color: var(--df-red-text) !important;
 }
 
 .ss-timeline-item > span,
@@ -152,7 +152,7 @@
 }
 
 .ss-link-button {
-  color: var(--ss-raspberry) !important;
+  color: var(--df-red-text) !important;
   font-weight: 700 !important;
   text-decoration: underline !important;
 }
@@ -177,7 +177,7 @@
 }
 
 .ss-quick-facts i {
-  color: var(--ss-raspberry) !important;
+  color: var(--df-red-text) !important;
 }
 
 .ss-draft-status {

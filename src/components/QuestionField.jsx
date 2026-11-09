@@ -70,6 +70,17 @@ function getQuestionOptions(question, answers) {
   const metadata = question.metadata || {};
   const country = answers?.COUNTRY;
 
+  // List only the education levels that qualify for this pathway in the applicant's country, plus
+  // "Other" for qualifications the programme team checks by hand. A saved answer always stays listed.
+  const educationRules = question.questionCode === "EDUCATION_LEVEL" && metadata.eligibilityByCountry
+    ? metadata.eligibilityByCountry[country] || metadata.eligibilityByCountry.default
+    : null;
+  if (educationRules?.education && Array.isArray(question.options)) {
+    return question.options.filter((option) =>
+      educationRules.education.includes(option) || option === "Other" || option === answers?.EDUCATION_LEVEL
+    );
+  }
+
   if (metadata.optionsByCountry && country) {
     const countryOptions = metadata.optionsByCountry[country];
     if (Array.isArray(countryOptions)) return countryOptions;

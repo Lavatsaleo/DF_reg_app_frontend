@@ -219,7 +219,7 @@ export default function CountryMap({ ref, country, geo, context, values, scale, 
                     onBlur={onLeave}
                     onClick={() => { if (!wasDrag() && count) onSelect(country, f.name); }}
                     onDoubleClick={() => zoomToFeature(f)}
-                    onKeyDown={event => { if (['Enter', ' '].includes(event.key)) { event.preventDefault(); onSelect(country, f.name); } }}
+                    onKeyDown={event => { if (['Enter', ' '].includes(event.key)) { event.preventDefault(); onSelect(country, f.name, true); } }}
                   >
                     <title>{label}</title>
                   </path>

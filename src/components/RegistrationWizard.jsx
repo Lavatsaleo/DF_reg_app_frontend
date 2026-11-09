@@ -193,6 +193,13 @@ function describeLevels(levels) {
   return names.length > 1 ? `${names.slice(0, -1).join(", ")} or ${names[names.length - 1]}` : names[0];
 }
 
+function getSaveStatusLabel(status) {
+  if (status === "saving") return "Saving...";
+  if (status === "existing_application") return "Not saved: an application already exists";
+  if (status === "error") return "Saved on this device only";
+  return "Progress saved";
+}
+
 function RegistrationWizard({
   selectedPathway,
   groupedQuestions,
@@ -203,6 +210,7 @@ function RegistrationWizard({
   errorMessage,
   fieldErrors,
   draftSaveStatus,
+  draftSaveMessage,
   currentStep = 0,
   onAnswerChange,
   onMultiSelectChange,
@@ -212,6 +220,7 @@ function RegistrationWizard({
   onStepChange,
   onNavigateStep,
   onBackStep,
+  onCheckStatus,
 }) {
   const sectionEntries = useMemo(
     () => groupSurveyPages(groupedQuestions),
@@ -354,12 +363,27 @@ function RegistrationWizard({
       <div className="ss-survey-toolbar">
         <div>
           <span className="ss-small-label dark">{selectedPathway.title}</span>
-          <strong>{draftSaveStatus === "saving" ? "Saving..." : "Progress saved"}</strong>
+          <strong>{getSaveStatusLabel(draftSaveStatus)}</strong>
         </div>
         <button type="button" className="btn btn-sm ss-link-button" onClick={onClearDraft}>
           Clear draft
         </button>
       </div>
+
+      {draftSaveStatus === "existing_application" && (
+        <div className="alert ss-alert-warning ss-existing-application-alert" role="alert">
+          <i className="bi bi-exclamation-triangle" aria-hidden="true" />
+          <div>
+            <strong className="d-block mb-1">You already have an application</strong>
+            <p className="mb-2">{draftSaveMessage}</p>
+            {onCheckStatus && (
+              <button type="button" className="btn ss-btn-outline" onClick={onCheckStatus}>
+                <i className="bi bi-clipboard2-check" aria-hidden="true" /> Check your application status
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       <nav className="ss-survey-stepper" aria-label="Application sections">
         <ol style={{ "--df-step-count": totalSteps }}>

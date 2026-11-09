@@ -1,0 +1,293 @@
+/*
+ * Approved Digital Futures programme icons (Mastercard Foundation icon library).
+ * Each rule swaps a Bootstrap icon glyph for the approved artwork, so every <i class="bi bi-…">
+ * on the site uses it. The artwork is a mask filled with the text colour, so icons follow
+ * the surrounding colour, high-contrast mode and dark buttons.
+ * Plain interface controls (arrows, chevrons, close, play/pause, zoom, print) have no
+ * approved equivalent and keep their Bootstrap glyph.
+ */
+
+.bi.bi-award::before,
+.bi.bi-bar-chart::before,
+.bi.bi-bookmark::before,
+.bi.bi-bookmark-check::before,
+.bi.bi-briefcase::before,
+.bi.bi-building-check::before,
+.bi.bi-calendar-check::before,
+.bi.bi-calendar-event::before,
+.bi.bi-card-image::before,
+.bi.bi-cash-coin::before,
+.bi.bi-check-circle::before,
+.bi.bi-check-circle-fill::before,
+.bi.bi-check2-circle::before,
+.bi.bi-check2-square::before,
+.bi.bi-clipboard2-check::before,
+.bi.bi-clock::before,
+.bi.bi-cloud-arrow-up::before,
+.bi.bi-cloud-check::before,
+.bi.bi-compass::before,
+.bi.bi-envelope-arrow-up::before,
+.bi.bi-envelope-check::before,
+.bi.bi-envelope-exclamation::before,
+.bi.bi-envelope-paper::before,
+.bi.bi-exclamation::before,
+.bi.bi-exclamation-circle::before,
+.bi.bi-exclamation-circle-fill::before,
+.bi.bi-exclamation-triangle::before,
+.bi.bi-file-earmark-check::before,
+.bi.bi-file-earmark-text::before,
+.bi.bi-file-earmark-x::before,
+.bi.bi-file-text::before,
+.bi.bi-gender-ambiguous::before,
+.bi.bi-geo-alt::before,
+.bi.bi-geo-alt-fill::before,
+.bi.bi-gift::before,
+.bi.bi-globe-africa::before,
+.bi.bi-graph-up::before,
+.bi.bi-hand-index::before,
+.bi.bi-hand-thumbs-up::before,
+.bi.bi-hourglass-split::before,
+.bi.bi-house::before,
+.bi.bi-inboxes::before,
+.bi.bi-incognito::before,
+.bi.bi-info-circle::before,
+.bi.bi-journal-check::before,
+.bi.bi-key::before,
+.bi.bi-laptop::before,
+.bi.bi-life-preserver::before,
+.bi.bi-lightbulb::before,
+.bi.bi-lightning-charge::before,
+.bi.bi-lock::before,
+.bi.bi-megaphone::before,
+.bi.bi-mic-fill::before,
+.bi.bi-mortarboard::before,
+.bi.bi-paperclip::before,
+.bi.bi-patch-check::before,
+.bi.bi-pen::before,
+.bi.bi-pencil::before,
+.bi.bi-pencil-square::before,
+.bi.bi-people::before,
+.bi.bi-people-fill::before,
+.bi.bi-person-badge::before,
+.bi.bi-person-check::before,
+.bi.bi-person-check-fill::before,
+.bi.bi-person-circle::before,
+.bi.bi-person-gear::before,
+.bi.bi-person-lines-fill::before,
+.bi.bi-person-plus::before,
+.bi.bi-phone::before,
+.bi.bi-question-circle::before,
+.bi.bi-rocket-takeoff::before,
+.bi.bi-search::before,
+.bi.bi-send::before,
+.bi.bi-send-check::before,
+.bi.bi-shield-check::before,
+.bi.bi-shield-exclamation::before,
+.bi.bi-shield-lock::before,
+.bi.bi-shield-lock-fill::before,
+.bi.bi-signpost-2::before,
+.bi.bi-signpost-split::before,
+.bi.bi-telephone::before,
+.bi.bi-telephone-forward::before,
+.bi.bi-telephone-x::before,
+.bi.bi-ui-checks::before,
+.bi.bi-ui-checks-grid::before,
+.bi.bi-universal-access::before,
+.bi.bi-universal-access-circle::before,
+.bi.bi-volume-up::before {
+  content: "" !important;
+  display: inline-block;
+  width: 1.25em;
+  height: 1.25em;
+  vertical-align: -0.25em;
+  background-color: currentColor;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+
+@media (forced-colors: active) {
+  .bi.bi-award::before,
+  .bi.bi-bar-chart::before,
+  .bi.bi-bookmark::before,
+  .bi.bi-bookmark-check::before,
+  .bi.bi-briefcase::before,
+  .bi.bi-building-check::before,
+  .bi.bi-calendar-check::before,
+  .bi.bi-calendar-event::before,
+  .bi.bi-card-image::before,
+  .bi.bi-cash-coin::before,
+  .bi.bi-check-circle::before,
+  .bi.bi-check-circle-fill::before,
+  .bi.bi-check2-circle::before,
+  .bi.bi-check2-square::before,
+  .bi.bi-clipboard2-check::before,
+  .bi.bi-clock::before,
+  .bi.bi-cloud-arrow-up::before,
+  .bi.bi-cloud-check::before,
+  .bi.bi-compass::before,
+  .bi.bi-envelope-arrow-up::before,
+  .bi.bi-envelope-check::before,
+  .bi.bi-envelope-exclamation::before,
+  .bi.bi-envelope-paper::before,
+  .bi.bi-exclamation::before,
+  .bi.bi-exclamation-circle::before,
+  .bi.bi-exclamation-circle-fill::before,
+  .bi.bi-exclamation-triangle::before,
+  .bi.bi-file-earmark-check::before,
+  .bi.bi-file-earmark-text::before,
+  .bi.bi-file-earmark-x::before,
+  .bi.bi-file-text::before,
+  .bi.bi-gender-ambiguous::before,
+  .bi.bi-geo-alt::before,
+  .bi.bi-geo-alt-fill::before,
+  .bi.bi-gift::before,
+  .bi.bi-globe-africa::before,
+  .bi.bi-graph-up::before,
+  .bi.bi-hand-index::before,
+  .bi.bi-hand-thumbs-up::before,
+  .bi.bi-hourglass-split::before,
+  .bi.bi-house::before,
+  .bi.bi-inboxes::before,
+  .bi.bi-incognito::before,
+  .bi.bi-info-circle::before,
+  .bi.bi-journal-check::before,
+  .bi.bi-key::before,
+  .bi.bi-laptop::before,
+  .bi.bi-life-preserver::before,
+  .bi.bi-lightbulb::before,
+  .bi.bi-lightning-charge::before,
+  .bi.bi-lock::before,
+  .bi.bi-megaphone::before,
+  .bi.bi-mic-fill::before,
+  .bi.bi-mortarboard::before,
+  .bi.bi-paperclip::before,
+  .bi.bi-patch-check::before,
+  .bi.bi-pen::before,
+  .bi.bi-pencil::before,
+  .bi.bi-pencil-square::before,
+  .bi.bi-people::before,
+  .bi.bi-people-fill::before,
+  .bi.bi-person-badge::before,
+  .bi.bi-person-check::before,
+  .bi.bi-person-check-fill::before,
+  .bi.bi-person-circle::before,
+  .bi.bi-person-gear::before,
+  .bi.bi-person-lines-fill::before,
+  .bi.bi-person-plus::before,
+  .bi.bi-phone::before,
+  .bi.bi-question-circle::before,
+  .bi.bi-rocket-takeoff::before,
+  .bi.bi-search::before,
+  .bi.bi-send::before,
+  .bi.bi-send-check::before,
+  .bi.bi-shield-check::before,
+  .bi.bi-shield-exclamation::before,
+  .bi.bi-shield-lock::before,
+  .bi.bi-shield-lock-fill::before,
+  .bi.bi-signpost-2::before,
+  .bi.bi-signpost-split::before,
+  .bi.bi-telephone::before,
+  .bi.bi-telephone-forward::before,
+  .bi.bi-telephone-x::before,
+  .bi.bi-ui-checks::before,
+  .bi.bi-ui-checks-grid::before,
+  .bi.bi-universal-access::before,
+  .bi.bi-universal-access-circle::before,
+  .bi.bi-volume-up::before {
+    forced-color-adjust: none;
+    background-color: CanvasText;
+  }
+}
+
+.bi.bi-award::before { -webkit-mask-image: url("assets/programme-icons/key-to-success.png"); mask-image: url("assets/programme-icons/key-to-success.png"); }
+.bi.bi-bar-chart::before { -webkit-mask-image: url("assets/programme-icons/data-chart.png"); mask-image: url("assets/programme-icons/data-chart.png"); }
+.bi.bi-bookmark::before { -webkit-mask-image: url("assets/programme-icons/folder.png"); mask-image: url("assets/programme-icons/folder.png"); }
+.bi.bi-bookmark-check::before { -webkit-mask-image: url("assets/programme-icons/folder.png"); mask-image: url("assets/programme-icons/folder.png"); }
+.bi.bi-briefcase::before { -webkit-mask-image: url("assets/programme-icons/globe-and-briefcase.png"); mask-image: url("assets/programme-icons/globe-and-briefcase.png"); }
+.bi.bi-building-check::before { -webkit-mask-image: url("assets/programme-icons/classroom.png"); mask-image: url("assets/programme-icons/classroom.png"); }
+.bi.bi-calendar-check::before { -webkit-mask-image: url("assets/programme-icons/compliance-calendar.png"); mask-image: url("assets/programme-icons/compliance-calendar.png"); }
+.bi.bi-calendar-event::before { -webkit-mask-image: url("assets/programme-icons/calendar-options.png"); mask-image: url("assets/programme-icons/calendar-options.png"); }
+.bi.bi-card-image::before { -webkit-mask-image: url("assets/programme-icons/capture.png"); mask-image: url("assets/programme-icons/capture.png"); }
+.bi.bi-cash-coin::before { -webkit-mask-image: url("assets/programme-icons/coins.png"); mask-image: url("assets/programme-icons/coins.png"); }
+.bi.bi-check-circle::before { -webkit-mask-image: url("assets/programme-icons/safety-check-mark.png"); mask-image: url("assets/programme-icons/safety-check-mark.png"); }
+.bi.bi-check-circle-fill::before { -webkit-mask-image: url("assets/programme-icons/safety-check-mark.png"); mask-image: url("assets/programme-icons/safety-check-mark.png"); }
+.bi.bi-check2-circle::before { -webkit-mask-image: url("assets/programme-icons/safety-check-mark.png"); mask-image: url("assets/programme-icons/safety-check-mark.png"); }
+.bi.bi-check2-square::before { -webkit-mask-image: url("assets/programme-icons/compliance-checkmark.png"); mask-image: url("assets/programme-icons/compliance-checkmark.png"); }
+.bi.bi-clipboard2-check::before { -webkit-mask-image: url("assets/programme-icons/compliance-checkmark.png"); mask-image: url("assets/programme-icons/compliance-checkmark.png"); }
+.bi.bi-clock::before { -webkit-mask-image: url("assets/programme-icons/time-clock.png"); mask-image: url("assets/programme-icons/time-clock.png"); }
+.bi.bi-cloud-arrow-up::before { -webkit-mask-image: url("assets/programme-icons/secure-cloud-storage.png"); mask-image: url("assets/programme-icons/secure-cloud-storage.png"); }
+.bi.bi-cloud-check::before { -webkit-mask-image: url("assets/programme-icons/secure-cloud-storage.png"); mask-image: url("assets/programme-icons/secure-cloud-storage.png"); }
+.bi.bi-compass::before { -webkit-mask-image: url("assets/programme-icons/direction-and-moral-guidance.png"); mask-image: url("assets/programme-icons/direction-and-moral-guidance.png"); }
+.bi.bi-envelope-arrow-up::before { -webkit-mask-image: url("assets/programme-icons/email-communication.png"); mask-image: url("assets/programme-icons/email-communication.png"); }
+.bi.bi-envelope-check::before { -webkit-mask-image: url("assets/programme-icons/email-inbox.png"); mask-image: url("assets/programme-icons/email-inbox.png"); }
+.bi.bi-envelope-exclamation::before { -webkit-mask-image: url("assets/programme-icons/letter-or-email.png"); mask-image: url("assets/programme-icons/letter-or-email.png"); }
+.bi.bi-envelope-paper::before { -webkit-mask-image: url("assets/programme-icons/letter-or-email.png"); mask-image: url("assets/programme-icons/letter-or-email.png"); }
+.bi.bi-exclamation::before { -webkit-mask-image: url("assets/programme-icons/warning-sign.png"); mask-image: url("assets/programme-icons/warning-sign.png"); }
+.bi.bi-exclamation-circle::before { -webkit-mask-image: url("assets/programme-icons/warning-sign.png"); mask-image: url("assets/programme-icons/warning-sign.png"); }
+.bi.bi-exclamation-circle-fill::before { -webkit-mask-image: url("assets/programme-icons/warning-sign.png"); mask-image: url("assets/programme-icons/warning-sign.png"); }
+.bi.bi-exclamation-triangle::before { -webkit-mask-image: url("assets/programme-icons/warning-sign.png"); mask-image: url("assets/programme-icons/warning-sign.png"); }
+.bi.bi-file-earmark-check::before { -webkit-mask-image: url("assets/programme-icons/contract-agreement.png"); mask-image: url("assets/programme-icons/contract-agreement.png"); }
+.bi.bi-file-earmark-text::before { -webkit-mask-image: url("assets/programme-icons/legal-document.png"); mask-image: url("assets/programme-icons/legal-document.png"); }
+.bi.bi-file-earmark-x::before { -webkit-mask-image: url("assets/programme-icons/legal-document.png"); mask-image: url("assets/programme-icons/legal-document.png"); }
+.bi.bi-file-text::before { -webkit-mask-image: url("assets/programme-icons/legal-document.png"); mask-image: url("assets/programme-icons/legal-document.png"); }
+.bi.bi-gender-ambiguous::before { -webkit-mask-image: url("assets/programme-icons/diversity-and-inclusion.png"); mask-image: url("assets/programme-icons/diversity-and-inclusion.png"); }
+.bi.bi-geo-alt::before { -webkit-mask-image: url("assets/programme-icons/earth-globe.png"); mask-image: url("assets/programme-icons/earth-globe.png"); }
+.bi.bi-geo-alt-fill::before { -webkit-mask-image: url("assets/programme-icons/earth-globe.png"); mask-image: url("assets/programme-icons/earth-globe.png"); }
+.bi.bi-gift::before { -webkit-mask-image: url("assets/programme-icons/employee-benefits.png"); mask-image: url("assets/programme-icons/employee-benefits.png"); }
+.bi.bi-globe-africa::before { -webkit-mask-image: url("assets/programme-icons/earth-globe.png"); mask-image: url("assets/programme-icons/earth-globe.png"); }
+.bi.bi-graph-up::before { -webkit-mask-image: url("assets/programme-icons/growth-chart.png"); mask-image: url("assets/programme-icons/growth-chart.png"); }
+.bi.bi-hand-index::before { -webkit-mask-image: url("assets/programme-icons/helping-hand.png"); mask-image: url("assets/programme-icons/helping-hand.png"); }
+.bi.bi-hand-thumbs-up::before { -webkit-mask-image: url("assets/programme-icons/hands-clapping.png"); mask-image: url("assets/programme-icons/hands-clapping.png"); }
+.bi.bi-hourglass-split::before { -webkit-mask-image: url("assets/programme-icons/timepiece-countdown.png"); mask-image: url("assets/programme-icons/timepiece-countdown.png"); }
+.bi.bi-house::before { -webkit-mask-image: url("assets/programme-icons/family-house.png"); mask-image: url("assets/programme-icons/family-house.png"); }
+.bi.bi-inboxes::before { -webkit-mask-image: url("assets/programme-icons/email-inbox.png"); mask-image: url("assets/programme-icons/email-inbox.png"); }
+.bi.bi-incognito::before { -webkit-mask-image: url("assets/programme-icons/privacy-shield.png"); mask-image: url("assets/programme-icons/privacy-shield.png"); }
+.bi.bi-info-circle::before { -webkit-mask-image: url("assets/programme-icons/lightbulb.png"); mask-image: url("assets/programme-icons/lightbulb.png"); }
+.bi.bi-journal-check::before { -webkit-mask-image: url("assets/programme-icons/compliance-checkmark.png"); mask-image: url("assets/programme-icons/compliance-checkmark.png"); }
+.bi.bi-key::before { -webkit-mask-image: url("assets/programme-icons/key-and-keyhole.png"); mask-image: url("assets/programme-icons/key-and-keyhole.png"); }
+.bi.bi-laptop::before { -webkit-mask-image: url("assets/programme-icons/laptop.png"); mask-image: url("assets/programme-icons/laptop.png"); }
+.bi.bi-life-preserver::before { -webkit-mask-image: url("assets/programme-icons/tech-support.png"); mask-image: url("assets/programme-icons/tech-support.png"); }
+.bi.bi-lightbulb::before { -webkit-mask-image: url("assets/programme-icons/lightbulb.png"); mask-image: url("assets/programme-icons/lightbulb.png"); }
+.bi.bi-lightning-charge::before { -webkit-mask-image: url("assets/programme-icons/lightning-bolt.png"); mask-image: url("assets/programme-icons/lightning-bolt.png"); }
+.bi.bi-lock::before { -webkit-mask-image: url("assets/programme-icons/padlock.png"); mask-image: url("assets/programme-icons/padlock.png"); }
+.bi.bi-megaphone::before { -webkit-mask-image: url("assets/programme-icons/megaphone.png"); mask-image: url("assets/programme-icons/megaphone.png"); }
+.bi.bi-mic-fill::before { -webkit-mask-image: url("assets/programme-icons/microphone.png"); mask-image: url("assets/programme-icons/microphone.png"); }
+.bi.bi-mortarboard::before { -webkit-mask-image: url("assets/programme-icons/graduation-cap.png"); mask-image: url("assets/programme-icons/graduation-cap.png"); }
+.bi.bi-paperclip::before { -webkit-mask-image: url("assets/programme-icons/folder.png"); mask-image: url("assets/programme-icons/folder.png"); }
+.bi.bi-patch-check::before { -webkit-mask-image: url("assets/programme-icons/safety-check-mark.png"); mask-image: url("assets/programme-icons/safety-check-mark.png"); }
+.bi.bi-pen::before { -webkit-mask-image: url("assets/programme-icons/contract-agreement.png"); mask-image: url("assets/programme-icons/contract-agreement.png"); }
+.bi.bi-pencil::before { -webkit-mask-image: url("assets/programme-icons/pencil-and-notebook.png"); mask-image: url("assets/programme-icons/pencil-and-notebook.png"); }
+.bi.bi-pencil-square::before { -webkit-mask-image: url("assets/programme-icons/pencil-and-notebook.png"); mask-image: url("assets/programme-icons/pencil-and-notebook.png"); }
+.bi.bi-people::before { -webkit-mask-image: url("assets/programme-icons/diverse-people.png"); mask-image: url("assets/programme-icons/diverse-people.png"); }
+.bi.bi-people-fill::before { -webkit-mask-image: url("assets/programme-icons/diverse-people.png"); mask-image: url("assets/programme-icons/diverse-people.png"); }
+.bi.bi-person-badge::before { -webkit-mask-image: url("assets/programme-icons/employee-badge.png"); mask-image: url("assets/programme-icons/employee-badge.png"); }
+.bi.bi-person-check::before { -webkit-mask-image: url("assets/programme-icons/compliance-checklist.png"); mask-image: url("assets/programme-icons/compliance-checklist.png"); }
+.bi.bi-person-check-fill::before { -webkit-mask-image: url("assets/programme-icons/compliance-checklist.png"); mask-image: url("assets/programme-icons/compliance-checklist.png"); }
+.bi.bi-person-circle::before { -webkit-mask-image: url("assets/programme-icons/employee-badge.png"); mask-image: url("assets/programme-icons/employee-badge.png"); }
+.bi.bi-person-gear::before { -webkit-mask-image: url("assets/programme-icons/expert.png"); mask-image: url("assets/programme-icons/expert.png"); }
+.bi.bi-person-lines-fill::before { -webkit-mask-image: url("assets/programme-icons/employee-badge.png"); mask-image: url("assets/programme-icons/employee-badge.png"); }
+.bi.bi-person-plus::before { -webkit-mask-image: url("assets/programme-icons/talent-acquisition.png"); mask-image: url("assets/programme-icons/talent-acquisition.png"); }
+.bi.bi-phone::before { -webkit-mask-image: url("assets/programme-icons/smartphone.png"); mask-image: url("assets/programme-icons/smartphone.png"); }
+.bi.bi-question-circle::before { -webkit-mask-image: url("assets/programme-icons/conversation-bubbles.png"); mask-image: url("assets/programme-icons/conversation-bubbles.png"); }
+.bi.bi-rocket-takeoff::before { -webkit-mask-image: url("assets/programme-icons/rocket-launch.png"); mask-image: url("assets/programme-icons/rocket-launch.png"); }
+.bi.bi-search::before { -webkit-mask-image: url("assets/programme-icons/magnifying-glass.png"); mask-image: url("assets/programme-icons/magnifying-glass.png"); }
+.bi.bi-send::before { -webkit-mask-image: url("assets/programme-icons/email-communication.png"); mask-image: url("assets/programme-icons/email-communication.png"); }
+.bi.bi-send-check::before { -webkit-mask-image: url("assets/programme-icons/email-communication.png"); mask-image: url("assets/programme-icons/email-communication.png"); }
+.bi.bi-shield-check::before { -webkit-mask-image: url("assets/programme-icons/safety-check-mark.png"); mask-image: url("assets/programme-icons/safety-check-mark.png"); }
+.bi.bi-shield-exclamation::before { -webkit-mask-image: url("assets/programme-icons/identify.png"); mask-image: url("assets/programme-icons/identify.png"); }
+.bi.bi-shield-lock::before { -webkit-mask-image: url("assets/programme-icons/privacy-shield.png"); mask-image: url("assets/programme-icons/privacy-shield.png"); }
+.bi.bi-shield-lock-fill::before { -webkit-mask-image: url("assets/programme-icons/privacy-shield.png"); mask-image: url("assets/programme-icons/privacy-shield.png"); }
+.bi.bi-signpost-2::before { -webkit-mask-image: url("assets/programme-icons/direction-and-moral-guidance.png"); mask-image: url("assets/programme-icons/direction-and-moral-guidance.png"); }
+.bi.bi-signpost-split::before { -webkit-mask-image: url("assets/programme-icons/direction-and-moral-guidance.png"); mask-image: url("assets/programme-icons/direction-and-moral-guidance.png"); }
+.bi.bi-telephone::before { -webkit-mask-image: url("assets/programme-icons/telephone.png"); mask-image: url("assets/programme-icons/telephone.png"); }
+.bi.bi-telephone-forward::before { -webkit-mask-image: url("assets/programme-icons/telephone.png"); mask-image: url("assets/programme-icons/telephone.png"); }
+.bi.bi-telephone-x::before { -webkit-mask-image: url("assets/programme-icons/telephone.png"); mask-image: url("assets/programme-icons/telephone.png"); }
+.bi.bi-ui-checks::before { -webkit-mask-image: url("assets/programme-icons/compliance-checklist.png"); mask-image: url("assets/programme-icons/compliance-checklist.png"); }
+.bi.bi-ui-checks-grid::before { -webkit-mask-image: url("assets/programme-icons/compliance-checklist.png"); mask-image: url("assets/programme-icons/compliance-checklist.png"); }
+.bi.bi-universal-access::before { -webkit-mask-image: url("assets/programme-icons/universal-access.png"); mask-image: url("assets/programme-icons/universal-access.png"); }
+.bi.bi-universal-access-circle::before { -webkit-mask-image: url("assets/programme-icons/universal-access.png"); mask-image: url("assets/programme-icons/universal-access.png"); }
+.bi.bi-volume-up::before { -webkit-mask-image: url("assets/programme-icons/speech-recognition.png"); mask-image: url("assets/programme-icons/speech-recognition.png"); }

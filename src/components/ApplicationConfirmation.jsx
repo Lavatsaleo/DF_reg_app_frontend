@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { formatPathwayLabel, formatStatusLabel } from "../utils/displayLabels";
+import MissingLinkHelp from "./MissingLinkHelp";
 
 // Moves screen reader and keyboard focus to the result heading when the confirmation replaces the form.
 function useFocusOnMount() {
@@ -83,6 +84,12 @@ function getNextStepCopy(result, selectedPathway) {
   const testRequired = requiresBasicSkillsTest(result, selectedPathway);
 
   if (screeningStatus === "EXISTING_APPLICATION") {
+    if (result?.status === "ELIGIBLE_PENDING_SKILLS_TEST") {
+      return {
+        title: "Complete your Basic IT skills test",
+        body: "Open the secure test link in the email we sent to the address on your application. The test can only be opened from that link. If you can't find the email, ask for a new link below.",
+      };
+    }
     return result?.existingApplicationOpened === false
       ? {
           title: "Existing application found",
@@ -194,6 +201,9 @@ function ApplicationConfirmation({ result, selectedPathway, onStartNewApplicatio
   const canCheckStatus = Boolean(reference) && result?.allowStatusCheck !== false;
   const testRequired = requiresBasicSkillsTest(result, selectedPathway);
   const nextStep = getNextStepCopy(result, selectedPathway);
+  const existingPathwayId = result?.pathway;
+  const appliedForOtherPathway = isDuplicate && existingPathwayId && selectedPathway?.id && existingPathwayId !== selectedPathway.id;
+  const awaitingSkillsTest = isDuplicate && result?.status === "ELIGIBLE_PENDING_SKILLS_TEST" && Boolean(reference);
 
   if (isIneligible && !isDuplicate) {
     return (
@@ -225,7 +235,9 @@ function ApplicationConfirmation({ result, selectedPathway, onStartNewApplicatio
                   {isDuplicate ? "This application already exists." : "Thank you. Your application has been received."}
                 </h1>
                 <p className="ss-confirmation-lead">
-                  {isDuplicate
+                  {appliedForOtherPathway
+                    ? <>You already have an application for <strong>{formatPathwayLabel(existingPathwayId)}</strong>. You can apply for one pathway only, so a new application for {selectedPathway.title} was not created. Your existing application is shown below.</>
+                    : isDuplicate
                     ? result?.existingApplicationOpened === false
                       ? "A new application was not created. Please contact the project team if you need help accessing the existing application."
                       : "A new application was not created. We have opened the existing application summary below."
@@ -294,6 +306,7 @@ function ApplicationConfirmation({ result, selectedPathway, onStartNewApplicatio
                       <div>
                         <strong>{nextStep.title}</strong>
                         <p>{nextStep.body}</p>
+                        {awaitingSkillsTest && <MissingLinkHelp reference={reference} supportEmail={result?.supportEmail} />}
                       </div>
                     </div>
                     <div className="ss-timeline-item">
@@ -312,7 +325,7 @@ function ApplicationConfirmation({ result, selectedPathway, onStartNewApplicatio
                   </button>
                   {canCheckStatus && (
                     <button type="button" className="btn ss-btn-outline" onClick={onCheckStatus}>
-                      <i className="bi bi-search" aria-hidden="true" /> Check status
+                      <i className="bi bi-clipboard2-check" aria-hidden="true" /> Check status
                     </button>
                   )}
                   <button type="button" className="btn ss-btn-outline" onClick={onStartNewApplication}>

@@ -2,6 +2,7 @@ function AppNavbar({
   selectedPathway,
   currentView,
   onBackToPathways,
+  onShowPortal,
   onCheckStatus,
   onShowCommittee,
   onShowDashboard,
@@ -30,10 +31,9 @@ function AppNavbar({
           <button
             type="button"
             className="ss-nav-chip df-portal-chip"
-            onClick={onBackToPathways}
-            aria-label="Application Portal — back to pathways"
+            onClick={onShowPortal || onBackToPathways}
+            aria-label="Application Portal: choose a pathway"
           >
-            <i className="bi bi-shield-check" aria-hidden="true" />
             <span>Application Portal</span>
           </button>
 
@@ -44,7 +44,7 @@ function AppNavbar({
               onClick={onCheckStatus}
               aria-current={isStatusPage ? "page" : undefined}
             >
-              <i className="bi bi-search" aria-hidden="true" />
+              <i className="bi bi-clipboard2-check" aria-hidden="true" />
               <span className="df-nav-label">Check status</span>
             </button>
           )}

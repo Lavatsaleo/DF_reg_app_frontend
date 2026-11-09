@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import { API_BASE_URL } from "../config/api";
+import MissingLinkHelp, { SupportContact } from "../components/MissingLinkHelp";
 import { formatPathwayLabel, formatStatusLabel } from "../utils/displayLabels";
 import {
   findSubmittedApplication,
@@ -93,10 +94,10 @@ function formatDate(value) {
 }
 
 // Tell the applicant what actually happened to their test email instead of always saying it was sent.
-function SkillsTestInvitationNote({ invitation }) {
+function SkillsTestInvitationNote({ invitation, reference, supportEmail }) {
   const expired = Boolean(invitation?.expired) || invitation?.status === "EXPIRED";
   const sent = ["SENT", "OPENED"].includes(invitation?.status);
-  const contactTeam = "Please contact the programme team so they can check your email address and send you a new link.";
+  const contactTeam = "You can ask for a new link below.";
 
   let icon = "bi-envelope-check";
   let message;
@@ -124,6 +125,7 @@ function SkillsTestInvitationNote({ invitation }) {
         {sent && !expired && invitation.expiresAt && (
           <p className="mb-0">Link expires: {formatDate(invitation.expiresAt)}.</p>
         )}
+        <MissingLinkHelp reference={reference} supportEmail={supportEmail} />
       </div>
     </div>
   );
@@ -263,7 +265,11 @@ function StatusResultCard({ result }) {
       )}
 
       {result?.requiresBasicSkillsTest && (
-        <SkillsTestInvitationNote invitation={result?.testInvitation} />
+        <SkillsTestInvitationNote
+          invitation={result?.testInvitation}
+          reference={result?.limitedView ? "" : reference}
+          supportEmail={result?.supportEmail}
+        />
       )}
 
       {status === "PARTICIPANT_REGISTRATION_PENDING" && (
@@ -274,10 +280,13 @@ function StatusResultCard({ result }) {
               You have been selected. Please check the email address used in your application for the secure Participant Registration &amp; Baseline Survey link. Also check your spam or junk folder.
             </p>
             {result?.participantRegistrationInvitation?.expiresAt && (
-              <p className="mb-0">
+              <p className="mb-2">
                 Registration invitation expires: {formatDate(result.participantRegistrationInvitation.expiresAt)}.
               </p>
             )}
+            <p className="mb-0">
+              Haven&apos;t received it? <SupportContact supportEmail={result?.supportEmail} /> and include your application reference, and the team will send it again.
+            </p>
           </div>
         </div>
       )}
@@ -324,7 +333,7 @@ function StatusCheckPage({ onBackHome, onStartApplication }) {
       );
 
       const apiResult = response.data?.data || response.data?.application || response.data?.registration || response.data;
-      if (apiResult && getReferenceFromResult(apiResult)) {
+      if (apiResult && (getReferenceFromResult(apiResult) || apiResult.limitedView)) {
         setLookupResult(apiResult);
         return;
       }
