@@ -4,6 +4,8 @@ import { createPortal } from "react-dom";
 import axios from "axios";
 import { API_BASE_URL } from "../config/api";
 import { formatPathwayLabel, formatStatusLabel } from "../utils/displayLabels";
+import PasswordFields from "../components/PasswordFields";
+import { getPasswordPairProblem } from "../utils/passwordRules";
 import "./CommitteeDashboardPage.css";
 import "./CommitteeWorkspace.css";
 
@@ -66,7 +68,8 @@ const EMPTY_MEMBER_FORM = {
   role: "MEMBER",
   notes: "",
   createLogin: false,
-  temporaryPassword: "",
+  password: "",
+  confirmPassword: "",
 };
 
 const EMPTY_COUNTRY_ADMIN_FORM = {
@@ -74,6 +77,7 @@ const EMPTY_COUNTRY_ADMIN_FORM = {
   email: "",
   country: "",
   password: "",
+  confirmPassword: "",
 };
 
 const REVIEW_DECISIONS = [
@@ -196,87 +200,362 @@ function getApplicantSubtitle(applicant) {
     .join(" · ");
 }
 
-function MemberWorkloadCard({ member, canManage, onToggleActive, onCreateLogin, creatingLoginForMemberId }) {
-  const [showLoginForm, setShowLoginForm] = useState(false);
-  const [temporaryPassword, setTemporaryPassword] = useState("");
+function getInitials(name) {
+  const parts = String(name || "").trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return "?";
+  return (parts[0][0] + (parts.length > 1 ? parts[parts.length - 1][0] : "")).toUpperCase();
+}
+
+const ADMIN_PASSWORD_NOTE =
+  "You are choosing this password for someone else. Tell them in person or by phone, never by email or chat. They can choose their own with “Forgot your password?” on the sign-in page.";
+
+function InlineFeedback({ feedback }) {
+  if (!feedback?.text) return null;
+  const ok = feedback.type === "success";
+  return (
+    <p className={`cm-feedback ${ok ? "is-ok" : "is-bad"}`} role={ok ? "status" : "alert"}>
+      <i className={`bi ${ok ? "bi-check-circle-fill" : "bi-exclamation-triangle-fill"}`} aria-hidden="true" />
+      <span>{feedback.text}</span>
+    </p>
+  );
+}
+
+function MemberWorkloadCard({ member, canManage, onToggleActive, onSetPassword, onSendReset }) {
+  const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [busy, setBusy] = useState("");
+  const [feedback, setFeedback] = useState(null);
+  const passwordToggleRef = useRef(null);
   const hasLogin = member.hasLogin === true;
+  const isChair = member.role === "CHAIRPERSON";
+  const panelId = `cm-password-${member.id}`;
+  const headingId = `cm-member-${member.id}`;
+
+  function closePasswordForm() {
+    setShowPasswordForm(false);
+    setPassword("");
+    setConfirmPassword("");
+    passwordToggleRef.current?.focus();
+  }
+
+  async function handlePasswordSubmit(event) {
+    event.preventDefault();
+    const problem = getPasswordPairProblem(password, confirmPassword, member);
+    if (problem) {
+      setFeedback({ type: "error", text: problem });
+      return;
+    }
+    setBusy("password");
+    setFeedback(null);
+    const result = await onSetPassword(member.id, password, confirmPassword);
+    setBusy("");
+    setFeedback({ type: result.ok ? "success" : "error", text: result.message });
+    if (result.ok) closePasswordForm();
+  }
+
+  async function handleSendReset() {
+    setBusy("reset");
+    setFeedback(null);
+    const result = await onSendReset(member.id);
+    setBusy("");
+    setFeedback({ type: result.ok ? "success" : "error", text: result.message });
+  }
 
   return (
-    <article className="committee-member-card">
-      <div className="committee-member-avatar" aria-hidden="true">
-        {member.fullName?.charAt(0)?.toUpperCase() || "M"}
+    <article className={`cm-card ${member.isActive ? "" : "is-inactive"}`} aria-labelledby={headingId}>
+      <div className="cm-card-head">
+        <span className={`cm-avatar ${isChair ? "is-chair" : ""}`} aria-hidden="true">{getInitials(member.fullName)}</span>
+        <div className="cm-identity">
+          <h4 id={headingId}>{member.fullName}</h4>
+          <p className="cm-email">{member.email}</p>
+        </div>
       </div>
-      <div className="committee-member-main">
-        <div className="d-flex flex-column flex-lg-row justify-content-between gap-2">
-          <div>
-            <h3>{member.fullName}</h3>
-            <p>{member.email}</p>
-          </div>
-          <div className="d-flex flex-wrap gap-2 align-items-start">
-            <span className={`committee-role-pill ${member.role === "CHAIRPERSON" ? "chair" : "member"}`}>
-              {member.role === "CHAIRPERSON" ? "Chairperson" : "Member"}
-            </span>
-            {member.country && (
-              <span className="committee-login-pill profile-only">
-                {member.country}
-              </span>
-            )}
-            <span className={`committee-login-pill ${hasLogin ? "active" : "profile-only"}`}>
-              {hasLogin ? "Login enabled" : "Profile only"}
-            </span>
-          </div>
-        </div>
-        <div className="committee-workload-row" aria-label="Committee member workload">
-          <span><strong>{member.workload?.pending || 0}</strong> pending</span>
-          <span><strong>{member.workload?.completed || 0}</strong> completed</span>
-          <span><strong>{member.workload?.total || 0}</strong> total</span>
-        </div>
 
-        {canManage && showLoginForm && (
-          <form
-            className="committee-member-login-form"
-            onSubmit={(event) => {
-              event.preventDefault();
-              onCreateLogin(member.id, temporaryPassword, () => {
-                setTemporaryPassword("");
-                setShowLoginForm(false);
-              });
-            }}
-          >
-            <input
-              type="password"
-              aria-label={`Temporary password for ${member.fullName}`}
-              minLength="10"
-              value={temporaryPassword}
-              onChange={(event) => setTemporaryPassword(event.target.value)}
-              placeholder="Temporary password, minimum 10 characters"
-              required
-            />
-            <button
-              type="submit"
-              className="btn committee-small-action"
-              disabled={creatingLoginForMemberId === member.id}
-            >
-              {creatingLoginForMemberId === member.id ? "Saving..." : hasLogin ? "Reset login" : "Create login"}
-            </button>
-          </form>
+      <ul className="cm-tags" aria-label="Member details">
+        <li className={`cm-tag ${isChair ? "is-chair" : "is-member"}`}>
+          <i className={`bi ${isChair ? "bi-star-fill" : "bi-person-fill"}`} aria-hidden="true" />
+          {isChair ? "Chairperson" : "Member"}
+        </li>
+        <li className={`cm-tag ${hasLogin ? "is-login" : "is-nologin"}`}>
+          <i className={`bi ${hasLogin ? "bi-key-fill" : "bi-key"}`} aria-hidden="true" />
+          {hasLogin ? "Can sign in" : "No login yet"}
+        </li>
+        {!member.isActive && (
+          <li className="cm-tag is-inactive">
+            <i className="bi bi-pause-circle-fill" aria-hidden="true" /> Inactive
+          </li>
         )}
-      </div>
+      </ul>
+
+      <dl className="cm-stats">
+        <div className={member.workload?.pending ? "is-pending" : ""}>
+          <dt>Pending</dt>
+          <dd>{member.workload?.pending || 0}</dd>
+        </div>
+        <div>
+          <dt>Completed</dt>
+          <dd>{member.workload?.completed || 0}</dd>
+        </div>
+        <div>
+          <dt>Total</dt>
+          <dd>{member.workload?.total || 0}</dd>
+        </div>
+      </dl>
+
+      <InlineFeedback feedback={feedback} />
+
       {canManage && (
-        <div className="committee-member-actions">
+        <div className="cm-actions">
+          {hasLogin && (
+            <button
+              type="button"
+              className="btn cm-btn cm-btn-primary"
+              onClick={handleSendReset}
+              disabled={busy === "reset"}
+            >
+              <i className="bi bi-envelope-arrow-up" aria-hidden="true" />
+              {busy === "reset" ? "Sending..." : "Send reset link"}
+              <span className="visually-hidden"> to {member.fullName}</span>
+            </button>
+          )}
           <button
+            ref={passwordToggleRef}
             type="button"
-            className="btn committee-small-action"
-            onClick={() => setShowLoginForm((current) => !current)}
+            className={`btn cm-btn ${hasLogin ? "cm-btn-outline" : "cm-btn-primary"}`}
+            aria-expanded={showPasswordForm}
+            aria-controls={panelId}
+            onClick={() => (showPasswordForm ? closePasswordForm() : setShowPasswordForm(true))}
           >
-            {showLoginForm ? "Cancel login" : hasLogin ? "Reset login" : "Create login"}
+            <i className={`bi ${hasLogin ? "bi-key" : "bi-person-lock"}`} aria-hidden="true" />
+            {hasLogin ? "Set new password" : "Create login"}
+            <span className="visually-hidden"> for {member.fullName}</span>
           </button>
           <button
             type="button"
-            className={`btn committee-small-action ${member.isActive ? "committee-danger-ghost" : "committee-success-ghost"}`}
+            className={`btn cm-btn ${member.isActive ? "cm-btn-danger" : "cm-btn-success"}`}
             onClick={() => onToggleActive(member)}
           >
+            <i className={`bi ${member.isActive ? "bi-pause-circle" : "bi-play-circle"}`} aria-hidden="true" />
             {member.isActive ? "Deactivate" : "Activate"}
+            <span className="visually-hidden"> {member.fullName}</span>
+          </button>
+        </div>
+      )}
+
+      {canManage && showPasswordForm && (
+        <form id={panelId} className="cm-password-panel" onSubmit={handlePasswordSubmit} noValidate>
+          <p className="cm-password-title">
+            {hasLogin ? `Set a new password for ${member.fullName}` : `Create a login for ${member.fullName}`}
+          </p>
+          <p className="cm-password-sub">
+            They will sign in with <strong>{member.email}</strong>.
+            {hasLogin && " Their current password stops working straight away."}
+          </p>
+          <PasswordFields
+            password={password}
+            confirmPassword={confirmPassword}
+            onPasswordChange={setPassword}
+            onConfirmPasswordChange={setConfirmPassword}
+            person={member}
+            label="New password"
+            confirmLabel="Confirm new password"
+            note={ADMIN_PASSWORD_NOTE}
+          />
+          <div className="cm-password-actions">
+            <button type="submit" className="btn cm-btn cm-btn-primary" disabled={busy === "password"}>
+              <i className="bi bi-check2-circle" aria-hidden="true" />
+              {busy === "password" ? "Saving..." : hasLogin ? "Save new password" : "Create login"}
+            </button>
+            <button type="button" className="btn cm-btn cm-btn-outline" onClick={closePasswordForm}>
+              Cancel
+            </button>
+          </div>
+        </form>
+      )}
+    </article>
+  );
+}
+
+function MembersOverview({ members }) {
+  const active = members.filter((member) => member.isActive);
+  const pending = members.reduce((sum, member) => sum + (member.workload?.pending || 0), 0);
+  const completed = members.reduce((sum, member) => sum + (member.workload?.completed || 0), 0);
+  const withoutLogin = active.filter((member) => !member.hasLogin).length;
+  const items = [
+    { label: "Active members", value: active.length, icon: "bi-people-fill" },
+    { label: "Reviews pending", value: pending, icon: "bi-hourglass-split" },
+    { label: "Reviews completed", value: completed, icon: "bi-check2-all" },
+    { label: "Active without a login", value: withoutLogin, icon: "bi-key", attention: withoutLogin > 0 },
+  ];
+  return (
+    <ul className="cm-overview" aria-label="Committee summary">
+      {items.map((item) => (
+        <li key={item.label} className={item.attention ? "needs-attention" : ""}>
+          <i className={`bi ${item.icon}`} aria-hidden="true" />
+          <strong>{item.value}</strong>
+          <span>{item.label}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function CommitteeMembersSection({
+  members,
+  canManage,
+  showAddMember,
+  onToggleAddMember,
+  addMemberForm,
+  onToggleActive,
+  onSetPassword,
+  onSendReset,
+}) {
+  const [query, setQuery] = useState("");
+  const term = query.trim().toLowerCase();
+  const shown = term
+    ? members.filter((member) => `${member.fullName} ${member.email}`.toLowerCase().includes(term))
+    : members;
+
+  // Grouped by country; chairpersons first in each group, then by name.
+  const groups = [];
+  [...shown]
+    .sort((a, b) =>
+      String(a.country || "").localeCompare(String(b.country || ""))
+      || Number(b.role === "CHAIRPERSON") - Number(a.role === "CHAIRPERSON")
+      || String(a.fullName).localeCompare(String(b.fullName)))
+    .forEach((member) => {
+      const country = member.country || "No country";
+      let group = groups.find((item) => item.country === country);
+      if (!group) {
+        group = { country, members: [] };
+        groups.push(group);
+      }
+      group.members.push(member);
+    });
+
+  return (
+    <section className="committee-section-card cm-section" aria-labelledby="cm-title">
+      <div className="cm-section-head">
+        <div>
+          <span className="ss-small-label dark">Members</span>
+          <h2 id="cm-title">Committee workload</h2>
+          <p>See who is reviewing, keep assignments balanced and manage sign-in access.</p>
+        </div>
+        {canManage && (
+          <button
+            type="button"
+            className={`btn ${showAddMember ? "committee-secondary-action" : "committee-primary-action"}`}
+            aria-expanded={showAddMember}
+            aria-controls="committee-add-member"
+            onClick={onToggleAddMember}
+          >
+            <i className={`bi ${showAddMember ? "bi-x-lg" : "bi-person-plus"}`} aria-hidden="true" />
+            {showAddMember ? " Close form" : " Add committee member"}
+          </button>
+        )}
+      </div>
+
+      {canManage && showAddMember && (
+        <div id="committee-add-member" className="cw-inline-form">{addMemberForm}</div>
+      )}
+
+      {members.length === 0 ? (
+        <div className="cm-empty">
+          <i className="bi bi-people" aria-hidden="true" />
+          <p>No committee members have been added yet.</p>
+        </div>
+      ) : (
+        <>
+          <MembersOverview members={members} />
+
+          <div className="cm-search">
+            <label htmlFor="cm-search-input">Find a member</label>
+            <div className="cm-search-row">
+              <i className="bi bi-search" aria-hidden="true" />
+              <input
+                id="cm-search-input"
+                type="search"
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Name or email address"
+                autoComplete="off"
+              />
+            </div>
+            <p className="visually-hidden" role="status" aria-live="polite">
+              {term ? `${shown.length} of ${members.length} members shown` : ""}
+            </p>
+          </div>
+
+          {shown.length === 0 && (
+            <p className="cm-empty-text">No members match &ldquo;{query.trim()}&rdquo;.</p>
+          )}
+
+          {groups.map((group) => {
+            const groupId = `cm-group-${group.country.replace(/\W+/g, "-").toLowerCase()}`;
+            return (
+              <section key={group.country} className="cm-group" aria-labelledby={groupId}>
+                <h3 id={groupId} className="cm-group-title">
+                  <i className="bi bi-geo-alt-fill" aria-hidden="true" /> {group.country}
+                  <span>{group.members.length} {group.members.length === 1 ? "member" : "members"}</span>
+                </h3>
+                <div className="cm-grid">
+                  {group.members.map((member) => (
+                    <MemberWorkloadCard
+                      key={member.id}
+                      member={member}
+                      canManage={canManage}
+                      onToggleActive={onToggleActive}
+                      onSetPassword={onSetPassword}
+                      onSendReset={onSendReset}
+                    />
+                  ))}
+                </div>
+              </section>
+            );
+          })}
+        </>
+      )}
+    </section>
+  );
+}
+
+function CountryAdminCard({ admin, onSendReset }) {
+  const [busy, setBusy] = useState(false);
+  const [feedback, setFeedback] = useState(null);
+  const isSso = (admin.authProvider || "LOCAL") === "SSO";
+
+  async function handleSendReset() {
+    setBusy(true);
+    setFeedback(null);
+    const result = await onSendReset(admin.id);
+    setBusy(false);
+    setFeedback({ type: result.ok ? "success" : "error", text: result.message });
+  }
+
+  return (
+    <article className={`cm-card cm-admin-card ${admin.isActive ? "" : "is-inactive"}`} aria-labelledby={`ca-${admin.id}`}>
+      <div className="cm-card-head">
+        <span className="cm-avatar is-admin" aria-hidden="true">{getInitials(admin.fullName)}</span>
+        <div className="cm-identity">
+          <h4 id={`ca-${admin.id}`}>{admin.fullName}</h4>
+          <p className="cm-email">{admin.email}</p>
+        </div>
+      </div>
+      <ul className="cm-tags" aria-label="Admin details">
+        <li className="cm-tag is-member"><i className="bi bi-geo-alt-fill" aria-hidden="true" /> {admin.country || "No country"}</li>
+        <li className={`cm-tag ${admin.isActive ? "is-login" : "is-inactive"}`}>
+          {admin.isActive ? "Active" : "Inactive"}
+        </li>
+        {admin.lastLoginAt && <li className="cm-tag is-plain">Last signed in {formatDate(admin.lastLoginAt)}</li>}
+      </ul>
+      <InlineFeedback feedback={feedback} />
+      {admin.isActive && !isSso && (
+        <div className="cm-actions">
+          <button type="button" className="btn cm-btn cm-btn-outline" onClick={handleSendReset} disabled={busy}>
+            <i className="bi bi-envelope-arrow-up" aria-hidden="true" />
+            {busy ? "Sending..." : "Send reset link"}
+            <span className="visually-hidden"> to {admin.fullName}</span>
           </button>
         </div>
       )}
@@ -284,86 +563,96 @@ function MemberWorkloadCard({ member, canManage, onToggleActive, onCreateLogin, 
   );
 }
 
-function AddCountryAdminForm({ adminForm, onChange, onSubmit, submitting, countries, countryAdmins }) {
+function AddCountryAdminForm({ adminForm, onChange, onSubmit, submitting, countries, countryAdmins, onSendReset }) {
   return (
-    <form className="committee-add-member-card" onSubmit={onSubmit}>
-      <div>
-        <span className="ss-small-label dark">Country administration</span>
-        <h3>Add country admin</h3>
-        <p>Country admins can add and manage committee members only for their assigned country.</p>
+    <section className="committee-section-card cm-section" aria-labelledby="ca-title">
+      <div className="cm-section-head">
+        <div>
+          <span className="ss-small-label dark">Country administration</span>
+          <h2 id="ca-title">Country admins</h2>
+          <p>Country admins add and manage committee members for their own country only.</p>
+        </div>
       </div>
 
-      <div className="committee-form-grid">
-        <label>
-          Full name
-          <input
-            type="text"
-            value={adminForm.fullName}
-            onChange={(event) => onChange("fullName", event.target.value)}
-            placeholder="e.g. Country programme admin"
-            required
-          />
-        </label>
-        <label>
-          Email address
-          <input
-            type="email"
-            value={adminForm.email}
-            onChange={(event) => onChange("email", event.target.value)}
-            placeholder="admin@example.org"
-            required
-          />
-        </label>
-        <label>
-          Country
-          <select
-            value={adminForm.country}
-            onChange={(event) => onChange("country", event.target.value)}
-            required
-          >
-            <option value="">Select country</option>
-            {(countries || COUNTRY_OPTIONS).map((country) => (
-              <option key={country} value={country}>{country}</option>
-            ))}
-          </select>
-        </label>
-        <label>
-          Temporary password
-          <input
-            type="password"
-            minLength="10"
-            value={adminForm.password}
-            onChange={(event) => onChange("password", event.target.value)}
-            placeholder="Minimum 10 characters"
-            required
-          />
-        </label>
-      </div>
-
-      {countryAdmins?.length > 0 && (
-        <div className="committee-workload-row" aria-label="Country admins already set up">
+      {countryAdmins?.length > 0 ? (
+        <div className="cm-grid cm-admin-grid">
           {countryAdmins.map((admin) => (
-            <span key={admin.id}><strong>{admin.country || "No country"}</strong> {admin.fullName}</span>
+            <CountryAdminCard key={admin.id} admin={admin} onSendReset={onSendReset} />
           ))}
         </div>
+      ) : (
+        <p className="cm-empty-text">No country admins have been set up yet.</p>
       )}
 
-      <div className="committee-form-actions">
-        <button type="submit" className="btn committee-primary-action" disabled={submitting}>
-          <i className="bi bi-person-gear" aria-hidden="true" /> {submitting ? "Adding..." : "Add country admin"}
-        </button>
-      </div>
-    </form>
+      <form className="committee-add-member-card cm-form" onSubmit={onSubmit} noValidate>
+        <div>
+          <h3>Add a country admin</h3>
+          <p>All fields are required.</p>
+        </div>
+
+        <div className="committee-form-grid">
+          <label>
+            Full name
+            <input
+              type="text"
+              value={adminForm.fullName}
+              onChange={(event) => onChange("fullName", event.target.value)}
+              autoComplete="off"
+              required
+            />
+          </label>
+          <label>
+            Email address
+            <input
+              type="email"
+              value={adminForm.email}
+              onChange={(event) => onChange("email", event.target.value)}
+              placeholder="name@example.org"
+              autoComplete="off"
+              required
+            />
+          </label>
+          <label>
+            Country
+            <select
+              value={adminForm.country}
+              onChange={(event) => onChange("country", event.target.value)}
+              required
+            >
+              <option value="">Select country</option>
+              {(countries || COUNTRY_OPTIONS).map((country) => (
+                <option key={country} value={country}>{country}</option>
+              ))}
+            </select>
+          </label>
+        </div>
+
+        <PasswordFields
+          password={adminForm.password}
+          confirmPassword={adminForm.confirmPassword}
+          onPasswordChange={(value) => onChange("password", value)}
+          onConfirmPasswordChange={(value) => onChange("confirmPassword", value)}
+          person={adminForm}
+          note={ADMIN_PASSWORD_NOTE}
+        />
+
+        <div className="committee-form-actions">
+          <button type="submit" className="btn committee-primary-action" disabled={submitting}>
+            <i className="bi bi-person-gear" aria-hidden="true" /> {submitting ? "Adding..." : "Add country admin"}
+          </button>
+        </div>
+      </form>
+    </section>
   );
 }
 
 function AddMemberForm({ memberForm, onChange, onSubmit, submitting, countries, canChooseCountry, currentUserCountry }) {
   return (
-    <form className="committee-add-member-card" onSubmit={onSubmit}>
+    <form className="committee-add-member-card cm-form" onSubmit={onSubmit} noValidate>
       <div>
         <span className="ss-small-label dark">Committee setup</span>
         <h3>Add committee member</h3>
-        <p>Members added here can receive automatic applicant assignments.</p>
+        <p>Members added here can receive applicant assignments. Phone number and notes are optional.</p>
       </div>
 
       <div className="committee-form-grid">
@@ -373,7 +662,7 @@ function AddMemberForm({ memberForm, onChange, onSubmit, submitting, countries, 
             type="text"
             value={memberForm.fullName}
             onChange={(event) => onChange("fullName", event.target.value)}
-            placeholder="e.g. Mary Wanjiku"
+            autoComplete="off"
             required
           />
         </label>
@@ -383,17 +672,18 @@ function AddMemberForm({ memberForm, onChange, onSubmit, submitting, countries, 
             type="email"
             value={memberForm.email}
             onChange={(event) => onChange("email", event.target.value)}
-            placeholder="member@example.org"
+            placeholder="name@example.org"
+            autoComplete="off"
             required
           />
         </label>
         <label>
-          Phone number
+          Phone number (optional)
           <input
             type="tel"
             value={memberForm.phone}
             onChange={(event) => onChange("phone", event.target.value)}
-            placeholder="Optional"
+            autoComplete="off"
           />
         </label>
         <label>
@@ -426,12 +716,12 @@ function AddMemberForm({ memberForm, onChange, onSubmit, submitting, countries, 
       </div>
 
       <label className="committee-notes-field">
-        Notes
+        Notes (optional)
         <textarea
           rows="3"
           value={memberForm.notes}
           onChange={(event) => onChange("notes", event.target.value)}
-          placeholder="Optional notes, area of expertise, or availability"
+          placeholder="Area of expertise or availability"
         />
       </label>
 
@@ -441,21 +731,18 @@ function AddMemberForm({ memberForm, onChange, onSubmit, submitting, countries, 
           checked={memberForm.createLogin}
           onChange={(event) => onChange("createLogin", event.target.checked)}
         />
-        Create a staff login for this committee member
+        Let this member sign in to the committee workspace
       </label>
 
       {memberForm.createLogin && (
-        <label className="committee-notes-field">
-          Temporary password
-          <input
-            type="password"
-            minLength="10"
-            value={memberForm.temporaryPassword}
-            onChange={(event) => onChange("temporaryPassword", event.target.value)}
-            placeholder="Minimum 10 characters"
-            required
-          />
-        </label>
+        <PasswordFields
+          password={memberForm.password}
+          confirmPassword={memberForm.confirmPassword}
+          onPasswordChange={(value) => onChange("password", value)}
+          onConfirmPasswordChange={(value) => onChange("confirmPassword", value)}
+          person={memberForm}
+          note={ADMIN_PASSWORD_NOTE}
+        />
       )}
 
       <div className="committee-form-actions">
@@ -1124,7 +1411,6 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
   const [assigningApplicantId, setAssigningApplicantId] = useState("");
   const [reassigning, setReassigning] = useState(false);
   const [submittingReview, setSubmittingReview] = useState(false);
-  const [creatingLoginForMemberId, setCreatingLoginForMemberId] = useState("");
   const [resendingRegistrationId, setResendingRegistrationId] = useState("");
   const [skillsEmailDelivery, setSkillsEmailDelivery] = useState({ records: [], totals: {}, note: "" });
   const [sendingTestEmailReference, setSendingTestEmailReference] = useState("");
@@ -1348,6 +1634,12 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
     event.preventDefault();
     setMessage("");
     setError("");
+    const missing = !countryAdminForm.fullName.trim() || !countryAdminForm.email.trim() || !countryAdminForm.country;
+    const passwordProblem = getPasswordPairProblem(countryAdminForm.password, countryAdminForm.confirmPassword, countryAdminForm);
+    if (missing || passwordProblem) {
+      setError(missing ? "Enter the full name, email address and country for the new country admin." : passwordProblem);
+      return;
+    }
     setAddingCountryAdmin(true);
 
     try {
@@ -1369,12 +1661,26 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
     event.preventDefault();
     setMessage("");
     setError("");
+    const country = isSuperAdmin ? memberForm.country : currentUserCountry;
+    if (!memberForm.fullName.trim() || !memberForm.email.trim() || !country) {
+      setError("Enter the member's full name, email address and country.");
+      return;
+    }
+    if (memberForm.createLogin) {
+      const passwordProblem = getPasswordPairProblem(memberForm.password, memberForm.confirmPassword, memberForm);
+      if (passwordProblem) {
+        setError(passwordProblem);
+        return;
+      }
+    }
     setAddingMember(true);
 
     try {
+      const { password, confirmPassword, ...details } = memberForm;
       const payload = {
-        ...memberForm,
-        country: isSuperAdmin ? memberForm.country : currentUserCountry,
+        ...details,
+        ...(memberForm.createLogin ? { password, confirmPassword } : {}),
+        country,
       };
       const response = await axios.post(`${API_BASE_URL}/api/committee/members`, payload);
       setMessage(response.data?.message || "Committee member added.");
@@ -1402,22 +1708,42 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
     }
   }
 
-  async function handleCreateMemberLogin(memberId, temporaryPassword, onSuccess) {
-    setCreatingLoginForMemberId(memberId);
-    setMessage("");
-    setError("");
+  function describeActionError(actionError, fallbackMessage) {
+    if (actionError.response?.status === 401) {
+      onSessionExpired?.();
+      return "Your staff session has expired. Please sign in again.";
+    }
+    return actionError.response?.data?.message || fallbackMessage;
+  }
 
+  async function handleSetMemberPassword(memberId, password, confirmPassword) {
     try {
       const response = await axios.post(`${API_BASE_URL}/api/committee/members/${memberId}/login`, {
-        temporaryPassword,
+        password,
+        confirmPassword,
       });
-      setMessage(response.data?.message || "Committee member login saved.");
-      onSuccess?.();
       await loadCommitteeData();
+      return { ok: true, message: response.data?.message || "Login saved." };
     } catch (loginError) {
-      handleApiError(loginError, "Failed to create committee member login.");
-    } finally {
-      setCreatingLoginForMemberId("");
+      return { ok: false, message: describeActionError(loginError, "Failed to save the login.") };
+    }
+  }
+
+  async function handleSendMemberReset(memberId) {
+    try {
+      const response = await axios.post(`${API_BASE_URL}/api/committee/members/${memberId}/password-reset`);
+      return { ok: true, message: response.data?.message || "Password reset link sent." };
+    } catch (resetError) {
+      return { ok: false, message: describeActionError(resetError, "Failed to send the password reset link.") };
+    }
+  }
+
+  async function handleSendStaffReset(userId) {
+    try {
+      const response = await axios.post(`${API_BASE_URL}/api/auth/users/${userId}/password-reset`);
+      return { ok: true, message: response.data?.message || "Password reset link sent." };
+    } catch (resetError) {
+      return { ok: false, message: describeActionError(resetError, "Failed to send the password reset link.") };
     }
   }
 
@@ -1982,63 +2308,31 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
               )}
 
               {currentSection.id === "members" && (
-                <section className="committee-section-card committee-workload-card">
-                  <div className="committee-section-header with-filters">
-                    <div>
-                      <span className="ss-small-label dark">Members</span>
-                      <h2>Committee workload</h2>
-                      <p>Monitor active members and keep assignments balanced.</p>
-                    </div>
-                    {canManageCommittee && (
-                      <button
-                        type="button"
-                        className={`btn ${showAddMember ? "committee-secondary-action" : "committee-primary-action"}`}
-                        aria-expanded={showAddMember}
-                        aria-controls="committee-add-member"
-                        onClick={() => {
-                          if (!showAddMember && isSuperAdmin && countryFilter && !memberForm.country) {
-                            setMemberForm((current) => ({ ...current, country: countryFilter }));
-                          }
-                          setShowAddMember((current) => !current);
-                        }}
-                      >
-                        <i className={`bi ${showAddMember ? "bi-x-lg" : "bi-person-plus"}`} aria-hidden="true" />
-                        {showAddMember ? " Close form" : " Add committee member"}
-                      </button>
-                    )}
-                  </div>
-
-                  {canManageCommittee && showAddMember && (
-                    <div id="committee-add-member" className="cw-inline-form">
-                      <AddMemberForm
-                        memberForm={memberForm}
-                        onChange={(field, value) => setMemberForm((current) => ({ ...current, [field]: value }))}
-                        onSubmit={handleAddMember}
-                        submitting={addingMember}
-                        countries={countries}
-                        canChooseCountry={isSuperAdmin}
-                        currentUserCountry={currentUserCountry}
-                      />
-                    </div>
+                <CommitteeMembersSection
+                  members={members}
+                  canManage={canManageCommittee}
+                  showAddMember={showAddMember}
+                  onToggleAddMember={() => {
+                    if (!showAddMember && isSuperAdmin && countryFilter && !memberForm.country) {
+                      setMemberForm((current) => ({ ...current, country: countryFilter }));
+                    }
+                    setShowAddMember((current) => !current);
+                  }}
+                  addMemberForm={(
+                    <AddMemberForm
+                      memberForm={memberForm}
+                      onChange={(field, value) => setMemberForm((current) => ({ ...current, [field]: value }))}
+                      onSubmit={handleAddMember}
+                      submitting={addingMember}
+                      countries={countries}
+                      canChooseCountry={isSuperAdmin}
+                      currentUserCountry={currentUserCountry}
+                    />
                   )}
-
-                  <div className="committee-member-list">
-                    {members.length === 0 ? (
-                      <p className="committee-empty-text">No committee members have been added yet.</p>
-                    ) : (
-                      members.map((member) => (
-                        <MemberWorkloadCard
-                          key={member.id}
-                          member={member}
-                          canManage={canManageCommittee}
-                          onToggleActive={handleToggleMember}
-                          onCreateLogin={handleCreateMemberLogin}
-                          creatingLoginForMemberId={creatingLoginForMemberId}
-                        />
-                      ))
-                    )}
-                  </div>
-                </section>
+                  onToggleActive={handleToggleMember}
+                  onSetPassword={handleSetMemberPassword}
+                  onSendReset={handleSendMemberReset}
+                />
               )}
 
               {currentSection.id === "admins" && (
@@ -2049,6 +2343,7 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
                   submitting={addingCountryAdmin}
                   countries={countries}
                   countryAdmins={countryAdmins}
+                  onSendReset={handleSendStaffReset}
                 />
               )}
             </section>

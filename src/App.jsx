@@ -13,6 +13,7 @@ import CommitteeDashboardPage from "./pages/CommitteeDashboardPage";
 import ApplicationDashboardPage from "./pages/ApplicationDashboardPage";
 import ConsentRecordsPage from "./pages/ConsentRecordsPage";
 import StaffLoginPage from "./pages/StaffLoginPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 import { useAccessibilityPreferences } from "./hooks/useAccessibilityPreferences";
 import { DRAFT_STORAGE_PREFIX, useRegistrationForm } from "./hooks/useRegistrationForm";
 import { clearStaffSession, loadStaffSession, saveStaffSession } from "./utils/staffAuthStorage";
@@ -20,6 +21,11 @@ import { pathways } from "./data/pathways";
 
 function getInitialSkillsTestToken() {
   const match = window.location.pathname.match(/^\/basic-skills-test\/([^/]+)\/?$/);
+  return match ? decodeURIComponent(match[1]) : "";
+}
+
+function getPasswordResetToken() {
+  const match = window.location.pathname.match(/^\/reset-password\/([^/]+)\/?$/);
   return match ? decodeURIComponent(match[1]) : "";
 }
 
@@ -47,6 +53,7 @@ function staffView(session, requested = "committee") {
 }
 
 function getInitialView() {
+  if (getPasswordResetToken()) return "reset-password";
   if (window.location.pathname.startsWith("/staff/")) return staffView(loadStaffSession(), window.location.pathname.endsWith("dashboard") ? "dashboard" : "committee");
   if (getInitialParticipantRegistrationToken()) return "participant-registration";
   if (getInitialSkillsTestToken() || window.location.pathname === "/basic-skills-test") return "skills-test";
@@ -79,6 +86,7 @@ const VIEW_TITLES = {
   "skills-test": "Basic IT skills test",
   "participant-registration": "Participant registration and baseline survey",
   "staff-login": "Staff sign in",
+  "reset-password": "Choose a new password",
   committee: "Committee workspace",
   dashboard: "Application dashboard",
   consents: "Signed consent records",
@@ -134,7 +142,9 @@ function App() {
       const participantRegistrationTokenFromPath = getInitialParticipantRegistrationToken();
       const invitedToken = getInitialSkillsTestToken();
       const pathway = getPathwayFromBrowserPath();
-      if (participantRegistrationTokenFromPath) {
+      if (getPasswordResetToken()) {
+        setCurrentView("reset-password");
+      } else if (participantRegistrationTokenFromPath) {
         setParticipantRegistrationToken(participantRegistrationTokenFromPath);
         setCurrentView("participant-registration");
       } else if (invitedToken || window.location.pathname === "/basic-skills-test") {
@@ -362,7 +372,7 @@ function App() {
 
       <AppNavbar
         selectedPathway={registration.selectedPathway}
-        currentView={currentView === "staff-login" ? "committee" : currentView}
+        currentView={["staff-login", "reset-password"].includes(currentView) ? "committee" : currentView}
         onBackToPathways={handleShowHome}
         onShowPortal={handleShowPortal}
         onCheckStatus={handleShowStatus}
@@ -384,6 +394,14 @@ function App() {
 
       {currentView === "staff-login" ? (
         <StaffLoginPage onLogin={handleStaffLogin} onBackHome={handleShowHome} />
+      ) : currentView === "reset-password" ? (
+        <ResetPasswordPage
+          token={getPasswordResetToken()}
+          onBackToSignIn={() => {
+            navigateTo("/staff/committee");
+            setCurrentView(staffView(loadStaffSession()));
+          }}
+        />
       ) : currentView === "dashboard" ? (
         <ApplicationDashboardPage
           staffUser={staffSession?.user}
@@ -467,7 +485,7 @@ function App() {
         />
       )}
 
-      {!["staff-login", "dashboard", "committee", "consents"].includes(currentView) && <SiteFooter />}
+      {!["staff-login", "reset-password", "dashboard", "committee", "consents"].includes(currentView) && <SiteFooter />}
 
       <ConfirmDialog
         open={Boolean(pendingSwitch)}

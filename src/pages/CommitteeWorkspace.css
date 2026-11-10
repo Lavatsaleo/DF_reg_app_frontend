@@ -449,3 +449,440 @@
     color: CanvasText;
   }
 }
+
+/* ------------------------------------------------------------------------------------------------
+ * Committee members and country admins (cm-*): roomy cards grouped by country.
+ * ---------------------------------------------------------------------------------------------- */
+
+.committee-page .cm-section {
+  display: grid;
+  gap: 22px;
+  min-width: 0;
+}
+
+.committee-page .cm-section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.committee-page .cm-section-head h2 {
+  margin: 2px 0 4px;
+}
+
+.committee-page .cm-section-head p {
+  max-width: 60ch;
+  margin: 0;
+  color: var(--ss-muted);
+}
+
+.committee-page .cm-overview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.committee-page .cm-overview li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+  column-gap: 12px;
+  align-items: center;
+  padding: 14px 16px;
+  background: var(--ss-soft-2);
+  border: 1px solid var(--ss-border);
+  border-radius: 12px;
+}
+
+.committee-page .cm-overview li .bi {
+  grid-row: 1 / span 2;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  color: var(--ss-black);
+  background: #ffffff;
+  border-radius: 50%;
+  font-size: 1.1rem;
+}
+
+.committee-page .cm-overview strong {
+  font-size: 1.5rem;
+  line-height: 1.1;
+}
+
+.committee-page .cm-overview span {
+  color: var(--ss-muted);
+  font-size: 0.92rem;
+}
+
+.committee-page .cm-overview li.needs-attention {
+  background: var(--committee-soft-orange);
+  border-color: #f0b591;
+}
+
+.committee-page .cm-search {
+  display: grid;
+  gap: 6px;
+  max-width: 420px;
+}
+
+.committee-page .cm-search label {
+  font-weight: 800;
+}
+
+.committee-page .cm-search-row {
+  position: relative;
+}
+
+.committee-page .cm-search-row .bi {
+  position: absolute;
+  top: 50%;
+  left: 14px;
+  color: var(--ss-muted);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.committee-page .cm-search-row input {
+  width: 100%;
+  min-height: 46px;
+  padding: 10px 12px 10px 40px;
+}
+
+.committee-page .cm-group {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.committee-page .cm-group-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 0 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--ss-border);
+  font-size: 1.15rem;
+}
+
+.committee-page .cm-group-title .bi {
+  color: var(--committee-red);
+}
+
+.committee-page .cm-group-title span {
+  color: var(--ss-muted);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.committee-page .cm-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 400px), 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+.committee-page .cm-card {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+  padding: 18px;
+  background: #ffffff;
+  border: 1px solid var(--ss-border);
+  border-radius: 14px;
+  box-shadow: 0 1px 2px rgba(17, 17, 17, 0.05);
+}
+
+/* A card with the password form open takes the full row, so the fields are not squeezed. */
+.committee-page .cm-card:has(.cm-password-panel) {
+  grid-column: 1 / -1;
+}
+
+.committee-page .cm-card.is-inactive {
+  background: var(--ss-soft-2);
+  border-style: dashed;
+}
+
+.committee-page .cm-card-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.committee-page .cm-avatar {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  color: var(--ss-black);
+  background: var(--committee-soft-teal);
+  border: 2px solid var(--committee-teal);
+  border-radius: 50%;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+}
+
+.committee-page .cm-avatar.is-chair {
+  background: var(--ss-soft);
+  border-color: var(--ss-yellow-deep);
+}
+
+.committee-page .cm-avatar.is-admin {
+  background: var(--committee-soft-red);
+  border-color: var(--committee-red);
+}
+
+.committee-page .cm-identity {
+  min-width: 0;
+}
+
+.committee-page .cm-identity h4 {
+  margin: 0;
+  font-size: 1.08rem;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.committee-page .cm-email {
+  margin: 2px 0 0;
+  color: var(--ss-muted);
+  font-size: 0.93rem;
+  overflow-wrap: anywhere;
+}
+
+.committee-page .cm-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.committee-page .cm-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  color: var(--ss-black);
+  background: var(--ss-soft-2);
+  border: 1px solid var(--ss-border);
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.committee-page .cm-tag.is-chair { background: var(--ss-soft); border-color: #e9cf7a; }
+.committee-page .cm-tag.is-member { background: var(--committee-soft-teal); border-color: #a9e3d5; }
+.committee-page .cm-tag.is-login { background: var(--committee-soft-green); border-color: #c5dc97; }
+.committee-page .cm-tag.is-nologin { background: var(--committee-soft-orange); border-color: #f0b591; }
+.committee-page .cm-tag.is-inactive { background: #ffffff; border-style: dashed; border-color: #8a8580; }
+.committee-page .cm-tag.is-plain { background: #ffffff; font-weight: 600; }
+
+.committee-page .cm-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid var(--ss-border);
+  border-radius: 10px;
+}
+
+.committee-page .cm-stats > div {
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  padding: 8px 4px;
+  text-align: center;
+}
+
+.committee-page .cm-stats > div + div {
+  border-left: 1px solid var(--ss-border);
+}
+
+.committee-page .cm-stats dt {
+  color: var(--ss-muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.committee-page .cm-stats dd {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.committee-page .cm-stats > div.is-pending {
+  background: var(--ss-soft);
+}
+
+.committee-page .cm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--ss-border);
+}
+
+.committee-page .cm-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 6px 14px !important;
+  color: var(--ss-black) !important;
+  border: 2px solid var(--ss-black) !important;
+  border-radius: 999px !important;
+  font-size: 0.9rem;
+  font-weight: 800 !important;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.committee-page .cm-btn-primary { background: var(--ss-yellow) !important; border-color: var(--ss-yellow) !important; }
+.committee-page .cm-btn-outline { background: #ffffff !important; }
+.committee-page .cm-btn-danger { color: var(--ss-danger) !important; background: #ffffff !important; border-color: var(--ss-danger) !important; }
+.committee-page .cm-btn-success { color: var(--ss-success) !important; background: #ffffff !important; border-color: var(--ss-success) !important; }
+
+.committee-page .cm-btn:hover:not(:disabled) {
+  filter: brightness(0.95);
+  text-decoration: underline;
+}
+
+.committee-page .cm-btn:focus-visible {
+  outline: 3px solid var(--ss-black) !important;
+  outline-offset: 2px;
+}
+
+/* Activate / Deactivate is less common, so it sits below as a quieter link-style button. */
+.committee-page .cm-actions .cm-btn-danger,
+.committee-page .cm-actions .cm-btn-success {
+  flex: 0 0 100%;
+  justify-content: flex-start;
+  min-height: 36px;
+  padding: 4px 6px !important;
+  background: transparent !important;
+  border-color: transparent !important;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.committee-page .cm-btn {
+  white-space: normal !important;
+  text-align: center;
+}
+
+.committee-page .cm-actions .cm-btn-primary,
+.committee-page .cm-actions .cm-btn-outline {
+  flex: 1 1 auto;
+}
+
+.committee-page .cm-feedback {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.committee-page .cm-feedback.is-ok {
+  color: #2f4209;
+  background: var(--committee-soft-green);
+  border: 1px solid #c5dc97;
+}
+
+.committee-page .cm-feedback.is-bad {
+  color: var(--ss-danger);
+  background: var(--committee-soft-red);
+  border: 1px solid #e7b3b6;
+}
+
+.committee-page .cm-password-panel {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  background: #fffdf5;
+  border: 2px solid var(--ss-yellow);
+  border-radius: 12px;
+}
+
+.committee-page .cm-password-title {
+  margin: 0;
+  font-size: 1.02rem;
+  font-weight: 800;
+}
+
+.committee-page .cm-password-sub {
+  margin: -8px 0 0;
+  color: var(--ss-muted);
+  overflow-wrap: anywhere;
+}
+
+.committee-page .cm-password-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.committee-page .cm-empty {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 32px 16px;
+  color: var(--ss-muted);
+  text-align: center;
+  background: var(--ss-soft-2);
+  border-radius: 12px;
+}
+
+.committee-page .cm-empty .bi {
+  font-size: 2rem;
+}
+
+.committee-page .cm-empty p,
+.committee-page .cm-empty-text {
+  margin: 0;
+  color: var(--ss-muted);
+}
+
+@media (max-width: 520px) {
+  .committee-page .cm-card {
+    padding: 14px;
+  }
+
+  .committee-page .cm-actions .cm-btn {
+    flex: 1 1 100%;
+  }
+}
+
+html.ss-high-contrast .committee-page .cm-card,
+html.ss-high-contrast .committee-page .cm-overview li,
+html.ss-high-contrast .committee-page .cm-tag {
+  background: #ffffff;
+  border-color: #000000;
+}
+
+@media (forced-colors: active) {
+  .committee-page .cm-card,
+  .committee-page .cm-stats,
+  .committee-page .cm-tag {
+    border: 1px solid CanvasText;
+  }
+}

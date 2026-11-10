@@ -64,6 +64,8 @@
 .df-dashboard-user-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 20px; }
 .df-dashboard-user-form label { font-size: .85rem; }
 .df-dashboard-user-form input, .df-dashboard-user-form select { margin-top: 6px; }
+.df-dashboard-user-password { grid-column: 1 / -1; }
+.df-dashboard-user-form .pw-field label { font-size: 1rem; }
 .df-dashboard-user-form button { justify-self: start; }
 .df-dashboard-user-list { padding: 0; margin-top: 20px; list-style: none; }
 .df-dashboard-user-list li { display: flex; gap: 12px; justify-content: space-between; font-size: .83rem; padding: 12px 0; border-top: 1px solid var(--df-border); }

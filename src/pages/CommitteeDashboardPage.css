@@ -1769,3 +1769,72 @@
   padding: 0 !important;
   background: none !important;
 }
+
+/* Forgot password link and reset flow on the staff sign-in card. */
+.staff-login-switch {
+  margin: 1.1rem 0 0;
+  text-align: center;
+}
+
+.staff-text-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 44px;
+  padding: 0.25rem 0.5rem;
+  color: #111111;
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+  font: inherit;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  cursor: pointer;
+}
+
+.staff-text-button:hover {
+  text-decoration-thickness: 3px;
+}
+
+.staff-text-button:focus-visible {
+  outline: 3px solid #111111;
+  outline-offset: 2px;
+}
+
+.staff-login-help {
+  margin: 0;
+  color: #3f3b38;
+  line-height: 1.5;
+}
+
+.staff-login-card h2[tabindex="-1"]:focus {
+  outline: none;
+}
+
+.staff-login-card h2[tabindex="-1"]:focus-visible {
+  outline: 3px solid #111111;
+  outline-offset: 4px;
+}
+
+.staff-login-done {
+  display: grid;
+  gap: 1rem;
+}
+
+.staff-login-done .staff-login-note {
+  margin-top: 0;
+  color: #1f2a0b;
+}
+
+.staff-login-form .pw-field input {
+  border-radius: 14px;
+}
+
+/* The reset page has less to say on the left, so keep its text together at the top. */
+.staff-login-intro.is-compact {
+  align-self: start;
+  justify-content: flex-start;
+  gap: 0.75rem;
+  min-height: 0;
+}

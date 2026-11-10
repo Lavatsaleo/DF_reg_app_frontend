@@ -1,116 +1,108 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import axios from "axios";
 import { API_BASE_URL } from "../config/api";
-import "./CommitteeDashboardPage.css";
+import PasswordFields from "../components/PasswordFields";
+import { getPasswordPairProblem } from "../utils/passwordRules";
 
+// Opened from the link in a password reset email: /reset-password/<token>.
 function ResetPasswordPage({ token, onBackToSignIn }) {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [message, setMessage] = useState("");
+  const [done, setDone] = useState(false);
   const [error, setError] = useState("");
+  const resultRef = useRef(null);
 
   async function handleSubmit(event) {
     event.preventDefault();
-    setMessage("");
     setError("");
 
-    if (password.length < 10) {
-      setError("Use a password with at least 10 characters.");
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setError("The two passwords do not match.");
+    const problem = getPasswordPairProblem(password, confirmPassword);
+    if (problem) {
+      setError(problem);
       return;
     }
 
     try {
       setSubmitting(true);
-      const response = await axios.post(`${API_BASE_URL}/api/auth/password-reset/complete`, {
+      await axios.post(`${API_BASE_URL}/api/auth/password-reset/complete`, {
         token,
         password,
+        confirmPassword,
       });
-      setMessage(response.data?.message || "Password reset successfully.");
       setPassword("");
       setConfirmPassword("");
+      setDone(true);
+      window.requestAnimationFrame(() => resultRef.current?.focus());
     } catch (resetError) {
-      setError(resetError.response?.data?.message || "Unable to reset password. The link may have expired.");
+      setError(
+        resetError.response?.status === 429
+          ? "Too many attempts. Wait a while and try again."
+          : resetError.response?.data?.message || "We could not reset the password. The link may have expired."
+      );
     } finally {
       setSubmitting(false);
     }
   }
 
   return (
-    <main id="main-content" className="page committee-page staff-login-page">
-      <section className="committee-hero staff-login-hero">
-        <div>
-          <button type="button" className="back-button" onClick={onBackToSignIn}>
+    <main id="main-content" className="page staff-login-page">
+      <section className="staff-login-shell" aria-labelledby="reset-password-title">
+        <div className="staff-login-intro is-compact">
+          <button type="button" className="back-button staff-login-back" onClick={onBackToSignIn}>
             <i className="bi bi-arrow-left" aria-hidden="true" /> Back to sign in
           </button>
-          <p className="eyebrow">Internal workspace</p>
-          <h1>Reset password</h1>
-          <p>Create a new password for your Digital Futures staff account.</p>
-        </div>
-        <div className="committee-hero-badge" aria-hidden="true">
-          <i className="bi bi-key" />
-          <span>Password reset</span>
-        </div>
-      </section>
-
-      <section className="committee-section-card staff-login-card" aria-labelledby="reset-password-title">
-        <div>
-          <span className="ss-small-label dark">Staff account</span>
-          <h2 id="reset-password-title">Choose a new password</h2>
-          <p>After resetting, sign in again using your new password.</p>
+          <p className="eyebrow">Staff access</p>
+          <h1 id="reset-password-title">Choose a new password</h1>
+          <p className="staff-login-lead">
+            Set a new password for your Digital Futures staff account. Once it is saved, you are signed out on every device and can sign in again with the new password.
+          </p>
         </div>
 
-        {message && (
-          <div className="alert committee-alert success" role="status">
-            <i className="bi bi-check-circle" aria-hidden="true" /> {message}
+        <div className="staff-login-card" aria-label="New password form">
+          <div className="staff-login-card-header">
+            <div className="staff-login-lock">
+              <i className="bi bi-key" aria-hidden="true" />
+            </div>
+            <div>
+              <span>Password reset</span>
+              <h2>{done ? "Password changed" : "New password"}</h2>
+            </div>
           </div>
-        )}
 
-        {error && (
-          <div className="alert committee-alert error" role="alert">
-            <i className="bi bi-exclamation-triangle" aria-hidden="true" /> {error}
-          </div>
-        )}
-
-        <form className="staff-login-form" onSubmit={handleSubmit}>
-          <label>
-            New password
-            <input
-              type="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              autoComplete="new-password"
-              required
-            />
-          </label>
-
-          <label>
-            Confirm new password
-            <input
-              type="password"
-              value={confirmPassword}
-              onChange={(event) => setConfirmPassword(event.target.value)}
-              autoComplete="new-password"
-              required
-            />
-          </label>
-
-          <button type="submit" className="btn committee-primary-action" disabled={submitting}>
-            <i className="bi bi-check2-circle" aria-hidden="true" />
-            {submitting ? "Resetting..." : "Reset password"}
-          </button>
-
-          {message && (
-            <button type="button" className="staff-text-button" onClick={onBackToSignIn}>
-              Go to sign in
-            </button>
+          {done ? (
+            <div className="staff-login-done">
+              <p ref={resultRef} tabIndex="-1" className="staff-login-note" role="status">
+                <i className="bi bi-check-circle-fill" aria-hidden="true" />
+                <span>Your password has been changed. You can now sign in with your new password.</span>
+              </p>
+              <button type="button" className="btn committee-primary-action staff-login-submit" onClick={onBackToSignIn}>
+                <i className="bi bi-box-arrow-in-right" aria-hidden="true" /> Go to sign in
+              </button>
+            </div>
+          ) : !token ? (
+            <div className="alert alert-error" role="alert">
+              This reset link is incomplete. Open the link from your email again, or ask for a new one on the sign-in page.
+            </div>
+          ) : (
+            <form className="staff-login-form" onSubmit={handleSubmit} noValidate>
+              {error && <div className="alert alert-error mb-0" role="alert">{error}</div>}
+              <PasswordFields
+                password={password}
+                confirmPassword={confirmPassword}
+                onPasswordChange={setPassword}
+                onConfirmPasswordChange={setConfirmPassword}
+                label="New password"
+                confirmLabel="Confirm new password"
+                stacked
+              />
+              <button type="submit" className="btn committee-primary-action staff-login-submit" disabled={submitting}>
+                <i className="bi bi-check2-circle" aria-hidden="true" />
+                {submitting ? "Saving..." : "Save new password"}
+              </button>
+            </form>
           )}
-        </form>
+        </div>
       </section>
     </main>
   );
