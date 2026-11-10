@@ -202,29 +202,15 @@ function StatusResultCard({ result }) {
         </div>
       </div>
 
-      {result?.limitedView && (
-        <div className="ss-status-note" role="note">
-          <i className="bi bi-shield-lock" aria-hidden="true" />
-          <p>
-            For your privacy, a search by mobile number shows your progress only. Search with the application
-            reference from your confirmation email (it starts with APP-DF) to see your full details.
-          </p>
-        </div>
-      )}
-
       <div className="ss-status-summary-grid" role="list">
-        {!result?.limitedView && (
-          <>
-            <div role="listitem">
-              <span>Application reference</span>
-              <strong>{reference || "Not available"}</strong>
-            </div>
-            <div role="listitem">
-              <span>Unique participant ID</span>
-              <strong>{result?.participantCode || "Not available"}</strong>
-            </div>
-          </>
-        )}
+        <div role="listitem">
+          <span>Application reference</span>
+          <strong>{reference || "Not available"}</strong>
+        </div>
+        <div role="listitem">
+          <span>Unique participant ID</span>
+          <strong>{result?.participantCode || "Not available"}</strong>
+        </div>
         <div role="listitem">
           <span>Application review</span>
           <strong>{getScreeningLabel(result)}</strong>
@@ -267,7 +253,7 @@ function StatusResultCard({ result }) {
       {result?.requiresBasicSkillsTest && (
         <SkillsTestInvitationNote
           invitation={result?.testInvitation}
-          reference={result?.limitedView ? "" : reference}
+          reference={reference}
           supportEmail={result?.supportEmail}
         />
       )}
@@ -305,63 +291,189 @@ function StatusResultCard({ result }) {
   );
 }
 
-function StatusCheckPage({ onBackHome, onStartApplication }) {
+function SavedDraftCard({ draft, onResumeDraft }) {
+  const headingRef = useRef(null);
+
+  useEffect(() => {
+    headingRef.current?.focus();
+  }, [draft]);
+
+  return (
+    <article className="ss-status-result-card" aria-labelledby="draft-result-title">
+      <span className="ss-small-label dark">Saved application found</span>
+      <h2 id="draft-result-title" tabIndex="-1" ref={headingRef}>Your application is not finished yet</h2>
+      <div className="ss-status-summary-grid" role="list">
+        <div role="listitem">
+          <span>Pathway</span>
+          <strong>{formatPathwayLabel(draft.pathway)}</strong>
+        </div>
+        <div role="listitem">
+          <span>Completed</span>
+          <strong>{draft.completionPercent || 0}%</strong>
+        </div>
+        <div role="listitem">
+          <span>Last saved</span>
+          <strong>{formatDate(draft.lastSavedAt)}</strong>
+        </div>
+      </div>
+      <div className="ss-status-note" role="note">
+        <i className="bi bi-signpost-2" aria-hidden="true" />
+        <p>Continue from where you stopped. Your application is only sent when you submit it at the end.</p>
+      </div>
+      <button type="button" className="btn ss-btn-primary mt-3" onClick={() => onResumeDraft(draft)}>
+        Continue your application <i className="bi bi-arrow-right" aria-hidden="true" />
+      </button>
+    </article>
+  );
+}
+
+const RESEND_WAIT_SECONDS = 60;
+
+const PAGE_TEXT = {
+  status: {
+    label: "Application tracking",
+    title: "Check your application status",
+    intro: "Enter your application reference, mobile number or email address. We will email you a code to confirm it is you. You can also use this page to continue an application you did not finish.",
+    cardTitle: "Use your reference, mobile number or email",
+    lookupLabel: "Find application",
+    lookupTitle: "Find your application",
+    lookupIntro: "Use the application reference shown after submission, or the mobile number or email address you entered in the application form. We send a 6-digit code to the email address in your application.",
+    fieldLabel: "Application reference, mobile number or email address",
+    placeholder: "Reference, mobile number or email",
+  },
+  continue: {
+    label: "Saved application",
+    title: "Continue my application",
+    intro: "Enter the mobile number or email address you used in your application. We will email you a 6-digit code, and then you can continue from where you stopped.",
+    cardTitle: "Use your mobile number or email",
+    lookupLabel: "Find saved application",
+    lookupTitle: "Find your saved application",
+    lookupIntro: "Use the mobile number or email address you entered on the personal details page. We send the code to the email address in your application.",
+    fieldLabel: "Mobile number or email address",
+    placeholder: "Mobile number or email",
+  },
+};
+
+function StatusCheckPage({ onBackHome, onStartApplication, onResumeDraft, mode = "status" }) {
+  const text = PAGE_TEXT[mode] || PAGE_TEXT.status;
+  const isContinue = mode === "continue";
   const [identifier, setIdentifier] = useState("");
+  const [code, setCode] = useState("");
+  // "details" -> "code" -> result shown
+  const [stage, setStage] = useState("details");
   const [lookupResult, setLookupResult] = useState(null);
   const [lookupMessage, setLookupMessage] = useState("");
+  const [codeError, setCodeError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [resendIn, setResendIn] = useState(0);
+  const codeInputRef = useRef(null);
 
   const recentApplications = useMemo(() => listSubmittedApplications().slice(0, 3), []);
 
-  async function handleSubmit(event) {
-    event.preventDefault();
+  useEffect(() => {
+    if (resendIn <= 0) return undefined;
+    const timer = window.setTimeout(() => setResendIn((value) => value - 1), 1000);
+    return () => window.clearTimeout(timer);
+  }, [resendIn]);
 
+  useEffect(() => {
+    if (stage === "code") codeInputRef.current?.focus();
+  }, [stage]);
+
+  async function requestCode() {
     const cleanIdentifier = identifier.trim();
     setLookupResult(null);
     setLookupMessage("");
+    setCodeError("");
 
     if (!cleanIdentifier) {
-      setLookupMessage("Please enter your application reference number or mobile number.");
+      setLookupMessage("Enter your application reference, mobile number or email address.");
       return;
     }
 
     try {
       setLoading(true);
-
-      const response = await axios.get(
-        `${API_BASE_URL}/api/registrations/status/${encodeURIComponent(cleanIdentifier)}`
-      );
-
-      const apiResult = response.data?.data || response.data?.application || response.data?.registration || response.data;
-      if (apiResult && (getReferenceFromResult(apiResult) || apiResult.limitedView)) {
-        setLookupResult(apiResult);
+      const response = await axios.post(`${API_BASE_URL}/api/registrations/status/request-code`, {
+        identifier: cleanIdentifier,
+      });
+      setLookupMessage(response.data?.message || "If we found an application, we have sent a code to its email address.");
+      setCode("");
+      setStage("code");
+      setResendIn(RESEND_WAIT_SECONDS);
+    } catch (error) {
+      if (error.response) {
+        setLookupMessage(error.response.data?.message || "We could not send a code. Please try again.");
         return;
       }
-
-      throw new Error("No official status returned");
-    } catch {
       const localResult = findSubmittedApplication(cleanIdentifier);
-
       if (localResult) {
         setLookupResult(localResult);
         setLookupMessage(
           "Showing the confirmation saved on this device because the official status lookup could not be reached."
         );
       } else {
-        setLookupMessage(
-          "We could not find an application using that reference or mobile number. Check the details and use the same mobile number entered during registration."
-        );
+        setLookupMessage("We could not reach the portal. Check your internet connection and try again.");
       }
     } finally {
       setLoading(false);
     }
   }
 
+  function handleSubmit(event) {
+    event.preventDefault();
+    requestCode();
+  }
+
+  async function handleVerify(event) {
+    event.preventDefault();
+    setCodeError("");
+    const cleanCode = code.replace(/\D/g, "");
+    if (cleanCode.length !== 6) {
+      setCodeError("Enter the 6-digit code from the email.");
+      codeInputRef.current?.focus();
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await axios.post(`${API_BASE_URL}/api/registrations/status/verify`, {
+        identifier: identifier.trim(),
+        code: cleanCode,
+      });
+      const result = response.data?.data || null;
+      if (isContinue && result?.kind === "DRAFT") {
+        onResumeDraft(result);
+        return;
+      }
+      setLookupResult(result);
+      setLookupMessage(
+        isContinue && result?.kind === "APPLICATION"
+          ? "This application has already been submitted, so it cannot be changed. Its current status is shown below."
+          : ""
+      );
+      setStage("result");
+    } catch (error) {
+      setCodeError(error.response?.data?.message || "We could not check the code. Please try again.");
+      codeInputRef.current?.focus();
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function handleStartAgain() {
+    setStage("details");
+    setCode("");
+    setCodeError("");
+    setLookupMessage("");
+    setLookupResult(null);
+  }
+
   function handleRecentClick(application) {
     const recentReference = getReferenceFromResult(application);
     setIdentifier(recentReference);
+    setStage("details");
     setLookupResult(application);
-    setLookupMessage("Showing a recently submitted application saved on this device.");
+    setLookupMessage("Showing a recently submitted application saved on this device. Check status to see the latest progress.");
   }
 
   return (
@@ -380,17 +492,15 @@ function StatusCheckPage({ onBackHome, onStartApplication }) {
               >
                 <i className="bi bi-arrow-left" aria-hidden="true" /> Back to home
               </a>
-              <span className="ss-small-label light">Application tracking</span>
-              <h1 id="status-page-title" tabIndex="-1">Check your application status</h1>
-              <p>
-                Enter your application reference or the mobile number used during registration to see the latest status available to this portal.
-              </p>
+              <span className="ss-small-label light">{text.label}</span>
+              <h1 id="status-page-title" tabIndex="-1">{text.title}</h1>
+              <p>{text.intro}</p>
             </div>
             <div className="col-12 col-lg-4">
               <div className="ss-selected-card">
                 <span>Applicant support</span>
-                <strong>Use your reference or mobile number</strong>
-                <small>Example: APP-DF-2026-AB12CD or +254712345678</small>
+                <strong>{text.cardTitle}</strong>
+                <small>{isContinue ? "Example: 0712345678 or name@example.com" : "Example: APP-DF-2026-AB12CD or +254712345678"}</small>
               </div>
             </div>
           </div>
@@ -401,15 +511,13 @@ function StatusCheckPage({ onBackHome, onStartApplication }) {
         <div className="row g-4 align-items-start">
           <div className="col-12 col-xl-8">
             <section className="ss-status-lookup-card" aria-labelledby="lookup-title">
-              <span className="ss-small-label dark">Find application</span>
-              <h2 id="lookup-title">Find your application</h2>
-              <p>
-                Use the application reference shown after submission or the same mobile number entered in the application form.
-              </p>
+              <span className="ss-small-label dark">{text.lookupLabel}</span>
+              <h2 id="lookup-title">{text.lookupTitle}</h2>
+              <p>{text.lookupIntro}</p>
 
               <form onSubmit={handleSubmit} noValidate>
                 <label className="form-label" htmlFor="application-reference">
-                  Application reference or mobile number
+                  {text.fieldLabel}
                 </label>
                 <div className="ss-status-search-row">
                   <input
@@ -417,23 +525,65 @@ function StatusCheckPage({ onBackHome, onStartApplication }) {
                     className="form-control"
                     type="text"
                     value={identifier}
-                    onChange={(event) => setIdentifier(event.target.value)}
-                    placeholder="Reference or mobile number"
-                    autoComplete="tel"
+                    onChange={(event) => {
+                      setIdentifier(event.target.value);
+                      if (stage !== "details") handleStartAgain();
+                    }}
+                    placeholder={text.placeholder}
+                    autoComplete="off"
                   />
                   <button type="submit" className="btn ss-btn-primary" disabled={loading}>
                     {loading ? (
                       <>
-                        <span className="spinner-border spinner-border-sm" aria-hidden="true" /> Checking...
+                        <span className="spinner-border spinner-border-sm" aria-hidden="true" /> Sending...
                       </>
                     ) : (
                       <>
-                        <i className="bi bi-search" aria-hidden="true" /> Check status
+                        <i className="bi bi-envelope-paper" aria-hidden="true" /> Send me a code
                       </>
                     )}
                   </button>
                 </div>
               </form>
+
+              {stage === "code" && (
+                <form className="ss-otp-form mt-4" onSubmit={handleVerify} noValidate>
+                  <label className="form-label" htmlFor="verification-code">
+                    6-digit code from the email
+                  </label>
+                  <div className="ss-status-search-row">
+                    <input
+                      id="verification-code"
+                      ref={codeInputRef}
+                      className={`form-control ss-otp-input ${codeError ? "is-invalid" : ""}`}
+                      type="text"
+                      inputMode="numeric"
+                      autoComplete="one-time-code"
+                      maxLength={6}
+                      value={code}
+                      onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
+                      aria-invalid={Boolean(codeError)}
+                      aria-describedby={codeError ? "verification-code-error" : "verification-code-help"}
+                    />
+                    <button type="submit" className="btn ss-btn-primary" disabled={loading}>
+                      {loading ? "Checking..." : isContinue ? "Confirm and continue" : "Confirm code"}
+                    </button>
+                  </div>
+                  {codeError ? (
+                    <div id="verification-code-error" className="invalid-feedback d-block" role="alert">{codeError}</div>
+                  ) : (
+                    <p id="verification-code-help" className="form-text">The code expires in 10 minutes.</p>
+                  )}
+                  <div className="ss-otp-actions">
+                    <button type="button" className="btn ss-link-button" onClick={requestCode} disabled={loading || resendIn > 0}>
+                      {resendIn > 0 ? `Send a new code (available in ${resendIn}s)` : "Send a new code"}
+                    </button>
+                    <button type="button" className="btn ss-link-button" onClick={handleStartAgain}>
+                      Use different details
+                    </button>
+                  </div>
+                </form>
+              )}
 
               {lookupMessage && (
                 <div className="alert ss-alert-info mt-4" role="status" aria-live="polite">
@@ -443,7 +593,11 @@ function StatusCheckPage({ onBackHome, onStartApplication }) {
 
               {lookupResult && (
                 <div className="mt-4">
-                  <StatusResultCard result={lookupResult} />
+                  {lookupResult.kind === "DRAFT" ? (
+                    <SavedDraftCard draft={lookupResult} onResumeDraft={onResumeDraft} />
+                  ) : (
+                    <StatusResultCard result={lookupResult} />
+                  )}
                 </div>
               )}
             </section>
@@ -463,7 +617,7 @@ function StatusCheckPage({ onBackHome, onStartApplication }) {
                 </ul>
               </div>
 
-              {recentApplications.length > 0 && (
+              {!isContinue && recentApplications.length > 0 && (
                 <div className="ss-help-card mt-4">
                   <span className="ss-small-label dark">Recent on this device</span>
                   <div className="ss-recent-reference-list">
@@ -488,7 +642,7 @@ function StatusCheckPage({ onBackHome, onStartApplication }) {
               <div className="ss-help-card mt-4">
                 <span className="ss-small-label dark">No reference yet?</span>
                 <p>
-                  Start one application and keep the confirmation reference after submission. You can also use the same mobile number entered in the form to check the application status.
+                  Start one application and keep the confirmation reference after submission. You can also use the mobile number or email address entered in the form.
                 </p>
                 <button type="button" className="btn ss-btn-outline w-100" onClick={onStartApplication}>
                   Start application

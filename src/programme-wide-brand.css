@@ -1207,3 +1207,32 @@ html.ss-high-contrast .form-select:not([multiple]):not([size]) {
 .ss-status-note .btn i {
   color: inherit !important;
 }
+
+/* Email code step on the status page */
+.ss-otp-input {
+  max-width: 12rem;
+  font-size: 1.35rem;
+  letter-spacing: .3em;
+  font-variant-numeric: tabular-nums;
+}
+.ss-otp-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .25rem 1rem;
+  margin-top: .5rem;
+}
+.ss-otp-actions .btn {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+/* "Already started? Continue my application" on the first step of a pathway */
+.df-continue-hint {
+  margin: .75rem 0 0;
+}
+.df-continue-hint .ss-link-button {
+  padding: 0;
+  vertical-align: baseline;
+  font-weight: 700;
+  text-decoration: underline;
+}

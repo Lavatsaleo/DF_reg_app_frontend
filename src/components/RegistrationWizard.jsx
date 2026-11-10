@@ -49,7 +49,9 @@ function getStepperLabel(section) {
 }
 
 // Source question codes and source sections remain unchanged for API submissions.
-// Only the visual survey journey groups the initial checks into a single first page.
+// Only the visual survey journey changes the order: personal and contact details come first, so the
+// mobile number and email are saved early and an unfinished application can be continued later with
+// an email code; the eligibility questions follow on one page.
 const INITIAL_ELIGIBILITY_CODES = [
   "TRAINING_AVAILABILITY",
   "DATE_OF_BIRTH",
@@ -75,9 +77,14 @@ function groupSurveyPages(groupedQuestions) {
     ])
     .filter(([, questions]) => questions.length > 0);
 
-  return firstPageQuestions.length > 0
-    ? [["Eligibility check", firstPageQuestions], ...remainingPages]
-    : remainingPages;
+  const contactPageIndex = remainingPages.findIndex(([, questions]) =>
+    questions.some((question) => question.questionCode === "CONTACT_NUMBER")
+  );
+  const contactPage = contactPageIndex >= 0 ? [remainingPages[contactPageIndex]] : [];
+  const otherPages = remainingPages.filter((_, index) => index !== contactPageIndex);
+  const eligibilityPage = firstPageQuestions.length > 0 ? [["Eligibility check", firstPageQuestions]] : [];
+
+  return [...contactPage, ...eligibilityPage, ...otherPages];
 }
 
 // Age on the reference date (today unless given), or null for an invalid or future date of birth.
@@ -197,6 +204,8 @@ function getSaveStatusLabel(status) {
   if (status === "saving") return "Saving...";
   if (status === "existing_application") return "Not saved: an application already exists";
   if (status === "error") return "Saved on this device only";
+  // Until a mobile number and email are entered the draft can't be reopened elsewhere.
+  if (status === "waiting_for_mobile") return "Saved on this device only: add your mobile number and email to save online";
   return "Progress saved";
 }
 
@@ -344,7 +353,7 @@ function RegistrationWizard({
 
   const currentSectionEntry = sectionEntries[activeStep] || null;
   const earlyEligibilityFeedback =
-    activeStep === 0 && currentSectionEntry?.[0] === "Eligibility check"
+    currentSectionEntry?.[0] === "Eligibility check"
       ? getEarlyEligibilityFeedback(answers, selectedPathway, currentSectionEntry[1])
       : null;
 

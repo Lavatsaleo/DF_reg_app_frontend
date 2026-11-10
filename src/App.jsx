@@ -14,7 +14,7 @@ import ApplicationDashboardPage from "./pages/ApplicationDashboardPage";
 import ConsentRecordsPage from "./pages/ConsentRecordsPage";
 import StaffLoginPage from "./pages/StaffLoginPage";
 import { useAccessibilityPreferences } from "./hooks/useAccessibilityPreferences";
-import { useRegistrationForm } from "./hooks/useRegistrationForm";
+import { DRAFT_STORAGE_PREFIX, useRegistrationForm } from "./hooks/useRegistrationForm";
 import { clearStaffSession, loadStaffSession, saveStaffSession } from "./utils/staffAuthStorage";
 import { pathways } from "./data/pathways";
 
@@ -51,6 +51,7 @@ function getInitialView() {
   if (getInitialParticipantRegistrationToken()) return "participant-registration";
   if (getInitialSkillsTestToken() || window.location.pathname === "/basic-skills-test") return "skills-test";
   if (window.location.pathname === "/status") return "status";
+  if (window.location.pathname === "/continue") return "continue";
   if (getPathwayFromBrowserPath()) return "application";
   return "home";
 }
@@ -74,6 +75,7 @@ function loadInitialStaffSession() {
 const VIEW_TITLES = {
   home: "Apply for digital skills training",
   status: "Check your application status",
+  continue: "Continue my application",
   "skills-test": "Basic IT skills test",
   "participant-registration": "Participant registration and baseline survey",
   "staff-login": "Staff sign in",
@@ -145,6 +147,8 @@ function App() {
         setCurrentView(staffView(loadStaffSession(), window.location.pathname.endsWith("dashboard") ? "dashboard" : "committee"));
       } else if (window.location.pathname === "/status") {
         setCurrentView("status");
+      } else if (window.location.pathname === "/continue") {
+        setCurrentView("continue");
       } else {
         setCurrentView("home");
       }
@@ -186,7 +190,7 @@ function App() {
 
   // NVDA should encounter the heading before the applicant-support card.
   useEffect(() => {
-    if (currentView !== "status") return undefined;
+    if (currentView !== "status" && currentView !== "continue") return undefined;
     const frame = window.requestAnimationFrame(() => {
       const heading = document.getElementById("status-page-title");
       heading?.focus({ preventScroll: true });
@@ -226,6 +230,11 @@ function App() {
     setCurrentView("status");
     setSkillsTestReference("");
     setSkillsTestToken("");
+  }
+
+  function handleShowContinue() {
+    navigateTo("/continue");
+    setCurrentView("continue");
   }
 
   function handleShowCommittee() {
@@ -314,7 +323,7 @@ function App() {
   function confirmPathwaySwitch() {
     // The normal autosave is debounced; persist answers synchronously before switching.
     try {
-      const storageKey = "sightsavers-registration-draft-" + registration.selectedPathway.id;
+      const storageKey = DRAFT_STORAGE_PREFIX + registration.selectedPathway.id;
       window.localStorage.setItem(storageKey, JSON.stringify({
         answers: registration.answers,
         documentType: registration.documentType,
@@ -329,6 +338,15 @@ function App() {
     const pathway = pendingSwitch;
     setPendingSwitch(null);
     openPathway(pathway);
+  }
+
+  // A saved draft found on the status page (after the email code) opens in the application form.
+  function handleResumeDraft(draft) {
+    const pathway = pathways.find((item) => item.id === draft.pathway && item.status === "open");
+    if (!pathway || !PATHWAY_SLUGS[pathway.id]) return;
+    registration.resumeSavedDraft(pathway, draft);
+    navigateTo("/apply/" + PATHWAY_SLUGS[pathway.id]);
+    setCurrentView("application");
   }
 
   const showStatusButton = !(
@@ -386,11 +404,14 @@ function App() {
           onBack={handleShowCommittee}
           onSessionExpired={handleSessionExpired}
         />
-      ) : currentView === "status" ? (
+      ) : currentView === "status" || currentView === "continue" ? (
         <StatusCheckPage
+          key={currentView}
+          mode={currentView}
           onBackHome={handleShowHome}
           onStartApplication={handleShowHome}
           onTakeSkillsTest={handleShowSkillsTest}
+          onResumeDraft={handleResumeDraft}
         />
       ) : currentView === "skills-test" ? (
         <SkillsTestPage
@@ -410,6 +431,7 @@ function App() {
           pathwayMessage={registration.pathwayMessage}
           onPathwaySelect={handlePathwaySelect}
           onCheckStatus={handleShowStatus}
+          onContinueApplication={handleShowContinue}
         />
       ) : (
         <ContextualApplicationPage
@@ -432,6 +454,7 @@ function App() {
           onBackToPathways={handleShowHome}
           onStartNewApplication={handleStartNewApplication}
           onCheckStatus={handleShowStatus}
+          onContinueApplication={handleShowContinue}
           onTakeSkillsTest={handleShowSkillsTest}
           onAnswerChange={registration.handleAnswerChange}
           onMultiSelectChange={registration.handleMultiSelectChange}

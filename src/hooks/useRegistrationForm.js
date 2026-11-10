@@ -65,10 +65,13 @@ function getDigitsOnly(value) {
   return String(value || "").replace(/\D/g, "");
 }
 
+// A portal draft is reopened later with a code sent to its email, so it needs a mobile number and an email.
 function hasEnoughInformationForPortalDraft({ draftReference, answers }) {
   if (draftReference) return true;
-  return getDigitsOnly(answers?.CONTACT_NUMBER).length >= 7;
+  return getDigitsOnly(answers?.CONTACT_NUMBER).length >= 7 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(answers?.EMAIL || "").trim());
 }
+
+export const DRAFT_STORAGE_PREFIX = "sightsavers-registration-draft-v4-";
 
 const LOCATION_DEPENDENT_QUESTIONS = {
   COUNTRY: ["COUNTY", "SUB_COUNTY", "STATE", "REGION", "DISTRICT"],
@@ -126,12 +129,12 @@ export function useRegistrationForm() {
   const [portalDraftLastSavedAt, setPortalDraftLastSavedAt] = useState(null);
   const [draftSaveStatus, setDraftSaveStatus] = useState("waiting_for_mobile");
   const [draftSaveMessage, setDraftSaveMessage] = useState(
-    "Draft is saved on this device. Enter a mobile number to also save it to the portal."
+    "Draft is saved on this device. Enter your mobile number and email address to also save it to the portal, so you can continue on any device."
   );
   const [currentStep, setCurrentStep] = useState(0);
 
   const draftStorageKey = selectedPathway
-    ? `sightsavers-registration-draft-v4-${selectedPathway.id}`
+    ? `${DRAFT_STORAGE_PREFIX}${selectedPathway.id}`
     : "";
 
   const restoreDraft = useCallback((draft) => {
@@ -176,13 +179,13 @@ export function useRegistrationForm() {
 
     if (!hasAnswers) {
       setDraftSaveStatus("waiting_for_mobile");
-      setDraftSaveMessage("Draft is saved on this device. Enter a mobile number to also save it to the portal.");
+      setDraftSaveMessage("Draft is saved on this device. Enter your mobile number and email address to also save it to the portal, so you can continue on any device.");
       return;
     }
 
     if (!hasEnoughInformationForPortalDraft({ draftReference: serverDraftReference, answers })) {
       setDraftSaveStatus("waiting_for_mobile");
-      setDraftSaveMessage("Draft is saved on this device. Enter a mobile number to also save it to the portal.");
+      setDraftSaveMessage("Draft is saved on this device. Enter your mobile number and email address to also save it to the portal, so you can continue on any device.");
       return;
     }
 
@@ -270,6 +273,38 @@ export function useRegistrationForm() {
     [groupedQuestions, answers]
   );
 
+  // Opens a draft saved on the portal (found on the status page after an email code) on this device.
+  function resumeSavedDraft(pathway, draft) {
+    const payload = {
+      answers: draft.answers || {},
+      documentType: draft.documentType,
+      draftReference: draft.draftReference,
+      currentStep: draft.currentStep || 0,
+      savedAt: draft.lastSavedAt || new Date().toISOString(),
+    };
+    try {
+      window.localStorage.setItem(`${DRAFT_STORAGE_PREFIX}${pathway.id}`, JSON.stringify(payload));
+    } catch {
+      // Storage can be unavailable (private mode); the draft is still restored below for this visit.
+    }
+
+    setPathwayMessage("");
+    setSubmitResult(null);
+    setErrorMessage("");
+    setFieldErrors({});
+    setDocuments([]);
+
+    if (selectedPathway?.id === pathway.id) {
+      restoreDraft(payload);
+      return;
+    }
+    // A new pathway key makes useLocalDraft restore the payload written above.
+    setServerDraftReference("");
+    setCurrentStep(0);
+    setAnswers({ COURSE_APPLIED_FOR: pathway.title });
+    setSelectedPathway(pathway);
+  }
+
   function handlePathwaySelect(pathway) {
     // Navigating back to the same pathway resumes the in-progress draft.
     if (selectedPathway?.id === pathway.id && !submitResult && pathway.status === "open") {
@@ -284,7 +319,7 @@ export function useRegistrationForm() {
     setServerDraftReference("");
     setPortalDraftLastSavedAt(null);
     setDraftSaveStatus("waiting_for_mobile");
-    setDraftSaveMessage("Draft is saved on this device. Enter a mobile number to also save it to the portal.");
+    setDraftSaveMessage("Draft is saved on this device. Enter your mobile number and email address to also save it to the portal, so you can continue on any device.");
     setCurrentStep(0);
 
     if (pathway.status !== "open") {
@@ -311,7 +346,7 @@ export function useRegistrationForm() {
     setServerDraftReference("");
     setPortalDraftLastSavedAt(null);
     setDraftSaveStatus("waiting_for_mobile");
-    setDraftSaveMessage("Draft is saved on this device. Enter a mobile number to also save it to the portal.");
+    setDraftSaveMessage("Draft is saved on this device. Enter your mobile number and email address to also save it to the portal, so you can continue on any device.");
     setCurrentStep(0);
   }
 
@@ -500,7 +535,7 @@ export function useRegistrationForm() {
     setServerDraftReference("");
     setPortalDraftLastSavedAt(null);
     setDraftSaveStatus("waiting_for_mobile");
-    setDraftSaveMessage("Draft cleared from this device. Enter a mobile number to save a new draft to the portal.");
+    setDraftSaveMessage("Draft cleared from this device. Enter your mobile number and email address to save a new draft to the portal.");
     setCurrentStep(0);
     setFieldErrors({});
     setErrorMessage("");
@@ -523,6 +558,7 @@ export function useRegistrationForm() {
     localDraftLastSavedAt: draftLastSavedAt,
     portalDraftLastSavedAt,
     draftReference: serverDraftReference,
+    resumeSavedDraft,
     draftSaveStatus,
     draftSaveMessage,
     currentStep,

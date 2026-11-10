@@ -2,8 +2,8 @@ import heroWheelchair from "../assets/hero-slide-wheelchair.webp";
 
 const PROGRAMME_COUNTRIES = ["Ghana", "Nigeria", "Kenya", "Zambia"];
 
-// One strong photo and two clear actions: start an application, or check an existing one.
-function HeroBanner({ onCheckStatus }) {
+// One strong photo and clear actions: start an application, continue a saved one, or check status.
+function HeroBanner({ onCheckStatus, onContinueApplication }) {
   return (
     <section className="df-hero-band theme-teal" aria-labelledby="digital-futures-title">
       <div className="df-hero-band-bg" aria-hidden="true">
@@ -30,9 +30,16 @@ function HeroBanner({ onCheckStatus }) {
               <button type="button" className="btn ss-btn-outline df-hero-action" onClick={onCheckStatus}>
                 <i className="bi bi-clipboard2-check" aria-hidden="true" /> Check your application status
               </button>
+              <button type="button" className="btn ss-btn-outline df-hero-action" onClick={onContinueApplication}>
+                <i className="bi bi-pencil-square" aria-hidden="true" /> Continue my application
+              </button>
             </div>
             <p className="df-hero-one-pathway">
-              <i className="bi bi-info-circle" aria-hidden="true" /> You can apply for one pathway only, so compare them before you start.
+              <i className="bi bi-info-circle" aria-hidden="true" />
+              <span>
+                You can apply for one pathway only, so compare them before you start.
+                {" "}Started an application and did not finish? Select <strong>Continue my application</strong>.
+              </span>
             </p>
 
             <div className="df-hero-about">

@@ -3,10 +3,10 @@ import PathwayCard from "../components/PathwayCard";
 import HeroBanner from "../components/HeroBanner";
 import "./LandingHero.css";
 
-function LandingPage({ pathwayMessage, onPathwaySelect, onCheckStatus }) {
+function LandingPage({ pathwayMessage, onPathwaySelect, onCheckStatus, onContinueApplication }) {
   return (
     <main id="main-content" tabIndex="-1" className="df-home-page df-home-clean">
-      <HeroBanner onCheckStatus={onCheckStatus} />
+      <HeroBanner onCheckStatus={onCheckStatus} onContinueApplication={onContinueApplication} />
 
       <section id="pathways" className="df-clean-pathway-section" aria-labelledby="pathways-title" tabIndex="-1">
         <div className="container">

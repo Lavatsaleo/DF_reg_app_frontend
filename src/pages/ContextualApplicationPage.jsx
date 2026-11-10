@@ -176,6 +176,7 @@ function ContextualApplicationPage({
   onBackToPathways,
   onStartNewApplication,
   onCheckStatus,
+  onContinueApplication,
   onTakeSkillsTest,
   onAnswerChange,
   onMultiSelectChange,
@@ -575,6 +576,14 @@ function ContextualApplicationPage({
             <div className="ss-country-panel mx-auto">
               <div className="ss-country-copy">
                 <h1 id="df-country-step-title" tabIndex="-1">Select your country of residence</h1>
+                {onContinueApplication && (
+                  <p className="df-continue-hint">
+                    Already started an application?{" "}
+                    <button type="button" className="btn ss-link-button" onClick={onContinueApplication}>
+                      Continue my application
+                    </button>
+                  </p>
+                )}
               </div>
 
               <div className="ss-country-select-wrap">
