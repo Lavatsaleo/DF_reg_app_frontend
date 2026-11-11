@@ -1395,7 +1395,7 @@ function ReviewPanel({
   );
 }
 
-function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessionExpired, onManageAccess }) {
+function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessionExpired, onManageAccess, onShowParticipants }) {
   const [overview, setOverview] = useState(null);
   const [members, setMembers] = useState([]);
   const [assignments, setAssignments] = useState([]);
@@ -2051,8 +2051,14 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
             </div>
           </div>
           <div className="committee-account-actions">
+            {["ADMIN", "COUNTRY_ADMIN"].includes(userRole) && onShowParticipants && (
+              <button type="button" className="committee-account-action is-primary" onClick={onShowParticipants}>
+                <i className="bi bi-people" aria-hidden="true" />
+                <span>Participants</span>
+              </button>
+            )}
             {userRole === "ADMIN" && onManageAccess && (
-              <button type="button" className="committee-account-action is-primary" onClick={onManageAccess}>
+              <button type="button" className="committee-account-action" onClick={onManageAccess}>
                 <i className="bi bi-shield-lock" aria-hidden="true" />
                 <span>Access and API keys</span>
               </button>

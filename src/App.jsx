@@ -14,6 +14,8 @@ import ApplicationDashboardPage from "./pages/ApplicationDashboardPage";
 import ConsentRecordsPage from "./pages/ConsentRecordsPage";
 import StaffLoginPage from "./pages/StaffLoginPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
+import ParticipantsPage from "./pages/ParticipantsPage";
+import ParticipantProfilePage from "./pages/ParticipantProfilePage";
 import { useAccessibilityPreferences } from "./hooks/useAccessibilityPreferences";
 import { DRAFT_STORAGE_PREFIX, useRegistrationForm } from "./hooks/useRegistrationForm";
 import { clearStaffSession, loadStaffSession, saveStaffSession } from "./utils/staffAuthStorage";
@@ -22,6 +24,20 @@ import { pathways } from "./data/pathways";
 function getInitialSkillsTestToken() {
   const match = window.location.pathname.match(/^\/basic-skills-test\/([^/]+)\/?$/);
   return match ? decodeURIComponent(match[1]) : "";
+}
+
+// /staff/participants/<id> opens one profile; /staff/participants is the directory.
+function getParticipantIdFromPath() {
+  const match = window.location.pathname.match(/^\/staff\/participants\/([^/]+)\/?$/);
+  return match ? decodeURIComponent(match[1]) : "";
+}
+
+// Which staff page the address asks for.
+function getRequestedStaffView() {
+  const path = window.location.pathname;
+  if (path.startsWith("/staff/participants")) return "participants";
+  if (path.endsWith("dashboard")) return "dashboard";
+  return "committee";
 }
 
 function getPasswordResetToken() {
@@ -49,12 +65,13 @@ function getPathwayFromBrowserPath() {
 function staffView(session, requested = "committee") {
   if (!session?.token) return "staff-login";
   if (session.user?.role === "VIEWER") return "dashboard";
+  if (requested === "participants" && ["ADMIN", "COUNTRY_ADMIN"].includes(session.user?.role)) return "participants";
   return requested === "dashboard" && session.user?.role === "ADMIN" ? "dashboard" : "committee";
 }
 
 function getInitialView() {
   if (getPasswordResetToken()) return "reset-password";
-  if (window.location.pathname.startsWith("/staff/")) return staffView(loadStaffSession(), window.location.pathname.endsWith("dashboard") ? "dashboard" : "committee");
+  if (window.location.pathname.startsWith("/staff/")) return staffView(loadStaffSession(), getRequestedStaffView());
   if (getInitialParticipantRegistrationToken()) return "participant-registration";
   if (getInitialSkillsTestToken() || window.location.pathname === "/basic-skills-test") return "skills-test";
   if (window.location.pathname === "/status") return "status";
@@ -90,6 +107,7 @@ const VIEW_TITLES = {
   committee: "Committee workspace",
   dashboard: "Application dashboard",
   consents: "Signed consent records",
+  participants: "Participants",
 };
 
 function App() {
@@ -103,6 +121,7 @@ function App() {
   const [skillsTestToken, setSkillsTestToken] = useState(initialSkillsTestToken);
   const [participantRegistrationToken, setParticipantRegistrationToken] = useState(initialParticipantRegistrationToken);
   const [staffSession, setStaffSession] = useState(loadInitialStaffSession);
+  const [participantId, setParticipantId] = useState(getParticipantIdFromPath);
   // A pathway switch waiting for the applicant to confirm in the dialog.
   const [pendingSwitch, setPendingSwitch] = useState(null);
   const [switchError, setSwitchError] = useState("");
@@ -154,7 +173,8 @@ function App() {
         if (historySelectedPathway?.id !== pathway.id) historySelectPathway(pathway);
         setCurrentView("application");
       } else if (window.location.pathname.startsWith("/staff/")) {
-        setCurrentView(staffView(loadStaffSession(), window.location.pathname.endsWith("dashboard") ? "dashboard" : "committee"));
+        setParticipantId(getParticipantIdFromPath());
+        setCurrentView(staffView(loadStaffSession(), getRequestedStaffView()));
       } else if (window.location.pathname === "/status") {
         setCurrentView("status");
       } else if (window.location.pathname === "/continue") {
@@ -170,7 +190,9 @@ function App() {
   // Screen readers announce the title, so each view gets its own.
   const pageTitle = currentView === "application" && registration.selectedPathway
     ? `${registration.selectedPathway.title} application`
-    : VIEW_TITLES[currentView];
+    : currentView === "participants" && participantId
+      ? "Participant profile"
+      : VIEW_TITLES[currentView];
   useEffect(() => {
     document.title = pageTitle ? `${pageTitle} | Digital Futures` : "Digital Futures";
   }, [pageTitle]);
@@ -259,6 +281,18 @@ function App() {
   function handleShowAccessManagement() {
     navigateTo("/staff/dashboard#access");
     setCurrentView(staffView(staffSession, "dashboard"));
+  }
+
+  function handleShowParticipants() {
+    navigateTo("/staff/participants");
+    setParticipantId("");
+    setCurrentView(staffView(staffSession, "participants"));
+  }
+
+  function handleOpenParticipant(id) {
+    navigateTo(`/staff/participants/${encodeURIComponent(id)}`);
+    setParticipantId(id);
+    setCurrentView("participants");
   }
 
   function handleShowDashboard() {
@@ -371,6 +405,7 @@ function App() {
     registration.submitResult?.screeningStatus === "NOT_ELIGIBLE"
   );
   const canViewConsentArchive = staffSession?.user?.role === "ADMIN";
+  const canViewParticipants = Boolean(staffSession?.token && ["ADMIN", "COUNTRY_ADMIN"].includes(staffSession?.user?.role));
 
   return (
     <>
@@ -388,6 +423,8 @@ function App() {
         showDashboardButton={Boolean(staffSession?.token && ["ADMIN", "VIEWER"].includes(staffSession?.user?.role))}
         onShowConsents={handleShowConsents}
         showConsentsButton={canViewConsentArchive}
+        onShowParticipants={handleShowParticipants}
+        showParticipantsButton={canViewParticipants}
       />
 
       <AccessibilityMenu
@@ -408,6 +445,21 @@ function App() {
             setCurrentView(staffView(loadStaffSession()));
           }}
         />
+      ) : currentView === "participants" && participantId ? (
+        <ParticipantProfilePage
+          key={participantId}
+          participantId={participantId}
+          token={staffSession?.token}
+          onBack={handleShowParticipants}
+          onSessionExpired={handleSessionExpired}
+        />
+      ) : currentView === "participants" ? (
+        <ParticipantsPage
+          token={staffSession?.token}
+          staffUser={staffSession?.user}
+          onOpenParticipant={handleOpenParticipant}
+          onSessionExpired={handleSessionExpired}
+        />
       ) : currentView === "dashboard" ? (
         <ApplicationDashboardPage
           staffUser={staffSession?.user}
@@ -423,6 +475,7 @@ function App() {
           onStaffLogout={handleStaffLogout}
           onSessionExpired={handleSessionExpired}
           onManageAccess={handleShowAccessManagement}
+          onShowParticipants={handleShowParticipants}
         />
       ) : currentView === "consents" ? (
         <ConsentRecordsPage
@@ -492,7 +545,7 @@ function App() {
         />
       )}
 
-      {!["staff-login", "reset-password", "dashboard", "committee", "consents"].includes(currentView) && <SiteFooter />}
+      {!["staff-login", "reset-password", "dashboard", "committee", "consents", "participants"].includes(currentView) && <SiteFooter />}
 
       <ConfirmDialog
         open={Boolean(pendingSwitch)}

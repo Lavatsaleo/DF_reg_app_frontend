@@ -10,6 +10,8 @@ function AppNavbar({
   onShowConsents,
   showConsentsButton = false,
   showStatusButton = true,
+  onShowParticipants,
+  showParticipantsButton = false,
 }) {
   const isStatusPage = currentView === "status";
   const isCommitteePage = currentView === "committee";
@@ -46,6 +48,18 @@ function AppNavbar({
             >
               <i className="bi bi-clipboard2-check" aria-hidden="true" />
               <span className="df-nav-label">Check status</span>
+            </button>
+          )}
+
+          {showParticipantsButton && onShowParticipants && (
+            <button
+              type="button"
+              className={`btn df-nav-status ${currentView === "participants" ? "active" : ""}`}
+              onClick={onShowParticipants}
+              aria-current={currentView === "participants" ? "page" : undefined}
+            >
+              <i className="bi bi-people" aria-hidden="true" />
+              <span className="df-nav-label">Participants</span>
             </button>
           )}
 
