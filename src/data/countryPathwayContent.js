@@ -183,7 +183,7 @@ const GHANA = {
         "Follow programme rules, safeguarding requirements and codes of conduct",
       ],
       eligibility: [
-        "Be aged 18–35 at the end of the training",
+        "Be aged 18–33 at the time of application",
         "Be a person with a disability",
         "Be willing to stay on the University of Ghana campus for nine months",
         "Be available to attend training for the full nine months",
@@ -229,7 +229,7 @@ const GHANA = {
       ],
       eligibility: [
         "Be a young woman or young man with a disability",
-        "Be aged 18–35 at the end of the training",
+        "Be aged 18–33 at the time of application",
         "Hold a minimum of a diploma in any field",
         "Show an interest in technology and digital careers",
         "Have access to a laptop or computer and a stable internet connection",
@@ -272,7 +272,7 @@ const GHANA = {
       dates: ["Training is expected to run for three months, from April to June 2027, for cohort 1. Participants who complete the training can apply for a grant, and grant recipients receive mentorship to start their business."],
       eligibility: [
         "Be a person with a disability",
-        "Be aged 18–45 at the end of the training",
+        "Be aged 18–45 at the time of application",
         "Have basic numeracy and digital literacy skills",
         "Live in Ghana",
         "Be available for the training",
@@ -379,7 +379,7 @@ const KENYA = {
       ],
       eligibility: [
         "Be a person with a disability",
-        "Be aged 18 to 35",
+        "Be aged 18 to 33 at the time of application",
         "Have a bachelor's degree",
         "Live in Kenya",
         "Be able to attend in person at NITA Nairobi or NITA Athi River for the full nine months",
@@ -427,7 +427,7 @@ const KENYA = {
         "Take part in follow-up surveys",
       ],
       eligibility: [
-        "Be a person with a disability aged 18 to 35 and living in Kenya",
+        "Be a person with a disability aged 18 to 33 at the time of application and living in Kenya",
         "Hold a diploma",
         "Be able to read and write in English and have basic numeracy",
         "Have regular access to a laptop or computer and the internet",
@@ -461,7 +461,7 @@ const KENYA = {
       location: ["Participants must be based in Nairobi and its environs. The in-person sessions are in Nairobi, and applicants must be able to attend them."],
       dates: ["Expected to start in March 2027."],
       eligibility: [
-        "Be a person with a disability aged 18 to 45 and living in Kenya",
+        "Be a person with a disability aged 18 to 45 at the time of application and living in Kenya",
         "Have a business idea or an early-stage business",
         "Be able to attend the in-person sessions in Nairobi and complete the online learning",
       ],
@@ -471,7 +471,7 @@ const KENYA = {
   faqs: [
     {
       question: "Who can apply?",
-      answer: ["Young women and men with disabilities who live in Kenya and meet the eligibility criteria for their chosen pathway: aged 18 to 35 for the physical and virtual academies, and 18 to 45 for Digital Entrepreneurship. Women with disabilities are strongly encouraged to apply."],
+      answer: ["Young women and men with disabilities who live in Kenya and meet the eligibility criteria for their chosen pathway: aged 18 to 33 when they apply for the physical and virtual academies, and 18 to 45 for Digital Entrepreneurship. Women with disabilities are strongly encouraged to apply."],
     },
     {
       question: "Can I apply for more than one pathway in a single application?",

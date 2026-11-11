@@ -31,6 +31,16 @@ export const DOCUMENT_TYPE_LABELS = {
 
 export { formatPathwayLabel, formatStatusLabel };
 
+// Country admins see people without a name until the committee selects them.
+export function getDisplayName(person) {
+  if (person?.name) return person.name;
+  if (person?.participantCode) return `Participant ${person.participantCode}`;
+  // Older records may have no participant code yet; a short internal id still tells them apart.
+  return person?.id ? `Participant #${String(person.id).slice(0, 8).toUpperCase()}` : "Participant";
+}
+
+export const IDENTITY_HIDDEN_LABEL = "Hidden until selected";
+
 export function getStageMeta(stage) {
   return STAGE_META[stage] || STAGE_META.review;
 }

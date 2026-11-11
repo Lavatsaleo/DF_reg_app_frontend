@@ -8,6 +8,7 @@ import {
   formatRelative,
   formatStatusLabel,
   getAvatarColour,
+  getDisplayName,
   getInitials,
   getStageMeta,
 } from "../utils/participantDisplay";
@@ -23,10 +24,13 @@ function readSavedView() {
   try { return window.localStorage.getItem(VIEW_KEY) === "table" ? "table" : "cards"; } catch { return "cards"; }
 }
 
-function Avatar({ name, size = "md" }) {
+function Avatar({ person, size = "md" }) {
+  if (person.identityHidden) {
+    return <span className={`pt-avatar is-${size} is-hidden`} aria-hidden="true"><i className="bi bi-person-lock" /></span>;
+  }
   return (
-    <span className={`pt-avatar is-${size}`} style={{ "--pt-avatar": getAvatarColour(name) }} aria-hidden="true">
-      {getInitials(name)}
+    <span className={`pt-avatar is-${size}`} style={{ "--pt-avatar": getAvatarColour(person.name) }} aria-hidden="true">
+      {getInitials(person.name)}
     </span>
   );
 }
@@ -47,10 +51,12 @@ function ParticipantCard({ participant, onOpen }) {
     <li className={`pt-card is-${meta.tone}`}>
       <button type="button" className="pt-card-button" onClick={() => onOpen(participant.id)}>
         <span className="pt-card-top">
-          <Avatar name={participant.name} />
+          <Avatar person={participant} />
           <span className="pt-card-identity">
-            <span className="pt-card-name">{participant.name}</span>
-            <span className="pt-card-code">{participant.participantCode || participant.applicationReference || "No reference yet"}</span>
+            <span className="pt-card-name">{getDisplayName(participant)}</span>
+            {participant.identityHidden
+              ? <span className="pt-card-hidden"><i className="bi bi-lock" aria-hidden="true" /> Name hidden until selected</span>
+              : <span className="pt-card-code">{participant.participantCode || participant.applicationReference || "No reference yet"}</span>}
           </span>
         </span>
         <StagePill stage={participant.stage} status={participant.status} />
@@ -94,10 +100,10 @@ function ParticipantTable({ participants, onOpen }) {
             <tr key={p.id}>
               <th scope="row">
                 <button type="button" className="pt-table-person" onClick={() => onOpen(p.id)}>
-                  <Avatar name={p.name} size="sm" />
+                  <Avatar person={p} size="sm" />
                   <span>
-                    <span className="pt-table-name">{p.name}</span>
-                    <span className="pt-table-code">{p.participantCode || p.applicationReference || "—"}</span>
+                    <span className="pt-table-name">{getDisplayName(p)}</span>
+                    <span className="pt-table-code">{p.identityHidden ? "Name hidden until selected" : p.participantCode || p.applicationReference || "—"}</span>
                   </span>
                 </button>
               </th>
@@ -245,8 +251,14 @@ function ParticipantsPage({ token, staffUser, onOpenParticipant, onSessionExpire
           <label className="pt-search">
             <span className="visually-hidden">Search participants</span>
             <i className="bi bi-search" aria-hidden="true" />
-            <input type="search" value={searchInput} onChange={(event) => setSearchInput(event.target.value)} placeholder="Search by name, phone, email or reference" autoComplete="off" />
+            <input type="search" value={searchInput} onChange={(event) => setSearchInput(event.target.value)} placeholder={isSuperAdmin ? "Search by name, phone, email or reference" : "Search by participant code, or by name once selected"} autoComplete="off" />
           </label>
+          {!isSuperAdmin && (
+            <p className="pt-privacy-note">
+              <i className="bi bi-shield-lock" aria-hidden="true" />
+              <span>Names, contact details and documents are hidden until the selection committee selects a person. Until then, people are shown by participant code.</span>
+            </p>
+          )}
           <div className="pt-filters">
             {isSuperAdmin && (
               <label><span>Country</span>
@@ -281,7 +293,7 @@ function ParticipantsPage({ token, staffUser, onOpenParticipant, onSessionExpire
                 <option value="newest">Newest first</option>
                 <option value="oldest">Oldest first</option>
                 <option value="updated">Recently updated</option>
-                <option value="name">Name A–Z</option>
+                <option value="name">{isSuperAdmin ? "Name A–Z" : "Participant code"}</option>
               </select>
             </label>
           </div>

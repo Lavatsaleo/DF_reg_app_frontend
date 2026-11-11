@@ -14,7 +14,9 @@ import {
   formatRelative,
   formatStatusLabel,
   formatYesNo,
+  IDENTITY_HIDDEN_LABEL,
   getAvatarColour,
+  getDisplayName,
   getInitials,
   getStageMeta,
 } from "../utils/participantDisplay";
@@ -33,12 +35,16 @@ const TABS = [
  * Small building blocks
  * ------------------------------------------------------------------------- */
 
-function Field({ label, children, wide = false }) {
+function Field({ label, children, wide = false, hidden = false }) {
   const empty = children === null || children === undefined || children === "" || children === "—";
   return (
     <div className={`pp-field ${wide ? "is-wide" : ""}`}>
       <dt>{label}</dt>
-      <dd className={empty ? "is-empty" : ""}>{empty ? "Not recorded" : children}</dd>
+      {hidden ? (
+        <dd className="is-hidden"><i className="bi bi-lock" aria-hidden="true" /> {IDENTITY_HIDDEN_LABEL}</dd>
+      ) : (
+        <dd className={empty ? "is-empty" : ""}>{empty ? "Not recorded" : children}</dd>
+      )}
     </div>
   );
 }
@@ -129,28 +135,29 @@ function Journey({ steps }) {
 function OverviewTab({ profile }) {
   const p = profile.participant;
   const e = profile.eligibility;
+  const H = Boolean(p.identityHidden);
   const disability = [p.disabilityType, p.otherDisabilityType].filter(Boolean).join(", ");
   return (
     <div className="pp-overview">
       <InfoCard title="Personal details" icon="bi-person">
         <dl className="pp-fields">
-          <Field label="First name">{p.firstName}</Field>
-          <Field label="Last name">{p.lastName}</Field>
+          <Field label="First name" hidden={H}>{p.firstName}</Field>
+          <Field label="Last name" hidden={H}>{p.lastName}</Field>
           <Field label="Gender">{p.sex}</Field>
           <Field label="Age at application">{p.age ? `${p.age} years` : null}</Field>
-          <Field label="Date of birth">{p.dateOfBirth ? formatDate(p.dateOfBirth) : p.yearOfBirth ? `Born ${p.yearOfBirth}` : null}</Field>
+          <Field label="Date of birth" hidden={H}>{p.dateOfBirth ? formatDate(p.dateOfBirth) : p.yearOfBirth ? `Born ${p.yearOfBirth}` : null}</Field>
           <Field label="Household size">{p.householdSize}</Field>
         </dl>
       </InfoCard>
 
       <InfoCard title="Contact" icon="bi-telephone">
         <dl className="pp-fields">
-          <Field label="Phone">{p.contactNumber && <a href={`tel:${p.contactNumber}`}>{p.contactNumber}</a>}</Field>
-          <Field label="Other phone">{p.alternativeContactNumber}</Field>
-          <Field label="Email" wide>{p.email && <a href={`mailto:${p.email}`}>{p.email}</a>}</Field>
+          <Field label="Phone" hidden={H}>{p.contactNumber && <a href={`tel:${p.contactNumber}`}>{p.contactNumber}</a>}</Field>
+          <Field label="Other phone" hidden={H}>{p.alternativeContactNumber}</Field>
+          <Field label="Email" wide hidden={H}>{p.email && <a href={`mailto:${p.email}`}>{p.email}</a>}</Field>
           <Field label="Preferred contact">{p.preferredContactMethod}</Field>
-          <Field label="Next of kin">{[p.nextOfKinName, p.nextOfKinRelationship].filter(Boolean).join(" · ")}</Field>
-          <Field label="Next of kin phone">{p.nextOfKinPhone}</Field>
+          <Field label="Next of kin" hidden={H}>{[p.nextOfKinName, p.nextOfKinRelationship].filter(Boolean).join(" · ")}</Field>
+          <Field label="Next of kin phone" hidden={H}>{p.nextOfKinPhone}</Field>
         </dl>
       </InfoCard>
 
@@ -158,8 +165,8 @@ function OverviewTab({ profile }) {
         <dl className="pp-fields">
           <Field label="Country">{p.country}</Field>
           <Field label="County / state / region">{p.region}</Field>
-          <Field label="Sub-county">{p.subCounty}</Field>
-          <Field label="Town">{p.town}</Field>
+          <Field label="Sub-county" hidden={H}>{p.subCounty}</Field>
+          <Field label="Town" hidden={H}>{p.town}</Field>
         </dl>
       </InfoCard>
 
@@ -455,9 +462,18 @@ function CommitteeTab({ committee, registration }) {
   );
 }
 
-function DocumentsTab({ participantId, documents, token, onSessionExpired }) {
+function DocumentsTab({ participantId, documents, identity, token, onSessionExpired }) {
   const [busy, setBusy] = useState("");
   const [error, setError] = useState("");
+  if (identity?.hidden) {
+    return (
+      <EmptyPanel
+        icon="bi-file-lock"
+        title="Documents are hidden until selection"
+        text={`${identity.documentCount ? `${identity.documentCount} document${identity.documentCount === 1 ? "" : "s"} uploaded. ` : ""}ID cards and certificates show names, so they open once the committee selects this person.`}
+      />
+    );
+  }
   if (!documents.length) {
     return <EmptyPanel icon="bi-folder2-open" title="No documents uploaded" text="ID, certificates and other files the participant uploads appear here." />;
   }
@@ -535,7 +551,7 @@ function ActivityTab({ profile }) {
       if (item.sentAt) list.push({ date: item.sentAt, icon: "bi-envelope-check", tone: "orange", title: "Registration invitation sent", text: item.emailTo });
       if (item.submittedAt) list.push({ date: item.submittedAt, icon: "bi-clipboard-check", tone: "green", title: "Participant registration submitted" });
     });
-    profile.documents.forEach((item) => list.push({ date: item.createdAt, icon: "bi-paperclip", tone: "neutral", title: `${DOCUMENT_TYPE_LABELS[item.documentType] || "Document"} uploaded`, text: item.originalName }));
+    (profile.documents || []).forEach((item) => list.push({ date: item.createdAt, icon: "bi-paperclip", tone: "neutral", title: `${DOCUMENT_TYPE_LABELS[item.documentType] || "Document"} uploaded`, text: item.originalName }));
     profile.dhis2.syncLogs.forEach((item) => list.push({ date: item.createdAt, icon: "bi-cloud-arrow-up", tone: item.status === "FAILED" ? "red" : "neutral", title: `DHIS2: ${formatStatusLabel(item.action)} (${formatStatusLabel(item.status)})`, text: item.errorMessage }));
     return list.filter((item) => item.date).sort((a, b) => new Date(b.date) - new Date(a.date));
   }, [profile]);
@@ -642,10 +658,14 @@ function ParticipantProfilePage({ participantId, token, onBack, onSessionExpired
 
         <header className={`pp-hero is-${stage.tone}`}>
           <div className="pp-hero-main">
-            <span className="pt-avatar is-xl" style={{ "--pt-avatar": getAvatarColour(p.name) }} aria-hidden="true">{getInitials(p.name)}</span>
+            {p.identityHidden ? (
+              <span className="pt-avatar is-xl is-hidden" aria-hidden="true"><i className="bi bi-person-lock" /></span>
+            ) : (
+              <span className="pt-avatar is-xl" style={{ "--pt-avatar": getAvatarColour(p.name) }} aria-hidden="true">{getInitials(p.name)}</span>
+            )}
             <div className="pp-hero-identity">
               <p className="pt-eyebrow">Participant profile</p>
-              <h1 ref={headingRef} tabIndex="-1">{p.name}</h1>
+              <h1 ref={headingRef} tabIndex="-1">{getDisplayName(p)}</h1>
               <div className="pp-ids">
                 {p.participantCode && <span className="pp-id"><span>Participant code</span><strong>{p.participantCode}</strong><CopyButton value={p.participantCode} label="participant code" /></span>}
                 {p.applicationReference && <span className="pp-id"><span>Application reference</span><strong>{p.applicationReference}</strong><CopyButton value={p.applicationReference} label="application reference" /></span>}
@@ -670,6 +690,13 @@ function ParticipantProfilePage({ participantId, token, onBack, onSessionExpired
             </dl>
           </div>
         </header>
+
+        {profile.identity?.hidden && (
+          <p className="pp-privacy-banner" role="note">
+            <i className="bi bi-shield-lock" aria-hidden="true" />
+            <span><strong>Identity hidden.</strong> {profile.identity.message} Answers that could identify them are left out of the forms below.</span>
+          </p>
+        )}
 
         <Journey steps={profile.journey} />
 
@@ -696,7 +723,7 @@ function ParticipantProfilePage({ participantId, token, onBack, onSessionExpired
           {tab === "forms" && <FormsTab forms={profile.forms} />}
           {tab === "skills" && <SkillsTab skillsTest={profile.skillsTest} />}
           {tab === "committee" && <CommitteeTab committee={profile.committee} registration={profile.registration} />}
-          {tab === "documents" && <DocumentsTab participantId={p.id} documents={profile.documents} token={token} onSessionExpired={onSessionExpired} />}
+          {tab === "documents" && <DocumentsTab participantId={p.id} documents={profile.documents} identity={profile.identity} token={token} onSessionExpired={onSessionExpired} />}
           {tab === "activity" && <ActivityTab profile={profile} />}
         </div>
       </div>
