@@ -4,6 +4,7 @@ import { API_BASE_URL } from '../config/api';
 import ApplicationRegionMap from '../components/ApplicationRegionMap';
 import ApplicationTrendChart from '../components/ApplicationTrendChart';
 import DashboardAccessPanel from '../components/DashboardAccessPanel';
+import ApiAccessPanel from '../components/ApiAccessPanel';
 import './ApplicationDashboard.css';
 const COUNTRIES = ['Kenya', 'Nigeria', 'Ghana', 'Zambia'];
 const PATHWAY_NAMES = { PHYSICAL_ACADEMY: 'Physical Academy', VIRTUAL_ACADEMY: 'Virtual Academy', DIGITAL_ENTREPRENEURSHIP: 'Digital Entrepreneurship', UNKNOWN: 'Not recorded' };
@@ -130,6 +131,7 @@ export default function ApplicationDashboardPage({ staffUser, token, onStaffLogo
         <ChartTooltip tip={tip} />
       </>}
       {staffUser?.role === 'ADMIN' && <DashboardAccessPanel token={token} onSessionExpired={onSessionExpired} />}
+      {staffUser?.role === 'ADMIN' && <ApiAccessPanel token={token} onSessionExpired={onSessionExpired} />}
       <footer className="df-dashboard-footnote">Digital Futures · Summary statistics only · Dashboard access does not grant access to individual applications.</footer>
     </div>
   </main>;

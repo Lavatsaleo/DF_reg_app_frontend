@@ -69,6 +69,25 @@
 .df-dashboard-user-form button { justify-self: start; }
 .df-dashboard-user-list { padding: 0; margin-top: 20px; list-style: none; }
 .df-dashboard-user-list li { display: flex; gap: 12px; justify-content: space-between; font-size: .83rem; padding: 12px 0; border-top: 1px solid var(--df-border); }
+/* API access for R */
+.df-dashboard-user-form label small, .df-api-personal small { display: block; margin-top: 6px; color: var(--df-muted); font-size: .78rem; line-height: 1.4; }
+.df-api-personal { align-self: end; }
+.df-api-check { display: flex; align-items: center; gap: 8px; font-weight: 700; }
+.df-api-check input { width: 18px; height: 18px; margin: 0; }
+.df-api-error { color: #8d1b20; font-weight: 600; }
+.df-api-new-key { margin-top: 20px; padding: 18px; border: 2px solid #111; border-left: 6px solid #ffc81f; border-radius: 12px; background: #fffaf0; }
+.df-api-new-key h3 { display: flex; gap: 8px; align-items: flex-start; font-size: 1rem; font-weight: 800; margin: 0 0 8px; }
+.df-api-new-key p { font-size: .85rem; margin: 8px 0; }
+.df-api-new-key pre { margin: 10px 0; padding: 12px; background: #111; color: #fff; border-radius: 8px; font-size: .8rem; white-space: pre-wrap; word-break: break-all; }
+.df-api-new-key-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.df-api-copied { min-height: 1.2em; font-weight: 700; }
+.df-api-key-list { padding: 0; margin-top: 20px; list-style: none; }
+.df-api-key-list li { display: flex; gap: 12px; align-items: center; justify-content: space-between; padding: 12px 0; border-top: 1px solid var(--df-border); font-size: .83rem; }
+.df-api-key-list li > div { min-width: 0; }
+.df-api-key-list strong, .df-api-key-list span, .df-api-key-list small { display: block; overflow-wrap: anywhere; }
+.df-api-key-list small { color: var(--df-muted); margin-top: 2px; }
+.df-api-key-list li.is-inactive { opacity: .7; }
+.df-api-key-list .btn { flex-shrink: 0; }
 /* Gender colours are darker steps of the brand orange and teal, checked for colour-blind separation; every split also carries visible counts and a table view. */
 .df-dashboard-page { --df-sex-female: #e8600f; --df-sex-male: #16927a; --df-sex-unrecorded: #b0a89f; }
 .df-sex-key { display: inline-block; width: 12px; height: 12px; border-radius: 3px; background: var(--sex-colour); flex-shrink: 0; }
