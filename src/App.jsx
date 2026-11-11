@@ -255,6 +255,12 @@ function App() {
     setSkillsTestToken("");
   }
 
+  // Super admins: dashboard users and API keys live on the dashboard's "Access management" tab.
+  function handleShowAccessManagement() {
+    navigateTo("/staff/dashboard#access");
+    setCurrentView(staffView(staffSession, "dashboard"));
+  }
+
   function handleShowDashboard() {
     navigateTo("/staff/dashboard");
     setCurrentView(staffView(staffSession, "dashboard"));
@@ -416,6 +422,7 @@ function App() {
           onBackHome={handleShowHome}
           onStaffLogout={handleStaffLogout}
           onSessionExpired={handleSessionExpired}
+          onManageAccess={handleShowAccessManagement}
         />
       ) : currentView === "consents" ? (
         <ConsentRecordsPage

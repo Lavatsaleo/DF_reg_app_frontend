@@ -66,6 +66,26 @@ export default function ApplicationDashboardPage({ staffUser, token, onStaffLogo
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const isAdmin = staffUser?.role === 'ADMIN';
+  // Super admins get a second tab for dashboard users and API keys; #access opens it directly.
+  const [tab, setTab] = useState(() => (isAdmin && window.location.hash === '#access' ? 'access' : 'insights'));
+  function chooseTab(next) {
+    setTab(next);
+    window.history.replaceState(window.history.state, '', next === 'access' ? '#access' : window.location.pathname + window.location.search);
+  }
+  useEffect(() => {
+    if (!isAdmin) return undefined;
+    const onHashChange = () => setTab(window.location.hash === '#access' ? 'access' : 'insights');
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, [isAdmin]);
+  function onTabKeyDown(event) {
+    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+    event.preventDefault();
+    const next = event.key === 'Home' ? 'insights' : event.key === 'End' ? 'access' : tab === 'insights' ? 'access' : 'insights';
+    chooseTab(next);
+    document.getElementById(`df-tab-${next}`)?.focus();
+  }
   useEffect(() => {
     const controller = new AbortController();
     async function load() {
@@ -91,6 +111,11 @@ export default function ApplicationDashboardPage({ staffUser, token, onStaffLogo
   return <main id="main-content" className="df-dashboard-page">
     <div className="df-dashboard-shell">
       <header className="df-dashboard-header"><div><span className="df-dashboard-eyebrow">Digital Futures / programme insights</span><h1>Application dashboard<span>.</span></h1><p>Understand who is applying, where they live and how reach is growing.</p></div><div className="df-dashboard-user"><span>{staffUser?.fullName}</span><small>{staffUser?.role === 'ADMIN' ? 'Super Admin' : 'Dashboard user'} · {fixedCountry || 'All countries'}</small><div>{staffUser?.role === 'ADMIN' && <button type="button" className="btn ss-btn-outline" onClick={onShowCommittee}>Committee workspace</button>}<button type="button" className="btn ss-btn-outline" onClick={onStaffLogout}>Sign out</button></div></div></header>
+      {isAdmin && <div className="df-dashboard-tabs" role="tablist" aria-label="Dashboard sections" onKeyDown={onTabKeyDown}>
+        <button type="button" role="tab" id="df-tab-insights" aria-controls="df-panel-insights" aria-selected={tab === 'insights'} tabIndex={tab === 'insights' ? 0 : -1} onClick={() => chooseTab('insights')}><i className="bi bi-bar-chart-line" aria-hidden="true" /> Programme insights</button>
+        <button type="button" role="tab" id="df-tab-access" aria-controls="df-panel-access" aria-selected={tab === 'access'} tabIndex={tab === 'access' ? 0 : -1} onClick={() => chooseTab('access')}><i className="bi bi-shield-lock" aria-hidden="true" /> Access management</button>
+      </div>}
+      {tab === 'insights' && <div id="df-panel-insights" {...(isAdmin ? { role: 'tabpanel', 'aria-labelledby': 'df-tab-insights' } : {})}>
       <section className="df-dashboard-filters" aria-label="Dashboard filters">
         <label><span>Country</span><select className="form-select" value={country} disabled={Boolean(fixedCountry)} onChange={e => { setCountry(e.target.value); setMonth(''); }}>{!fixedCountry && <option value="">All countries</option>}{scopeCountries.map(c => <option key={c}>{c}</option>)}</select></label>
         <label><span>Application month</span><select className="form-select" value={month} onChange={e => setMonth(e.target.value)}><option value="">All months</option>{month && !data?.availableMonths.includes(month) && <option value={month}>{monthLabel(month)}</option>}{(data?.availableMonths || []).map(m => <option key={m} value={m}>{monthLabel(m)}</option>)}</select></label>
@@ -130,8 +155,12 @@ export default function ApplicationDashboardPage({ staffUser, token, onStaffLogo
         </section>
         <ChartTooltip tip={tip} />
       </>}
-      {staffUser?.role === 'ADMIN' && <DashboardAccessPanel token={token} onSessionExpired={onSessionExpired} />}
-      {staffUser?.role === 'ADMIN' && <ApiAccessPanel token={token} onSessionExpired={onSessionExpired} />}
+      </div>}
+      {isAdmin && tab === 'access' && <div id="df-panel-access" role="tabpanel" aria-labelledby="df-tab-access" className="df-access-panels">
+        <p className="df-access-intro">Decide who can see this dashboard and who can pull data into R. Only super admins see this tab.</p>
+        <DashboardAccessPanel token={token} onSessionExpired={onSessionExpired} />
+        <ApiAccessPanel token={token} onSessionExpired={onSessionExpired} />
+      </div>}
       <footer className="df-dashboard-footnote">Digital Futures · Summary statistics only · Dashboard access does not grant access to individual applications.</footer>
     </div>
   </main>;

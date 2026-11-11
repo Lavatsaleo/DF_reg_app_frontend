@@ -77,8 +77,8 @@ export default function ApiAccessPanel({ token, onSessionExpired }) {
 
   const renviron = newKey ? `DF_API_URL=${getApiUrl()}\nDF_API_KEY=${newKey.value}` : '';
 
-  return <details className="df-dashboard-access df-api-access">
-    <summary><i className="bi bi-code-slash" aria-hidden="true" /> API access for R <span>Super Admin</span></summary>
+  return <section className="df-dashboard-access df-api-access" aria-labelledby="df-api-access-title">
+    <h2 id="df-api-access-title"><i className="bi bi-code-slash" aria-hidden="true" /> API access for R</h2>
     <p>Create a read-only key so an analyst can pull application data into R / RStudio. Keys are de-identified by default: no names, phone numbers, emails, dates of birth or free-text answers.</p>
 
     {newKey && <div className="df-api-new-key" role="region" aria-labelledby="df-api-new-key-title">
@@ -114,5 +114,5 @@ export default function ApiAccessPanel({ token, onSessionExpired }) {
       </div>
       {k.status === 'ACTIVE' && <button type="button" className="btn btn-outline-danger btn-sm" onClick={() => revokeKey(k)}>Revoke<span className="visually-hidden"> {k.name}</span></button>}
     </li>)}</ul>}
-  </details>;
+  </section>;
 }

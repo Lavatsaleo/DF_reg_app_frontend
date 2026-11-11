@@ -1386,7 +1386,7 @@ function ReviewPanel({
   );
 }
 
-function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessionExpired }) {
+function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessionExpired, onManageAccess }) {
   const [overview, setOverview] = useState(null);
   const [members, setMembers] = useState([]);
   const [assignments, setAssignments] = useState([]);
@@ -2033,6 +2033,11 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
           <span>Signed in as</span>
           <strong>{staffUser?.fullName || "Staff user"}</strong>
           <p>{String(userRole || "STAFF").replace(/_/g, " ").toLowerCase()}{currentUserCountry ? ` · ${currentUserCountry}` : ""}</p>
+          {userRole === "ADMIN" && onManageAccess && (
+            <button type="button" className="btn committee-secondary-action" onClick={onManageAccess}>
+              <i className="bi bi-shield-lock" aria-hidden="true" /> Manage access and API keys
+            </button>
+          )}
           <button type="button" className="btn committee-secondary-action" onClick={onStaffLogout}>
             <i className="bi bi-box-arrow-right" aria-hidden="true" /> Sign out
           </button>

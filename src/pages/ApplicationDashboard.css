@@ -69,6 +69,15 @@
 .df-dashboard-user-form button { justify-self: start; }
 .df-dashboard-user-list { padding: 0; margin-top: 20px; list-style: none; }
 .df-dashboard-user-list li { display: flex; gap: 12px; justify-content: space-between; font-size: .83rem; padding: 12px 0; border-top: 1px solid var(--df-border); }
+/* Super-admin tabs: insights and access management */
+.df-dashboard-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 22px; padding: 6px; background: var(--df-white); border: 1px solid var(--df-border); border-radius: 14px; width: fit-content; max-width: 100%; }
+.df-dashboard-tabs button { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px; border: 2px solid transparent; border-radius: 10px; background: transparent; color: inherit; font-weight: 750; cursor: pointer; }
+.df-dashboard-tabs button:hover { background: #fff4cc; }
+.df-dashboard-tabs button[aria-selected="true"] { background: #111; color: #fff; }
+.df-dashboard-tabs button:focus-visible { outline: 3px solid #111; outline-offset: 2px; }
+.df-access-intro { font-size: .92rem; margin: 0 0 4px; }
+.df-access-panels .df-dashboard-access h2 { display: flex; align-items: center; gap: 10px; margin: 0; font-size: 1.25rem; font-weight: 800; }
+.df-access-panels .df-dashboard-access > p:first-of-type { margin-top: 10px; }
 /* API access for R */
 .df-dashboard-user-form label small, .df-api-personal small { display: block; margin-top: 6px; color: var(--df-muted); font-size: .78rem; line-height: 1.4; }
 .df-api-personal { align-self: end; }

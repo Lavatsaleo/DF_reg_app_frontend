@@ -31,8 +31,8 @@ export default function DashboardAccessPanel({ token, onSessionExpired }) {
     } catch (e) { if (e.response?.status === 401) onSessionExpired(); else setError(e.response?.data?.message || 'Unable to create this user.'); }
     finally { setBusy(false); }
   }
-  return <details className="df-dashboard-access"><summary><i className="bi bi-person-plus" aria-hidden="true" /> Manage dashboard access <span>Super Admin</span></summary>
-    <p>Dashboard users see summary statistics only. Choose a country to restrict access, or explicitly grant all-country access.</p>
+  return <section className="df-dashboard-access" aria-labelledby="df-dashboard-access-title"><h2 id="df-dashboard-access-title"><i className="bi bi-person-plus" aria-hidden="true" /> Dashboard users</h2>
+    <p>Dashboard users sign in and see the summary statistics on this dashboard only, never individual applications. Choose a country to restrict access, or explicitly grant all-country access.</p>
     <form onSubmit={createUser} className="df-dashboard-user-form" noValidate>
       <label>Full name<input className="form-control" required value={form.fullName} onChange={e => setForm({ ...form, fullName: e.target.value })} autoComplete="name" /></label>
       <label>Email<input className="form-control" type="email" required value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} autoComplete="off" /></label>
@@ -51,5 +51,5 @@ export default function DashboardAccessPanel({ token, onSessionExpired }) {
     </form>
     {message && <p role="status">{message}</p>}{error && <p role="alert">{error}</p>}
     {users.length > 0 && <ul className="df-dashboard-user-list">{users.map(u => <li key={u.id}><strong>{u.fullName}</strong><span>{u.country || 'All countries'} · {u.isActive ? 'Active' : 'Inactive'}</span></li>)}</ul>}
-  </details>;
+  </section>;
 }
