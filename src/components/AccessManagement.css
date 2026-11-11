@@ -1,0 +1,476 @@
+/* Access management tab (super admins): dashboard users and API keys for R. */
+
+.am-section {
+  display: grid;
+  gap: 20px;
+  margin-top: 28px;
+  min-width: 0;
+}
+
+.am-section + .am-section {
+  padding-top: 32px;
+  border-top: 1px solid var(--df-border, #e1dcd6);
+}
+
+.am-section-header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: start;
+}
+
+.am-section-icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: var(--df-black, #111);
+  color: #ffc81f;
+  font-size: 1.35rem;
+}
+
+.am-section-header h2 {
+  margin: 2px 0 6px;
+  font-size: clamp(1.3rem, 2vw, 1.6rem);
+  font-weight: 850;
+  letter-spacing: -.02em;
+}
+
+.am-section-header p {
+  max-width: 72ch;
+  margin: 0;
+  color: var(--df-muted, #55514d);
+  font-size: .98rem;
+  line-height: 1.5;
+}
+
+.am-count {
+  align-self: center;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--df-white, #fff);
+  border: 1px solid var(--df-border, #e1dcd6);
+  font-size: .88rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+/* Form on the left, list on the right; stacks on smaller screens. */
+.am-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.am-stack {
+  display: grid;
+  gap: 20px;
+  min-width: 0;
+}
+
+.am-card {
+  min-width: 0;
+  padding: clamp(20px, 2.2vw, 30px);
+  background: var(--df-white, #fff);
+  border: 1px solid var(--df-border, #e1dcd6);
+  border-radius: 20px;
+}
+
+.am-card h3 {
+  margin: 0 0 20px;
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.am-muted {
+  color: var(--df-muted, #55514d);
+  font-weight: 700;
+}
+
+/* The form card sizes its own fields, so it reflows wherever it sits. */
+.am-form-card {
+  container-type: inline-size;
+}
+
+.am-form-card form {
+  display: grid;
+  gap: 20px;
+}
+
+.am-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
+  gap: 18px 20px;
+}
+
+.am-field {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  min-width: 0;
+  margin: 0;
+}
+
+.am-field > span {
+  font-weight: 800;
+  font-size: 1rem;
+}
+
+.am-field .form-control,
+.am-field .form-select {
+  min-height: 48px;
+  font-size: 1rem;
+  border-width: 2px;
+  border-radius: 10px;
+}
+
+.am-field small,
+.am-choice small {
+  color: var(--df-muted, #55514d);
+  font-size: .88rem;
+  line-height: 1.45;
+}
+
+.am-field-wide {
+  grid-column: 1 / -1;
+}
+
+@container (max-width: 560px) {
+  .am-form-card .pw-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.am-choice {
+  display: grid;
+  gap: 8px;
+  padding: 16px 18px;
+  border: 2px solid var(--df-border, #e1dcd6);
+  border-radius: 12px;
+  background: var(--df-bg, #f6f4f2);
+}
+
+.am-choice.is-on {
+  border-color: #b4540a;
+  background: #fff4e5;
+}
+
+.am-choice label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.am-choice input {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  margin: 0;
+  accent-color: #111;
+}
+
+.am-submit {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 24px;
+}
+
+.am-feedback {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.am-feedback.is-ok { background: #eef6e3; color: #3f5a0c; }
+.am-feedback.is-bad { background: #fbeaea; color: #8d1b20; }
+.am-feedback.is-info { background: var(--df-bg, #f6f4f2); color: var(--df-black, #111); }
+
+/* Lists */
+.am-list {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.am-list li {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--df-border, #e1dcd6);
+  border-radius: 14px;
+}
+
+.am-list li.is-inactive {
+  background: var(--df-bg, #f6f4f2);
+}
+
+.am-list li.is-inactive .am-row-text strong {
+  color: var(--df-muted, #55514d);
+}
+
+.am-row-main {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.am-avatar {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #ffc81f;
+  color: #111;
+  font-weight: 850;
+}
+
+.am-avatar.is-key {
+  border-radius: 12px;
+  background: #111;
+  color: #ffc81f;
+  font-size: 1.15rem;
+}
+
+.am-row-text {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.am-row-text strong {
+  font-size: 1.02rem;
+  overflow-wrap: anywhere;
+}
+
+.am-row-email {
+  color: var(--df-muted, #55514d);
+  overflow-wrap: anywhere;
+}
+
+.am-row-code {
+  justify-self: start;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: var(--df-bg, #f6f4f2);
+  color: #111;
+  font-size: .88rem;
+}
+
+.am-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.am-tag {
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--df-border, #d7d2cd);
+  background: #fff;
+  font-size: .82rem;
+  font-weight: 750;
+}
+
+.am-tag.is-ok { border-color: #8fae55; background: #eef6e3; color: #3f5a0c; }
+.am-tag.is-warn { border-color: #d98a3a; background: #fff4e5; color: #8a3f00; }
+.am-tag.is-muted { background: var(--df-bg, #f6f4f2); color: var(--df-muted, #55514d); }
+
+.am-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+  margin: 2px 0 0;
+  font-size: .88rem;
+}
+
+.am-meta div { display: flex; gap: 6px; }
+.am-meta dt { color: var(--df-muted, #55514d); font-weight: 600; }
+.am-meta dd { margin: 0; font-weight: 700; }
+
+.am-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--df-border, #e1dcd6);
+}
+
+.am-row-actions .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 14px;
+  font-weight: 750;
+}
+
+.am-confirm-text {
+  flex: 1 1 100%;
+  color: #8d1b20;
+  font-weight: 700;
+  font-size: .92rem;
+}
+
+.am-empty {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 22px;
+  border: 2px dashed var(--df-border, #d7d2cd);
+  border-radius: 14px;
+  color: var(--df-muted, #55514d);
+}
+
+.am-toggle {
+  margin-top: 14px;
+  padding: 0;
+  font-weight: 750;
+  color: #111;
+}
+
+/* One-time key */
+.am-new-key {
+  padding: clamp(18px, 2vw, 26px);
+  border: 2px solid #111;
+  border-left: 8px solid #ffc81f;
+  border-radius: 16px;
+  background: #fffaf0;
+}
+
+.am-new-key h3 {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0 0 10px;
+  font-size: 1.15rem;
+  font-weight: 850;
+}
+
+.am-new-key h3:focus { outline: none; }
+.am-new-key h3:focus-visible { outline: 3px solid #111; outline-offset: 4px; }
+
+.am-new-key p {
+  max-width: 80ch;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.am-new-key pre {
+  margin: 14px 0;
+  padding: 16px;
+  border-radius: 10px;
+  background: #111;
+  color: #fff;
+  font-size: .92rem;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.am-new-key-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.am-new-key-actions .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 46px;
+  font-weight: 750;
+}
+
+.am-copied {
+  min-height: 1.4em;
+  margin-top: 8px !important;
+  font-weight: 750;
+}
+
+/* RStudio steps */
+.am-help-card {
+  background: var(--df-bg, #f6f4f2);
+}
+
+.am-steps {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding-left: 1.3em;
+  line-height: 1.55;
+}
+
+.am-steps code,
+.am-new-key p code {
+  padding: 1px 6px;
+  border-radius: 5px;
+  background: #fff;
+  color: #111;
+  font-size: .88em;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 1100px) {
+  .am-split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 620px) {
+  .am-section-header {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .am-count {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+
+  .am-section-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 1.15rem;
+  }
+
+  .am-submit,
+  .am-new-key-actions .btn,
+  .am-row-actions .btn {
+    flex: 1 1 100%;
+    justify-content: center;
+    width: 100%;
+  }
+}
+
+html.ss-high-contrast .am-card,
+html.ss-high-contrast .am-list li,
+html.ss-high-contrast .am-choice,
+html.ss-high-contrast .am-count {
+  background: #fff;
+  border-color: #000;
+}
+
+html.ss-high-contrast .am-section-header p,
+html.ss-high-contrast .am-field small,
+html.ss-high-contrast .am-choice small,
+html.ss-high-contrast .am-meta dt,
+html.ss-high-contrast .am-row-email {
+  color: #000;
+}

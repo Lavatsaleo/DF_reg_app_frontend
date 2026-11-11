@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import { API_BASE_URL } from '../config/api';
+import './AccessManagement.css';
 
 // Super admins create read-only API keys for analysts pulling data into R / RStudio.
 const COUNTRIES = ['Kenya', 'Nigeria', 'Ghana', 'Zambia'];
@@ -21,6 +22,8 @@ export default function ApiAccessPanel({ token, onSessionExpired }) {
   const [message, setMessage] = useState('');
   const [newKey, setNewKey] = useState(null);
   const [copied, setCopied] = useState('');
+  const [confirmRevokeId, setConfirmRevokeId] = useState('');
+  const [showInactive, setShowInactive] = useState(false);
   const newKeyRef = useRef(null);
   const auth = { headers: { Authorization: `Bearer ${token}` } };
 
@@ -61,12 +64,12 @@ export default function ApiAccessPanel({ token, onSessionExpired }) {
   }
 
   async function revokeKey(key) {
-    if (!window.confirm(`Revoke "${key.name}"? Anyone using it in R will lose access straight away.`)) return;
     setError(''); setMessage('');
     try {
       const r = await axios.post(`${API_BASE_URL}/api/data/keys/${key.id}/revoke`, {}, auth);
       setKeys(current => current.map(k => (k.id === key.id ? r.data.key : k)));
-      setMessage(`"${key.name}" has been revoked.`);
+      setConfirmRevokeId('');
+      setMessage(`"${key.name}" has been revoked. It stopped working straight away.`);
     } catch (e) { handleError(e, 'Unable to revoke the API key.'); }
   }
 
@@ -76,43 +79,102 @@ export default function ApiAccessPanel({ token, onSessionExpired }) {
   }
 
   const renviron = newKey ? `DF_API_URL=${getApiUrl()}\nDF_API_KEY=${newKey.value}` : '';
+  const activeKeys = keys.filter(k => k.status === 'ACTIVE');
+  const inactiveKeys = keys.filter(k => k.status !== 'ACTIVE');
 
-  return <section className="df-dashboard-access df-api-access" aria-labelledby="df-api-access-title">
-    <h2 id="df-api-access-title"><i className="bi bi-code-slash" aria-hidden="true" /> API access for R</h2>
-    <p>Create a read-only key so an analyst can pull application data into R / RStudio. Keys are de-identified by default: no names, phone numbers, emails, dates of birth or free-text answers.</p>
-
-    {newKey && <div className="df-api-new-key" role="region" aria-labelledby="df-api-new-key-title">
-      <h3 id="df-api-new-key-title" ref={newKeyRef} tabIndex="-1"><i className="bi bi-exclamation-triangle-fill" aria-hidden="true" /> Copy this key now: it will not be shown again</h3>
-      <p>Give it to “{newKey.name}” in person or through a password manager, never by email or chat. They add these two lines to their <code>.Renviron</code> file (in RStudio run <code>usethis::edit_r_environ()</code>), then restart R:</p>
-      <pre><code>{renviron}</code></pre>
-      <div className="df-api-new-key-actions">
-        <button type="button" className="btn ss-btn-primary" onClick={() => copy(renviron, 'lines')}><i className="bi bi-clipboard" aria-hidden="true" /> Copy both lines</button>
-        <button type="button" className="btn btn-outline-dark" onClick={() => copy(newKey.value, 'key')}>Copy key only</button>
-        <button type="button" className="btn btn-link" onClick={() => setNewKey(null)}>I have saved it</button>
+  function renderKey(k) {
+    const confirming = confirmRevokeId === k.id;
+    return <li key={k.id} className={k.status !== 'ACTIVE' ? 'is-inactive' : ''}>
+      <div className="am-row-main">
+        <span className="am-avatar is-key" aria-hidden="true"><i className="bi bi-key" /></span>
+        <div className="am-row-text">
+          <strong>{k.name}</strong>
+          <code className="am-row-code">{k.keyPrefix}</code>
+          <span className="am-tags">
+            <span className={`am-tag ${k.status === 'ACTIVE' ? 'is-ok' : 'is-muted'}`}>{STATUS_LABEL[k.status]}</span>
+            <span className="am-tag">{k.country || 'All countries'}</span>
+            <span className={`am-tag ${k.includePersonalData ? 'is-warn' : ''}`}>{k.includePersonalData ? 'Personal data' : 'De-identified'}</span>
+          </span>
+          <dl className="am-meta">
+            <div><dt>{k.status === 'REVOKED' ? 'Revoked' : k.status === 'EXPIRED' ? 'Expired' : 'Expires'}</dt><dd>{formatDate(k.status === 'REVOKED' ? k.revokedAt : k.expiresAt)}</dd></div>
+            <div><dt>Last used</dt><dd>{formatDate(k.lastUsedAt)}</dd></div>
+            {k.createdByName && <div><dt>Created by</dt><dd>{k.createdByName}</dd></div>}
+          </dl>
+        </div>
       </div>
-      <p role="status" className="df-api-copied">{copied === 'lines' ? 'Both lines copied.' : copied === 'key' ? 'Key copied.' : ''}</p>
-      <p>Then in R: <code>source("digital_futures_data.R")</code> and <code>applicants &lt;- df_get("applicants")</code>. The script and instructions are in <code>backend/docs/r</code>.</p>
+      {k.status === 'ACTIVE' && <div className="am-row-actions">
+        {confirming ? <>
+          <span className="am-confirm-text">Anyone using this key loses access straight away.</span>
+          <button type="button" className="btn btn-danger btn-sm" onClick={() => revokeKey(k)}>Yes, revoke<span className="visually-hidden"> {k.name}</span></button>
+          <button type="button" className="btn btn-outline-dark btn-sm" onClick={() => setConfirmRevokeId('')}>Keep it</button>
+        </> : <button type="button" className="btn btn-outline-danger btn-sm" onClick={() => setConfirmRevokeId(k.id)}>Revoke<span className="visually-hidden"> {k.name}</span></button>}
+      </div>}
+    </li>;
+  }
+
+  return <section className="am-section" aria-labelledby="am-api-title">
+    <header className="am-section-header">
+      <span className="am-section-icon" aria-hidden="true"><i className="bi bi-code-slash" /></span>
+      <div>
+        <h2 id="am-api-title">API access for R</h2>
+        <p>Read-only keys that let an analyst pull application data into R / RStudio. Keys are de-identified by default: no names, phone numbers, emails, dates of birth or free-text answers.</p>
+      </div>
+      <span className="am-count">{activeKeys.length} active</span>
+    </header>
+
+    {newKey && <div className="am-new-key" role="region" aria-labelledby="am-new-key-title">
+      <h3 id="am-new-key-title" ref={newKeyRef} tabIndex="-1"><i className="bi bi-exclamation-triangle-fill" aria-hidden="true" /> Copy this key now: it will not be shown again</h3>
+      <p>Give it to “{newKey.name}” in person or through a password manager, never by email or chat. They paste these two lines into their <code>.Renviron</code> file, then restart R.</p>
+      <pre><code>{renviron}</code></pre>
+      <div className="am-new-key-actions">
+        <button type="button" className="btn ss-btn-primary" onClick={() => copy(renviron, 'lines')}><i className="bi bi-clipboard" aria-hidden="true" /> Copy both lines</button>
+        <button type="button" className="btn btn-outline-dark" onClick={() => copy(newKey.value, 'key')}><i className="bi bi-key" aria-hidden="true" /> Copy key only</button>
+        <button type="button" className="btn btn-link" onClick={() => setNewKey(null)}>I have saved it, hide the key</button>
+      </div>
+      <p role="status" className="am-copied">{copied === 'lines' ? 'Both lines copied.' : copied === 'key' ? 'Key copied.' : ''}</p>
     </div>}
 
-    <form onSubmit={createKey} className="df-dashboard-user-form" noValidate>
-      <label>Key name<input className="form-control" value={form.name} maxLength={120} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="e.g. M&E team – RStudio" aria-describedby="df-api-name-hint" /><small id="df-api-name-hint">Who uses it and for what, so you know which key to revoke later.</small></label>
-      <label>Country access<select className="form-select" value={form.country} onChange={e => setForm({ ...form, country: e.target.value })}><option value="">All four countries</option>{COUNTRIES.map(c => <option key={c}>{c}</option>)}</select></label>
-      <label>Expires after<select className="form-select" value={form.expiresInDays} onChange={e => setForm({ ...form, expiresInDays: e.target.value })}>{[30, 90, 180, 365].map(d => <option key={d} value={d}>{d} days</option>)}</select></label>
-      <div className="df-api-personal">
-        <label className="df-api-check"><input type="checkbox" checked={form.includePersonalData} onChange={e => setForm({ ...form, includePersonalData: e.target.checked })} aria-describedby="df-api-personal-hint" /> Include personal data</label>
-        <small id="df-api-personal-hint">Adds names, phone numbers, emails, dates of birth, next of kin and free-text answers. Only tick this when the person must contact participants and has a data-protection reason.</small>
-      </div>
-      <button type="submit" className="btn ss-btn-primary" disabled={busy}>{busy ? 'Creating…' : 'Create API key'}</button>
-    </form>
-    {message && <p role="status">{message}</p>}{error && <p role="alert" className="df-api-error">{error}</p>}
+    <div className="am-split">
+      <div className="am-stack">
+        <div className="am-card am-form-card">
+          <h3>Create a key</h3>
+          <form onSubmit={createKey} noValidate>
+            <div className="am-fields">
+              <label className="am-field am-field-wide"><span>Key name</span><input className="form-control" value={form.name} maxLength={120} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="e.g. M&E team – RStudio" aria-describedby="am-key-name-hint" /><small id="am-key-name-hint">Who uses it and for what, so you know which key to revoke later.</small></label>
+              <label className="am-field"><span>Country access</span><select className="form-select" value={form.country} onChange={e => setForm({ ...form, country: e.target.value })}><option value="">All four countries</option>{COUNTRIES.map(c => <option key={c}>{c}</option>)}</select></label>
+              <label className="am-field"><span>Expires after</span><select className="form-select" value={form.expiresInDays} onChange={e => setForm({ ...form, expiresInDays: e.target.value })}>{[30, 90, 180, 365].map(d => <option key={d} value={d}>{d} days</option>)}</select></label>
+            </div>
+            <div className={`am-choice ${form.includePersonalData ? 'is-on' : ''}`}>
+              <label><input type="checkbox" checked={form.includePersonalData} onChange={e => setForm({ ...form, includePersonalData: e.target.checked })} aria-describedby="am-personal-hint" /> <span>Include personal data</span></label>
+              <small id="am-personal-hint">Adds names, phone numbers, emails, dates of birth, next of kin and free-text answers. Only tick this when the person must contact participants and has a data-protection reason.</small>
+            </div>
+            {error && <p className="am-feedback is-bad" role="alert"><i className="bi bi-exclamation-circle-fill" aria-hidden="true" /> {error}</p>}
+            {message && <p className="am-feedback is-ok" role="status"><i className="bi bi-check-circle-fill" aria-hidden="true" /> {message}</p>}
+            <button type="submit" className="btn ss-btn-primary am-submit" disabled={busy}><i className="bi bi-plus-circle" aria-hidden="true" /> {busy ? 'Creating…' : 'Create API key'}</button>
+          </form>
+        </div>
 
-    {keys.length > 0 && <ul className="df-api-key-list" aria-label="API keys">{keys.map(k => <li key={k.id} className={k.status !== 'ACTIVE' ? 'is-inactive' : ''}>
-      <div>
-        <strong>{k.name}</strong>
-        <span><code>{k.keyPrefix}</code> · {k.country || 'All countries'} · {k.includePersonalData ? 'Personal data' : 'De-identified'}</span>
-        <small>{STATUS_LABEL[k.status]} · {k.status === 'REVOKED' ? `revoked ${formatDate(k.revokedAt)}` : `expires ${formatDate(k.expiresAt)}`} · last used {formatDate(k.lastUsedAt)}{k.createdByName ? ` · created by ${k.createdByName}` : ''}</small>
+        <div className="am-card am-help-card">
+          <h3>Using a key in RStudio</h3>
+          <ol className="am-steps">
+            <li>Install the packages once: <code>install.packages(c("httr2", "jsonlite"))</code></li>
+            <li>Run <code>usethis::edit_r_environ()</code>, paste the two lines shown when the key was created, save and restart R.</li>
+            <li>Load the helper script from <code>backend/docs/r</code>: <code>source("digital_futures_data.R")</code></li>
+            <li>Pull data: <code>applicants &lt;- df_get("applicants")</code>. Also <code>"status-history"</code>, <code>"skills-tests"</code> and <code>"committee-reviews"</code>.</li>
+          </ol>
+        </div>
       </div>
-      {k.status === 'ACTIVE' && <button type="button" className="btn btn-outline-danger btn-sm" onClick={() => revokeKey(k)}>Revoke<span className="visually-hidden"> {k.name}</span></button>}
-    </li>)}</ul>}
+
+      <div className="am-card am-list-card">
+        <h3>Active keys <span className="am-muted">({activeKeys.length})</span></h3>
+        {activeKeys.length === 0 ? <p className="am-empty"><i className="bi bi-key" aria-hidden="true" /> No active keys. Keys you create appear here.</p> : <ul className="am-list">{activeKeys.map(renderKey)}</ul>}
+        {inactiveKeys.length > 0 && <>
+          <button type="button" className="btn btn-link am-toggle" aria-expanded={showInactive} onClick={() => setShowInactive(v => !v)}>
+            <i className={`bi ${showInactive ? 'bi-chevron-up' : 'bi-chevron-down'}`} aria-hidden="true" /> {showInactive ? 'Hide' : 'Show'} revoked and expired keys ({inactiveKeys.length})
+          </button>
+          {showInactive && <ul className="am-list">{inactiveKeys.map(renderKey)}</ul>}
+        </>}
+      </div>
+    </div>
   </section>;
 }
