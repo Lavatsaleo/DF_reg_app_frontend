@@ -886,3 +886,141 @@ html.ss-high-contrast .committee-page .cm-tag {
     border: 1px solid CanvasText;
   }
 }
+
+/* "Signed in as" card in the workspace header: person on top, roomy stacked actions below. */
+.committee-hero {
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 360px);
+}
+
+.committee-hero .committee-account-card {
+  display: grid;
+  gap: 18px;
+  padding: 22px !important;
+  container-type: inline-size;
+}
+
+.committee-hero .committee-account-card .committee-account-label {
+  margin: 0;
+  color: var(--committee-red, #b3121f) !important;
+  font-size: .9rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.committee-account-person {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+}
+
+.committee-hero .committee-account-card .committee-account-avatar {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  margin: 0;
+  border-radius: 50%;
+  background: var(--ss-black, #111) !important;
+  color: var(--ss-yellow, #ffc81f) !important;
+  font-size: 1.05rem;
+  font-weight: 850;
+}
+
+.committee-account-text {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.committee-hero .committee-account-card .committee-account-text strong {
+  font-size: 1.3rem;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.committee-hero .committee-account-card .committee-account-role {
+  display: block;
+  margin: 0;
+  color: var(--ss-black, #111) !important;
+  font-size: .95rem;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+.committee-account-actions {
+  display: grid;
+  gap: 10px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(17, 17, 17, 0.14);
+}
+
+.committee-account-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 18px;
+  color: var(--ss-black, #111);
+  background: #ffffff;
+  border: 2px solid var(--ss-black, #111);
+  border-radius: 999px;
+  font: inherit;
+  font-weight: 800;
+  line-height: 1.2;
+  text-align: center;
+  cursor: pointer;
+  transition: background-color .15s ease, color .15s ease;
+}
+
+.committee-hero .committee-account-card .committee-account-action span {
+  display: inline;
+  margin: 0;
+  color: inherit !important;
+  font-weight: inherit;
+}
+
+.committee-account-action.is-primary {
+  background: var(--ss-yellow, #ffc81f);
+  border-color: var(--ss-yellow, #ffc81f);
+}
+
+.committee-account-action:hover {
+  background: var(--ss-black, #111);
+  border-color: var(--ss-black, #111);
+  color: #ffffff;
+}
+
+.committee-account-action:focus-visible {
+  outline: 3px solid var(--ss-black, #111);
+  outline-offset: 3px;
+}
+
+/* When the header stacks and the card is wide, keep the buttons side by side. */
+@container (min-width: 560px) {
+  .committee-account-actions {
+    grid-template-columns: repeat(auto-fit, minmax(220px, max-content));
+  }
+
+  .committee-account-action {
+    width: auto;
+  }
+}
+
+@media (max-width: 1180px) {
+  .committee-hero {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .committee-account-action { transition: none; }
+}
+
+html.ss-high-contrast .committee-account-action {
+  background: #ffffff;
+  border-color: #000000;
+  color: #000000;
+}

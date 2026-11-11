@@ -200,6 +200,15 @@ function getApplicantSubtitle(applicant) {
     .join(" · ");
 }
 
+// Readable role names for the "Signed in as" card.
+const ROLE_LABELS = {
+  ADMIN: "Super Admin",
+  COUNTRY_ADMIN: "Country admin",
+  COMMITTEE_CHAIRPERSON: "Committee chairperson",
+  COMMITTEE_MEMBER: "Committee member",
+  VIEWER: "Dashboard user",
+};
+
 function getInitials(name) {
   const parts = String(name || "").trim().split(/\s+/).filter(Boolean);
   if (!parts.length) return "?";
@@ -2029,18 +2038,30 @@ function CommitteeDashboardPage({ staffUser, onBackHome, onStaffLogout, onSessio
             Review applications, balance the committee's workload and follow up on participants, all in one place.
           </p>
         </div>
-        <div className="committee-hero-card">
-          <span>Signed in as</span>
-          <strong>{staffUser?.fullName || "Staff user"}</strong>
-          <p>{String(userRole || "STAFF").replace(/_/g, " ").toLowerCase()}{currentUserCountry ? ` · ${currentUserCountry}` : ""}</p>
-          {userRole === "ADMIN" && onManageAccess && (
-            <button type="button" className="btn committee-secondary-action" onClick={onManageAccess}>
-              <i className="bi bi-shield-lock" aria-hidden="true" /> Manage access and API keys
+        <div className="committee-hero-card committee-account-card">
+          <p className="committee-account-label">Signed in as</p>
+          <div className="committee-account-person">
+            <span className="committee-account-avatar" aria-hidden="true">{getInitials(staffUser?.fullName || "Staff user")}</span>
+            <div className="committee-account-text">
+              <strong>{staffUser?.fullName || "Staff user"}</strong>
+              <span className="committee-account-role">
+                {ROLE_LABELS[userRole] || "Staff"}
+                {userRole === "ADMIN" ? " · All countries" : currentUserCountry ? ` · ${currentUserCountry}` : ""}
+              </span>
+            </div>
+          </div>
+          <div className="committee-account-actions">
+            {userRole === "ADMIN" && onManageAccess && (
+              <button type="button" className="committee-account-action is-primary" onClick={onManageAccess}>
+                <i className="bi bi-shield-lock" aria-hidden="true" />
+                <span>Access and API keys</span>
+              </button>
+            )}
+            <button type="button" className="committee-account-action" onClick={onStaffLogout}>
+              <i className="bi bi-box-arrow-right" aria-hidden="true" />
+              <span>Sign out</span>
             </button>
-          )}
-          <button type="button" className="btn committee-secondary-action" onClick={onStaffLogout}>
-            <i className="bi bi-box-arrow-right" aria-hidden="true" /> Sign out
-          </button>
+          </div>
         </div>
       </section>
 
