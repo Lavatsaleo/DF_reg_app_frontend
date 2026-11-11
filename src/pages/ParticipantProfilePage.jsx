@@ -129,16 +129,73 @@ function Journey({ steps }) {
 }
 
 /* ----------------------------------------------------------------------------
+ * Outcome: why an application ended, and whether the applicant was told
+ * ------------------------------------------------------------------------- */
+
+const EMAIL_STATUS_TEXT = {
+  SENT: "Emailed to the applicant",
+  FAILED: "Email failed",
+  NOT_SENT: "Email not sent (email is not set up on this server)",
+  NO_EMAIL: "No email address on the application",
+};
+
+function OutcomeCard({ participantId, outcome, token, onSessionExpired }) {
+  const [state, setState] = useState({ busy: false, message: "", tone: "" });
+  const [sentAt, setSentAt] = useState(outcome.emailSentAt);
+  const [status, setStatus] = useState(outcome.emailStatus);
+
+  async function resend() {
+    setState({ busy: true, message: "", tone: "" });
+    try {
+      const response = await axios.post(`${API_BASE_URL}/api/participants/${participantId}/outcome-email`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      setStatus("SENT");
+      setSentAt(response.data?.sentAt || new Date().toISOString());
+      setState({ busy: false, message: response.data?.message || "Email sent.", tone: "ok" });
+    } catch (requestError) {
+      if (requestError.response?.status === 401) { onSessionExpired(); return; }
+      setState({ busy: false, message: requestError.response?.data?.message || "The email could not be sent.", tone: "bad" });
+    }
+  }
+
+  const sent = status === "SENT";
+  return (
+    <section className="pp-card pp-outcome" aria-labelledby="pp-outcome-title">
+      <h3 id="pp-outcome-title"><span className="pp-card-icon" aria-hidden="true"><i className="bi bi-envelope-paper" /></span>
+        {outcome.kind === "NOT_ELIGIBLE" ? "Why the application was not eligible" : "Why the applicant was not selected"}
+      </h3>
+      {outcome.reasonLabel && <p className="pp-outcome-label">{outcome.reasonLabel}</p>}
+      <blockquote className="pp-outcome-reason">{outcome.reason || "No reason was recorded for this application (it ended before reasons were collected)."}</blockquote>
+      <div className="pp-outcome-footer">
+        <span className={`pp-outcome-status ${sent ? "is-ok" : "is-bad"}`}>
+          <i className={`bi ${sent ? "bi-check-circle-fill" : "bi-exclamation-triangle-fill"}`} aria-hidden="true" />
+          {EMAIL_STATUS_TEXT[status] || "Not emailed yet"}{sent && sentAt ? ` on ${formatDateTime(sentAt)}` : ""}
+        </span>
+        {outcome.canResend && (
+          <button type="button" className={`pt-button ${sent ? "" : "is-primary"}`} onClick={resend} disabled={state.busy}>
+            <i className="bi bi-send" aria-hidden="true" /> {state.busy ? "Sending…" : sent ? "Send again" : "Resend email"}
+          </button>
+        )}
+      </div>
+      {!sent && outcome.emailError && <p className="pp-error-text">{outcome.emailError}</p>}
+      <p role="status" className={`pp-outcome-feedback ${state.tone ? `is-${state.tone}` : ""}`}>{state.message}</p>
+    </section>
+  );
+}
+
+/* ----------------------------------------------------------------------------
  * Tabs
  * ------------------------------------------------------------------------- */
 
-function OverviewTab({ profile }) {
+function OverviewTab({ profile, token, onSessionExpired }) {
   const p = profile.participant;
   const e = profile.eligibility;
   const H = Boolean(p.identityHidden);
   const disability = [p.disabilityType, p.otherDisabilityType].filter(Boolean).join(", ");
   return (
     <div className="pp-overview">
+      {profile.outcome && (
+        <OutcomeCard participantId={p.id} outcome={profile.outcome} token={token} onSessionExpired={onSessionExpired} />
+      )}
       <InfoCard title="Personal details" icon="bi-person">
         <dl className="pp-fields">
           <Field label="First name" hidden={H}>{p.firstName}</Field>
@@ -423,7 +480,10 @@ function CommitteeTab({ committee, registration }) {
             <p className="pp-decision-label">Committee decision</p>
             <p className="pp-decision-value">{formatDecision(review.decision)}</p>
             <p className="pp-muted">{review.memberName ? `${review.memberName} · ` : ""}{formatDateTime(review.reviewedAt)}</p>
-            {review.comments && <blockquote>{review.comments}</blockquote>}
+            {(review.notSelectedReason || review.applicantMessage) && (
+              <p className="pp-decision-reason"><strong>Reason given to the applicant:</strong> {[review.notSelectedReason, review.applicantMessage].filter(Boolean).join(" — ")}</p>
+            )}
+            {review.comments && <blockquote><span className="visually-hidden">Internal comments: </span>{review.comments}</blockquote>}
           </section>
         ))}
       </div>
@@ -719,7 +779,7 @@ function ParticipantProfilePage({ participantId, token, onBack, onSessionExpired
         </div>
 
         <div className="pp-panel" role="tabpanel" id={`pp-panel-${tab}`} aria-labelledby={`pp-tab-${tab}`}>
-          {tab === "overview" && <OverviewTab profile={profile} />}
+          {tab === "overview" && <OverviewTab profile={profile} token={token} onSessionExpired={onSessionExpired} />}
           {tab === "forms" && <FormsTab forms={profile.forms} />}
           {tab === "skills" && <SkillsTab skillsTest={profile.skillsTest} />}
           {tab === "committee" && <CommitteeTab committee={profile.committee} registration={profile.registration} />}

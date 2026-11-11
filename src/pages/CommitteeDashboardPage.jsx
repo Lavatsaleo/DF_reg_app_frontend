@@ -1200,7 +1200,21 @@ function ReviewPanel({
   const [decision, setDecision] = useState("SELECTED");
   const [comments, setComments] = useState("");
   const [panelStatus, setPanelStatus] = useState("");
+  // "Not selected" needs a reason for the applicant, which is emailed to them.
+  const [reasons, setReasons] = useState([]);
+  const [notSelectedReason, setNotSelectedReason] = useState("");
+  const [applicantMessage, setApplicantMessage] = useState("");
+  const [reasonError, setReasonError] = useState("");
   const decisionGroupRef = useRef(null);
+  const reasonGroupRef = useRef(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    axios.get(`${API_BASE_URL}/api/committee/not-selected-reasons`, { signal: controller.signal })
+      .then((response) => setReasons(response.data?.reasons || []))
+      .catch(() => { /* the form still explains that a reason is needed; the server checks it */ });
+    return () => controller.abort();
+  }, []);
 
   // "Start review" disappears once the review starts, so move focus to the decision choices
   // instead of letting it fall back to the page behind the dialog.
@@ -1217,7 +1231,35 @@ function ReviewPanel({
   useEffect(() => {
     setDecision("SELECTED");
     setComments("");
+    setNotSelectedReason("");
+    setApplicantMessage("");
+    setReasonError("");
   }, [assignment?.id]);
+
+  const chosenReason = reasons.find((item) => item.code === notSelectedReason);
+  const emailPreview = [chosenReason?.text, applicantMessage.trim()].filter(Boolean).join(" ");
+
+  function submitDecision(event) {
+    event.preventDefault();
+    if (decision === "NOT_SELECTED") {
+      const problem = !notSelectedReason
+        ? "Choose the reason the applicant was not selected. It is included in the email they receive."
+        : notSelectedReason === "OTHER" && applicantMessage.trim().length < 15
+          ? "Write the reason for the applicant (at least 15 characters)."
+          : "";
+      if (problem) {
+        setReasonError(problem);
+        window.requestAnimationFrame(() => reasonGroupRef.current?.focus());
+        return;
+      }
+    }
+    setReasonError("");
+    onSubmitReview(assignment.id, {
+      decision,
+      comments,
+      ...(decision === "NOT_SELECTED" ? { notSelectedReason, applicantMessage: applicantMessage.trim() } : {}),
+    });
+  }
 
   if (!assignment) {
     return null;
@@ -1335,15 +1377,19 @@ function ReviewPanel({
           <span>Decision submitted</span>
           <h3>{formatDecision(review.decision)}</h3>
           <p>{review.comments || "No comment was provided."}</p>
+          {review.decision === "NOT_SELECTED" && (review.notSelectedReasonCode || review.applicantMessage) && (
+            <p className="committee-reason-sent">
+              <strong>Reason emailed to the applicant:</strong>{" "}
+              {[reasons.find((item) => item.code === review.notSelectedReasonCode)?.text, review.applicantMessage].filter(Boolean).join(" ")}
+            </p>
+          )}
           <small>Reviewed on {formatDate(review.reviewedAt)}</small>
         </div>
       ) : (
         <form
           className="committee-decision-form"
-          onSubmit={(event) => {
-            event.preventDefault();
-            onSubmitReview(assignment.id, { decision, comments });
-          }}
+          onSubmit={submitDecision}
+          noValidate
         >
           {assignment.status === "ASSIGNED" && (
             <button
@@ -1375,8 +1421,57 @@ function ReviewPanel({
             </div>
           </fieldset>
 
+          {decision === "NOT_SELECTED" && (
+            <fieldset
+              className="committee-reason-fieldset"
+              ref={reasonGroupRef}
+              tabIndex="-1"
+              aria-describedby="committee-reason-help"
+            >
+              <legend>Reason for the applicant</legend>
+              <p id="committee-reason-help" className="committee-reason-help">
+                <i className="bi bi-envelope-paper" aria-hidden="true" />
+                <span>The applicant is emailed this reason when you save. Write it kindly and clearly; it should help them decide what to do next.</span>
+              </p>
+              {reasonError && <p className="committee-reason-error" role="alert"><i className="bi bi-exclamation-circle-fill" aria-hidden="true" /> {reasonError}</p>}
+              <div className="committee-reason-options">
+                {reasons.map((item) => (
+                  <label key={item.code} className={`committee-reason-option ${notSelectedReason === item.code ? "selected" : ""}`}>
+                    <input
+                      type="radio"
+                      name={`not-selected-reason-${assignment.id}`}
+                      value={item.code}
+                      checked={notSelectedReason === item.code}
+                      onChange={() => { setNotSelectedReason(item.code); setReasonError(""); }}
+                    />
+                    <span>
+                      <strong>{item.label}</strong>
+                      {item.text && <small>{item.text}</small>}
+                    </span>
+                  </label>
+                ))}
+              </div>
+              <label className="committee-reason-message">
+                {notSelectedReason === "OTHER" ? "Reason for the applicant (required)" : "Personal message to the applicant (optional)"}
+                <textarea
+                  rows="3"
+                  maxLength={1500}
+                  value={applicantMessage}
+                  onChange={(event) => { setApplicantMessage(event.target.value); setReasonError(""); }}
+                  placeholder="For example: we encourage you to build your digital skills and apply again."
+                />
+              </label>
+              {emailPreview && (
+                <div className="committee-reason-preview" aria-live="polite">
+                  <span>The applicant will read:</span>
+                  <p>{emailPreview}</p>
+                </div>
+              )}
+            </fieldset>
+          )}
+
           <label>
-            Review comments
+            Internal review comments (only the committee sees these)
             <textarea
               rows="4"
               value={comments}

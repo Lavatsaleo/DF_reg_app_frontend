@@ -1024,3 +1024,78 @@ html.ss-high-contrast .committee-account-action {
   border-color: #000000;
   color: #000000;
 }
+
+/* "Not selected": the reason emailed to the applicant. */
+.committee-reason-fieldset {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 18px;
+  background: #fff;
+  border: 2px solid var(--committee-red, #d22a2f);
+  border-radius: 12px;
+}
+
+.committee-reason-fieldset:focus { outline: 3px solid #111; outline-offset: 3px; }
+
+.committee-reason-fieldset legend {
+  float: left;
+  width: 100%;
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.committee-reason-help,
+.committee-reason-error {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin: 0;
+  line-height: 1.45;
+}
+
+.committee-reason-help { color: var(--ss-muted, #55514d); }
+.committee-reason-error { padding: 10px 12px; color: #8d1b20; background: #fbeaec; border-radius: 8px; font-weight: 700; }
+
+.committee-reason-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: 10px;
+}
+
+.committee-page .committee-reason-option {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin: 0;
+  padding: 12px 14px;
+  background: var(--committee-bg, #f3f1ef) !important;
+  border: 1.5px solid var(--ss-border, #d7d2cd) !important;
+  border-radius: 10px !important;
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.committee-page .committee-reason-option.selected {
+  background: #fff4cc !important;
+  border-color: #111 !important;
+}
+
+.committee-reason-option input { flex: 0 0 auto; width: 20px; height: 20px; margin-top: 2px; accent-color: #111; }
+.committee-reason-option span { display: grid; gap: 4px; }
+.committee-reason-option strong { font-weight: 800; }
+.committee-reason-option small { color: var(--ss-muted, #55514d); font-size: .86rem; line-height: 1.4; }
+
+.committee-reason-message { display: grid; gap: 6px; font-weight: 800; }
+
+.committee-reason-preview {
+  padding: 12px 14px;
+  background: var(--committee-soft-teal, #e8f8f4);
+  border: 1px solid var(--committee-teal, #4fcdb0);
+  border-radius: 10px;
+}
+
+.committee-reason-preview span { display: block; margin-bottom: 4px; color: var(--ss-muted, #55514d); font-size: .85rem; font-weight: 800; }
+.committee-reason-preview p { margin: 0; line-height: 1.5; }
+.committee-reason-sent { margin: 8px 0; }

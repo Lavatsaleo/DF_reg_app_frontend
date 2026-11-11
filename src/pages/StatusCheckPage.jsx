@@ -232,6 +232,13 @@ function StatusResultCard({ result }) {
         </div>
       )}
 
+      {result?.outcomeReason && (
+        <div className="ss-status-note" role="note">
+          <i className="bi bi-chat-square-text" aria-hidden="true" />
+          <p><strong>Reason from the selection committee:</strong> {result.outcomeReason}</p>
+        </div>
+      )}
+
       {result?.eligibilityReason && result?.screeningStatus !== "ELIGIBLE" && (
         <div className="ss-status-note" role="note">
           <i className="bi bi-info-circle" aria-hidden="true" />

@@ -383,7 +383,7 @@ function RegistrationWizard({
         <div className="alert ss-alert-warning ss-existing-application-alert" role="alert">
           <i className="bi bi-exclamation-triangle" aria-hidden="true" />
           <div>
-            <strong className="d-block mb-1">You already have an application</strong>
+            <strong className="d-block mb-1">You already have an active application</strong>
             <p className="mb-2">{draftSaveMessage}</p>
             {onCheckStatus && (
               <button type="button" className="btn ss-btn-outline" onClick={onCheckStatus}>
@@ -480,7 +480,7 @@ function RegistrationWizard({
             errors={fieldErrors}
             onPrevious={() => onBackStep ? onBackStep() : goToStep(activeStep - 1)}
             onContinue={() => continueFromSection(activeStep, currentSectionEntry[1])}
-            disableContinue={earlyEligibilityFeedback?.type === "not-eligible"}
+            disableContinue={earlyEligibilityFeedback?.type === "not-eligible" || draftSaveStatus === "existing_application"}
             onAnswerChange={onAnswerChange}
             onMultiSelectChange={onMultiSelectChange}
           />

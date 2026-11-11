@@ -880,3 +880,17 @@ html.ss-high-contrast .pp-muted { color: #000; }
   font-weight: 700;
 }
 .pt-card-hidden { display: inline-flex; align-items: center; gap: 5px; color: var(--pt-muted); font-size: .82rem; font-weight: 700; }
+
+/* ---------- Outcome (not eligible / not selected) ---------- */
+
+.pp-outcome { grid-column: 1 / -1; border-left: 6px solid var(--pt-red); }
+.pp-outcome-label { margin: -6px 0 10px; font-weight: 800; }
+.pp-outcome-reason { margin: 0 0 14px; padding: 14px 16px; background: var(--pt-bg); border-radius: 10px; line-height: 1.55; }
+.pp-outcome-footer { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }
+.pp-outcome-status { display: inline-flex; gap: 8px; align-items: center; font-weight: 800; }
+.pp-outcome-status.is-ok { color: var(--tone-green); }
+.pp-outcome-status.is-bad { color: var(--tone-red); }
+.pp-outcome-feedback { min-height: 1.2em; margin: 8px 0 0; font-weight: 700; }
+.pp-outcome-feedback.is-ok { color: var(--tone-green); }
+.pp-outcome-feedback.is-bad { color: var(--tone-red); }
+.pp-decision-reason { margin: 10px 0 0; line-height: 1.5; }

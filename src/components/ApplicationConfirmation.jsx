@@ -171,7 +171,7 @@ function IneligibleConfirmation({ result, selectedPathway, onStartNewApplication
                 </div>
 
                 <p className="ss-confirmation-footnote compact">
-                  Please do not submit another application with the same phone number or email address. If you believe this result is incorrect, contact the project team for support.
+                  We have also emailed these reasons to you. You can apply again, for another pathway or in a future intake, if you meet its requirements. If you believe this result is incorrect, contact the project team for support.
                 </p>
 
                 <div className="ss-confirmation-actions">
