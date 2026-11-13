@@ -254,7 +254,7 @@ function CountryPathwayInfo({ pathway, country, onContinue, onChangeCountry, onB
                     {countryContent.faqs.map((faq) => (
                       <details key={faq.question} className="df-faq">
                         <summary>{faq.question}</summary>
-                        <div className="df-faq-answer"><Blocks items={faq.answer} /></div>
+                        <div className="df-faq-answer"><Blocks items={faq.answerByPathway?.[pathway.id] || faq.answer} /></div>
                       </details>
                     ))}
                   </div>

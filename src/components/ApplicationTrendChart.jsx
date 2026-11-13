@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 
-const SEXES = ['Female', 'Male', 'Not recorded'];
-const SEX_CLASS = { Female: 'female', Male: 'male', 'Not recorded': 'unrecorded' };
+const SEXES = ['Female', 'Male', 'Not stated'];
+const SEX_CLASS = { Female: 'female', Male: 'male', 'Not stated': 'unrecorded' };
 const number = n => Number(n || 0).toLocaleString();
 const monthLabel = (m, month = 'short') => new Intl.DateTimeFormat('en', { month, year: 'numeric', timeZone: 'UTC' }).format(new Date(m + '-01T00:00:00Z'));
 const shortMonth = m => new Intl.DateTimeFormat('en', { month: 'short', timeZone: 'UTC' }).format(new Date(m + '-01T00:00:00Z'));

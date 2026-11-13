@@ -1,6 +1,7 @@
 /*
  * Country pages shown after an applicant chooses their country, before consent.
- * Source: "Web page prompts" documents from the country programme managers (November 2026),
+ * Source: "Web page prompts" documents from the country programme managers (November 2026; Nigeria
+ * updated 13 November 2026 from "Web page prompts for Nigeria"),
  * pending copy-edit review. Revise each application cycle.
  *
  * Text blocks: a string is a paragraph; an array of strings is a bulleted list.
@@ -60,6 +61,14 @@ const GENERAL_FAQS = {
   },
   device: {
     question: "What if I do not have a digital device?",
+    // Shown instead of the general answer on the Virtual Academy page.
+    answerByPathway: {
+      VIRTUAL_ACADEMY: [
+        "The virtual academy is fully online, so you need regular access to a suitable device, such as a laptop or computer, and a reliable internet connection for the whole course.",
+        "Without a device and internet access it would be very difficult to take part in live classes and complete the weekly work. We cannot guarantee to provide a device or internet access.",
+        "If you do not have them yet, you are welcome to apply in a later intake once you do. You could also look at the physical academy, where you learn in computer labs at the training centre.",
+      ],
+    },
     answer: [
       "Requirements vary by pathway. Physical academy participants can use the learning facilities, computer labs and training equipment at the training centre.",
       "Virtual academy participants need reliable access to a suitable device, such as a laptop or computer, and an internet connection to take part fully in online learning.",
@@ -123,15 +132,6 @@ const WEST_AFRICA_JOURNEY = [
   "Complete the basic IT skills assessment, done remotely. This is only for applicants who meet the eligibility criteria.",
   "Complete an interview, held remotely.",
   "Successful applicants join their selected or recommended pathway.",
-];
-
-const STANDARD_PROVIDES = [
-  "Technical training delivered by qualified instructors",
-  "Access to learning materials and practical labs",
-  "Certification preparation support",
-  "Career readiness and employability skills training",
-  "Mentorship and coaching",
-  "Support with referrals to internship and job placement opportunities where available",
 ];
 
 const GHANA = {
@@ -277,7 +277,7 @@ const GHANA = {
         "Live in Ghana",
         "Be available for the training",
         "Have a basic business idea or an existing business",
-        "Have at least a secondary school qualification",
+        "Have completed at least Junior High School (JHS)",
         "Have a nano enterprise (1–2 employees) or micro enterprise (3–5 employees)",
         "Show passion, interest and motivation to start or grow a digital enterprise",
         "Clearly define the problem the business will solve, understand the target audience and offer a logical digital-led solution",
@@ -354,7 +354,7 @@ const KENYA = {
         },
       ],
       location: [
-        "Training is hosted by the National Industrial Training Authority (NITA), a national public training institution. In this cycle the physical academy runs at two NITA campuses:",
+        "Training is delivered by Strathmore University, which also awards the certificate, and hosted by the National Industrial Training Authority (NITA), a national public training institution. In this cycle the physical academy runs at two NITA campuses:",
         [
           "NITA Nairobi: Commercial Street, Industrial Area, Nairobi",
           "NITA Athi River: Namanga Road, Athi River / Kitengela border, Machakos County",
@@ -374,8 +374,8 @@ const KENYA = {
       ],
       expected: [
         "Attend training for the full nine months and take part in all practical sessions",
-        "Complete your assignments, assessments and final project",
-        "Take part in follow-up surveys after you finish, so we can learn how the programme helped you",
+        "Complete your assignments, assessments and final projects within set timelines",
+        "Take part in follow-up surveys if called upon during the course and after completion, so that we can learn how the programme helped you",
       ],
       eligibility: [
         "Be a person with a disability",
@@ -471,6 +471,11 @@ const KENYA = {
   faqs: [
     {
       question: "Who can apply?",
+      answerByPathway: {
+        PHYSICAL_ACADEMY: ["Young women and men with disabilities who live in Kenya, are aged 18 to 33 when they apply and meet the other criteria under Who can apply. Women with disabilities are strongly encouraged to apply."],
+        VIRTUAL_ACADEMY: ["Young women and men with disabilities who live in Kenya, are aged 18 to 33 when they apply and meet the other criteria under Who can apply. Women with disabilities are strongly encouraged to apply."],
+        DIGITAL_ENTREPRENEURSHIP: ["Young women and men with disabilities who live in Kenya, are aged 18 to 45 when they apply and meet the other criteria under Who can apply. Women with disabilities are strongly encouraged to apply."],
+      },
       answer: ["Young women and men with disabilities who live in Kenya and meet the eligibility criteria for their chosen pathway: aged 18 to 33 when they apply for the physical and virtual academies, and 18 to 45 for Digital Entrepreneurship. Women with disabilities are strongly encouraged to apply."],
     },
     {
@@ -503,6 +508,15 @@ const KENYA = {
     },
     {
       question: "What if I do not have a digital device?",
+      answerByPathway: {
+        PHYSICAL_ACADEMY: ["You do not need your own device. Physical academy learners use the computer labs at the NITA campus."],
+        VIRTUAL_ACADEMY: [
+          "The virtual academy is fully online, so you need regular access to a suitable device, such as a laptop or computer, and a reliable internet connection for the whole 16 weeks.",
+          "Without a device and internet access it would be very difficult to take part in live classes and complete the weekly work. We cannot guarantee to provide a device or internet access.",
+          "If you do not have them yet, you are welcome to apply in a later intake once you do. You could also look at the physical academy, where you learn in the computer labs at NITA.",
+        ],
+        DIGITAL_ENTREPRENEURSHIP: ["You will need regular access to a smartphone or computer and the internet for the online parts of the programme. Tell us about your device and internet access in your application."],
+      },
       answer: ["Physical academy learners use the computer labs at the NITA campus. For the virtual academy and Digital Entrepreneurship, tell us about your device and internet access in your application."],
     },
     {
@@ -554,6 +568,13 @@ const NIGERIA = {
         "Career readiness and employability training",
         "Mentorship and coaching",
         "Support with referrals to internship and job placement opportunities where available",
+        "Access to computer labs, software and learning materials",
+        "Reasonable accommodation for your disability, such as sign language interpreters, screen readers and other assistive technology, and accessible learning materials",
+      ],
+      expected: [
+        "Attend training for the full nine months and take part in all practical sessions",
+        "Complete your assignments, assessments and final project",
+        "Take part in follow-up surveys after you finish, so we can learn how the programme helped you",
       ],
       eligibility: [
         "Be aged 18–33 at the time of application",
@@ -588,7 +609,7 @@ const NIGERIA = {
           careers: "Front-End Developer, Web Developer, UI Developer, Accessibility Specialist",
         },
       ],
-      location: ["Learning is delivered online. Candidates from all over Nigeria can apply if they meet the virtual academy eligibility criteria."],
+      location: ["Online, so you can take part from anywhere in Nigeria. Candidates from any state can apply if they meet the virtual academy eligibility criteria."],
       dates: ["Training is expected to run for four months: February to May 2027 for cohort 1, and August to November 2027 for cohort 2, followed by mentorship, internship and employment preparation activities."],
       provides: [
         "Technical training delivered by qualified instructors",
@@ -597,11 +618,18 @@ const NIGERIA = {
         "Career readiness and employability training",
         "Mentorship and coaching",
         "Support with referrals to internship and job placement opportunities where available",
+        "Reasonable accommodation for your disability, such as sign language interpretation for live sessions, captioning and screen-reader-accessible materials",
+      ],
+      expected: [
+        "Attend your live sessions",
+        "Complete your weekly learning and assessments",
+        "Take part in follow-up surveys",
       ],
       eligibility: [
         "Be aged 18–33 at the time of application",
         "Be a person with a disability",
-        "Be available for the full four months of online training",
+        "Be available for the full four months of online training, about 13 hours a week for 16 weeks",
+        "Own or have regular access to a digital device, such as a laptop or tablet, and the internet",
         "Show an interest in a career in IT and technology",
         "Have basic IT skills, such as using a computer and basic software like Microsoft Word",
         "Hold at least an Ordinary National Diploma (OND) or NCE in any field",
@@ -609,7 +637,7 @@ const NIGERIA = {
       note: "Training is free. Eligible and selected candidates are not expected to pay anything to anybody to be part of the programme.",
     },
     DIGITAL_ENTREPRENEURSHIP: {
-      summary: "A three-month hybrid programme for young micro and nano entrepreneurs with disabilities, with in-person classes prioritised. Candidates in Lagos and Kano are particularly encouraged to apply.",
+      summary: "A three-month hybrid programme for young micro and nano entrepreneurs with disabilities, with in-person classes prioritised. Candidates in Lagos, Kano, Abuja and Rivers State are particularly encouraged to apply.",
       learning: [
         "The programme equips young micro and nano entrepreneurs, particularly persons with disabilities, with practical entrepreneurship, digital, financial, green and business management skills to launch, formalise, manage and grow viable digital or digitally enabled enterprises. It helps you move from idea to action and prepares you to present a credible business pitch and launch plan for post-training support or grant opportunities.",
         "Learning is hybrid, both in person and online through Zoom or Microsoft Teams, with in-person classes prioritised.",
@@ -634,15 +662,23 @@ const NIGERIA = {
           careers: "Starting a new business, or growing an existing one, that is digitally native (for example digital marketing, digital educational content, or mobile apps and solutions) or digitally transformed (for example using a digital payment platform such as Moniepoint, WhatsApp to engage customers, or digital invoicing)",
         },
       ],
-      location: ["Hybrid: in person and online, with in-person classes prioritised. Candidates who live in Lagos and Kano are particularly encouraged to apply."],
+      location: ["Hybrid: in person and online through Zoom or Microsoft Teams, with in-person classes prioritised. Candidates who live in Lagos, Kano, Abuja and Rivers State are particularly encouraged to apply."],
       dates: ["Training is expected to run for three months per cohort: April to June 2027 (cohort 1), August to October 2027 (cohort 2) and December 2027 to February 2028 (cohort 3). Participants who complete the training can apply for grant funding, and grant recipients receive mentorship to start their business."],
-      provides: STANDARD_PROVIDES,
+      provides: [
+        "Technical training delivered by qualified instructors",
+        "Access to learning materials and practical labs on the learning management system",
+        "Certification preparation support",
+        "Career readiness and employability training",
+        "Mentorship and coaching",
+        "Support with referrals to internship and job placement opportunities where available",
+      ],
       eligibility: [
         "Be aged 18–45 at the time of application",
         "Be a person with a disability",
         "Be available for the full three months of training, in person and online",
         "Show an interest in starting a business or growing an existing business using digital technology",
         "Have basic IT skills, such as using a smartphone or computer",
+        "Own or have access to a digital device, such as a laptop or tablet",
         "Have completed secondary school, with at least WAEC, NECO or GCE",
       ],
     },

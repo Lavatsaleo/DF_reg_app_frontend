@@ -375,9 +375,13 @@ export function useRegistrationForm() {
 
   function handleMultiSelectChange(question, option) {
     const currentValues = Array.isArray(answers[question.questionCode]) ? answers[question.questionCode] : [];
+    const exclusive = question.metadata?.exclusiveOptions || [];
+    // Choosing "None of the above" clears the other choices, and choosing another clears it.
     const updatedValues = currentValues.includes(option)
       ? currentValues.filter((item) => item !== option)
-      : [...currentValues, option];
+      : exclusive.includes(option)
+        ? [option]
+        : [...currentValues.filter((item) => !exclusive.includes(item)), option];
 
     handleAnswerChange(question, updatedValues);
   }

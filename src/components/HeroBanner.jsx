@@ -1,4 +1,6 @@
-import heroWheelchair from "../assets/hero-slide-wheelchair.webp";
+// The earlier wheelchair photo was replaced because its off-shoulder dress does not suit the cultural
+// context in Northern Nigeria (Nigeria review, November 2026).
+import heroPhoto from "../assets/hero-slide-braids.webp";
 
 const PROGRAMME_COUNTRIES = ["Ghana", "Nigeria", "Kenya", "Zambia"];
 
@@ -59,9 +61,9 @@ function HeroBanner({ onCheckStatus, onContinueApplication }) {
         <div className="df-hero-photo">
           <figure className="df-hero-slide-photo">
             <img
-              src={heroWheelchair}
-              alt="Smiling young woman in a floral dress, seated in her wheelchair outside a training centre"
-              style={{ objectPosition: "58% 30%" }}
+              src={heroPhoto}
+              alt="Smiling young woman with long braids, wearing a blue collared shirt"
+              style={{ objectPosition: "50% 30%" }}
               fetchPriority="high"
             />
           </figure>

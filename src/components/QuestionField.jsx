@@ -66,6 +66,23 @@ function getCountryDialCode(answers) {
   return COUNTRY_DIAL_CODES[answers?.COUNTRY] || "";
 }
 
+// The name shown for an option in the applicant's country (the stored answer does not change).
+function getOptionLabel(question, option, answers) {
+  return question.metadata?.optionLabelsByCountry?.[answers?.COUNTRY]?.[option] || option;
+}
+
+// Long answers cannot wrap inside a dropdown (phones cut them off), so they are shown as a list.
+const LONG_OPTION_LENGTH = 60;
+
+// "Idea stage: I have identified..." -> the part before the colon is shown in bold.
+function renderOptionText(text) {
+  const split = text.indexOf(": ");
+  if (split > 0 && split <= 45) {
+    return <><strong>{text.slice(0, split)}:</strong> {text.slice(split + 2)}</>;
+  }
+  return text;
+}
+
 function getQuestionOptions(question, answers) {
   const metadata = question.metadata || {};
   const country = answers?.COUNTRY;
@@ -212,6 +229,9 @@ function QuestionField({
           {...commonInputProps}
           className={`form-control ${invalidClass}`}
           type="number"
+          min={question.metadata?.min ?? 0}
+          max={question.metadata?.max}
+          step={question.metadata?.integer ? 1 : "any"}
           inputMode={getInputMode(question)}
           value={safeValue}
           onChange={(event) => onAnswerChange(question, event.target.value)}
@@ -336,6 +356,36 @@ function QuestionField({
   if (question.responseType === "SINGLE_SELECT") {
     const options = getQuestionOptions(question, answers);
 
+    if (options.some((option) => String(option).length > LONG_OPTION_LENGTH)) {
+      return (
+        <div
+          className={`ss-checkbox-list ss-radio-list ${error ? "has-error" : ""}`}
+          role="radiogroup"
+          aria-labelledby={labelId}
+          aria-describedby={describedBy}
+          aria-invalid={error ? "true" : "false"}
+          aria-required={question.required ? "true" : "false"}
+        >
+          {options.map((option, index) => {
+            const optionId = `${question.questionCode}-${index}`;
+            return (
+              <label key={option} htmlFor={optionId} className={`ss-checkbox-item ${safeValue === option ? "selected" : ""}`}>
+                <input
+                  id={optionId}
+                  type="radio"
+                  name={question.questionCode}
+                  value={option}
+                  checked={safeValue === option}
+                  onChange={(event) => onAnswerChange(question, event.target.value)}
+                />
+                <span>{renderOptionText(getOptionLabel(question, option, answers))}</span>
+              </label>
+            );
+          })}
+        </div>
+      );
+    }
+
     return (
       <>
         <select
@@ -347,7 +397,7 @@ function QuestionField({
           <option value="">{getSelectPlaceholder(question, options, answers)}</option>
           {options.map((option) => (
             <option key={option} value={option}>
-              {option}
+              {getOptionLabel(question, option, answers)}
             </option>
           ))}
         </select>

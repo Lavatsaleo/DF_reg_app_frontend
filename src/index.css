@@ -4501,3 +4501,50 @@ html.ss-high-contrast .ss-committee-corner.active {
     padding: 0.85rem;
   }
 }
+
+/* Single-choice questions with long answers: a list of radio cards that wraps the full text. */
+.ss-radio-list .ss-checkbox-item {
+  align-items: flex-start;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.ss-radio-list .ss-checkbox-item input {
+  flex: 0 0 auto;
+  margin-top: 0.2rem;
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+.ss-radio-list .ss-checkbox-item span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.ss-radio-list .ss-checkbox-item.selected {
+  border-color: var(--df-black, #111111);
+  background: var(--df-soft-yellow, #fff4cc);
+  box-shadow: 0 0 0 1px var(--df-black, #111111);
+}
+
+/* "What happens next" after the skills test and participant registration. */
+.ss-next-steps { margin-top: 1.5rem; padding: 1.25rem 1.4rem; text-align: left; background: #fff; border: 1px solid var(--df-border, #d7d2cd); border-left: 6px solid var(--df-teal, #4fcdb0); border-radius: 12px; }
+.ss-next-steps h2 { margin: 0 0 0.5rem; }
+.ss-next-steps p { margin: 0 0 0.8rem; line-height: 1.5; }
+.ss-next-steps-list { display: grid; gap: 0.5rem; margin: 0 0 0.8rem; padding: 0; list-style: none; }
+.ss-next-steps-list li { display: flex; align-items: center; gap: 0.7rem; font-weight: 600; }
+.ss-next-steps-marker { display: grid; flex: 0 0 auto; place-items: center; width: 1.9rem; height: 1.9rem; border-radius: 50%; border: 2px solid var(--df-border, #d7d2cd); background: #fff; font-size: 0.85rem; font-weight: 800; }
+.ss-next-steps-list li.is-done { color: var(--df-muted, #55514d); }
+.ss-next-steps-list li.is-done .ss-next-steps-marker { background: var(--df-teal, #4fcdb0); border-color: var(--df-teal, #4fcdb0); color: #111; }
+.ss-next-steps-list li.is-next { font-weight: 800; }
+.ss-next-steps-list li.is-next .ss-next-steps-marker { background: var(--df-yellow, #ffc81f); border-color: #111; }
+.ss-next-steps-footnote { margin: 0 !important; color: var(--df-muted, #55514d); font-size: 0.92rem; }
+
+/* Participant registration review: every answer, by page. */
+.pr-answer-summary { display: grid; gap: 1rem; }
+.pr-answer-module { padding: 1rem 1.1rem; border: 1px solid var(--df-border, #d7d2cd); border-radius: 12px; background: #fff; }
+.pr-answer-module-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.5rem; margin-bottom: 0.6rem; }
+.pr-answer-module h4 { margin: 0; font-size: 1rem; font-weight: 800; }
+.pr-answer-module dl { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); gap: 0.6rem 1.2rem; margin: 0; }
+.pr-answer-module dt { color: var(--df-muted, #55514d); font-size: 0.86rem; font-weight: 600; line-height: 1.4; }
+.pr-answer-module dd { margin: 0.15rem 0 0; font-weight: 700; overflow-wrap: anywhere; }

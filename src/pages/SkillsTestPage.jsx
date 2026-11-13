@@ -1,3 +1,4 @@
+import NextSteps from "../components/NextSteps";
 import { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import { API_BASE_URL } from "../config/api";
@@ -46,7 +47,7 @@ function ResultPanel({ attempt, applicant, onCheckStatus }) {
       <span className="ss-small-label dark">Basic IT skills test submitted</span>
       <h2 id="skills-result-title" tabIndex="-1" ref={headingRef}>Your test result has been saved</h2>
       <p>
-        The committee will review this result together with your registration information and supporting documents.
+        The selection committee will review this result together with your application.
       </p>
 
       <div className="ss-skills-score-card" aria-label={`Score ${attempt.score} out of ${attempt.maxScore}`}>
@@ -81,6 +82,7 @@ function ResultPanel({ attempt, applicant, onCheckStatus }) {
           <i className="bi bi-search" aria-hidden="true" /> Check application status
         </button>
       </div>
+      <NextSteps done="skills-test" pathway={applicant?.pathway} />
     </section>
   );
 }

@@ -279,6 +279,7 @@ function ParticipantsPage({ token, staffUser, onOpenParticipant, onSessionExpire
                 <option value="">All genders</option>
                 <option>Female</option>
                 <option>Male</option>
+                <option>Prefer not to say</option>
               </select>
             </label>
             <label><span>Disability</span>

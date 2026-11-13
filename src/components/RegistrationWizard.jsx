@@ -171,13 +171,14 @@ function getEarlyEligibilityFeedback(answers, selectedPathway, questions) {
     };
   }
 
+  // Academies need applicants for the whole course; "No" ends the application (Nigeria review, November 2026).
   if (!isEntrepreneurship && availability === "No") {
     return {
-      type: "information",
-      title: "Please confirm your training availability.",
+      type: "not-eligible",
+      title: "You do not meet this academy's availability requirement.",
       message: selectedPathway?.id === "VIRTUAL_ACADEMY"
-        ? "This pathway involves four months of virtual training. Check your availability answer before continuing."
-        : "This pathway involves nine months of residential training. Check your availability answer before continuing.",
+        ? "The virtual academy requires you to take part in online training for the full four months. You can change your answer if it was entered incorrectly, or look at another pathway."
+        : "The physical academy requires you to attend in-person training for the full course. You can change your answer if it was entered incorrectly, or look at another pathway.",
     };
   }
 

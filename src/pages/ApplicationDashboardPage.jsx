@@ -10,8 +10,8 @@ const COUNTRIES = ['Kenya', 'Nigeria', 'Ghana', 'Zambia'];
 const PATHWAY_NAMES = { PHYSICAL_ACADEMY: 'Physical Academy', VIRTUAL_ACADEMY: 'Virtual Academy', DIGITAL_ENTREPRENEURSHIP: 'Digital Entrepreneurship', UNKNOWN: 'Not recorded' };
 const number = n => Number(n || 0).toLocaleString();
 const monthLabel = m => new Intl.DateTimeFormat('en', { month: 'short', year: 'numeric', timeZone: 'UTC' }).format(new Date(m + '-01T00:00:00Z'));
-const SEXES = ['Female', 'Male', 'Not recorded'];
-const SEX_CLASS = { Female: 'female', Male: 'male', 'Not recorded': 'unrecorded' };
+const SEXES = ['Female', 'Male', 'Not stated'];
+const SEX_CLASS = { Female: 'female', Male: 'male', 'Not stated': 'unrecorded' };
 const share = (part, whole) => whole ? Math.round(part / whole * 100) : 0;
 const sexSummary = bySex => SEXES.filter(sex => bySex?.[sex]).map(sex => `${sex} ${number(bySex[sex])}`).join(' · ') || 'No applications';
 function GenderLegend() {

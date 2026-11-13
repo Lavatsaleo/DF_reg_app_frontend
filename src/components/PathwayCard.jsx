@@ -13,7 +13,10 @@ function PathwayCard({ pathway, onSelect, simplified = false }) {
       </div>
 
       <span className="ss-small-label">{pathway.tag}</span>
-      <h3>{pathway.title}</h3>
+      {/* One word per line, so "Virtual Academy" lines up with the other two-line titles. */}
+      <h3 className="df-pathway-title">
+        {pathway.title.split(" ").map((word) => <span key={word}>{word}</span>)}
+      </h3>
       <p className="df-clean-pathway-description">{pathway.description}</p>
 
       {!simplified && (

@@ -19,6 +19,10 @@ export function isQuestionVisible(question, answers) {
 }
 
 function matchesShowCondition(condition, answers) {
+  // { all: [...] }: every listed condition must match.
+  if (Array.isArray(condition.all)) {
+    return condition.all.every((item) => matchesShowCondition(item, answers));
+  }
   const controllingAnswer = answers[condition.questionCode];
   const expectedValue = condition.value;
   const operator = condition.operator;

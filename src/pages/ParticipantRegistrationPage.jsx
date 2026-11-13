@@ -1,3 +1,4 @@
+import NextSteps from "../components/NextSteps";
 import { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import ConsentReadSection from "../components/ConsentReadSection";
@@ -73,13 +74,33 @@ function formatPathway(pathway) {
   return pathway || "Digital Futures";
 }
 
+// Number limits come from the form definition; amounts and counts are never negative.
+function getNumberProblem(question, value) {
+  if (question.responseType !== "NUMBER" || isEmpty(value)) return "";
+  const number = Number(value);
+  const min = question.metadata?.min ?? 0;
+  const max = question.metadata?.max;
+  if (!Number.isFinite(number)) return "Enter a number.";
+  if (number < min) return min === 0 ? "Enter 0 or more." : `Enter ${min} or more.`;
+  if (max !== undefined && number > max) return `Enter ${max} or less.`;
+  if (question.metadata?.integer && !Number.isInteger(number)) return "Enter a whole number.";
+  return "";
+}
+
+function formatSummaryAnswer(value) {
+  if (Array.isArray(value)) return value.join(", ");
+  if (value === true) return "Yes";
+  if (value === false) return "No";
+  return String(value);
+}
+
 function pipeQuestionText(question, answers) {
   const periodMap = {
     Monthly: "month",
     Weekly: "week",
     Daily: "day",
   };
-  const period = periodMap[answers.M3_7] || "period selected in M3.7";
+  const period = periodMap[answers.M3_7] || "pay period";
   return String(question.questionText || "").replaceAll("[period from M3.7]", period);
 }
 
@@ -624,13 +645,16 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
       }
     }
 
-    if (
-      Array.isArray(answers.M3_5) &&
-      answers.M3_5.includes("None of the above") &&
-      answers.M3_5.length > 1
-    ) {
-      nextErrors.M3_5 =
-        "None of the above cannot be selected together with another option.";
+    // "None of the above" (or a question's other exclusive answer) cannot be combined with other choices.
+    for (const question of currentQuestions) {
+      const value = answers[question.questionCode];
+      const numberProblem = getNumberProblem(question, value);
+      if (numberProblem && !nextErrors[question.questionCode]) {
+        nextErrors[question.questionCode] = numberProblem;
+      }
+      if (question.exclusiveOption && Array.isArray(value) && value.includes(question.exclusiveOption) && value.length > 1) {
+        nextErrors[question.questionCode] = `${question.exclusiveOption} cannot be selected together with another option.`;
+      }
     }
 
     setErrors(nextErrors);
@@ -793,6 +817,7 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
                   <strong>Registration completed - pending verification</strong>
                 </div>
               </div>
+              <NextSteps done="registration" pathway={applicant?.pathway} />
               {submittedResult?.documentsUploaded !== undefined && (
                 <p className="mt-3 mb-0">
                   Documents uploaded: <strong>{submittedResult.documentsUploaded}</strong>
@@ -1434,6 +1459,38 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
                 <span>Documents uploaded</span>
                 <strong>{documentQuestions.filter((question) => savedDocuments[question.documentField]).length} of {documentQuestions.length}</strong>
               </div>
+            </div>
+
+            <h3 className="h5 mt-4">Your answers</h3>
+            <div className="pr-answer-summary">
+              {modules.map((module, moduleIndex) => {
+                const moduleAnswers = questions.filter(
+                  (question) =>
+                    question.section === module.title &&
+                    question.responseType !== "FILE" &&
+                    isQuestionVisible(question, answers) &&
+                    !isEmpty(answers[question.questionCode])
+                );
+                if (moduleAnswers.length === 0) return null;
+                return (
+                  <section key={module.title} className="pr-answer-module" aria-labelledby={`pr-summary-${moduleIndex}`}>
+                    <div className="pr-answer-module-head">
+                      <h4 id={`pr-summary-${moduleIndex}`}>{module.title}</h4>
+                      <button type="button" className="pr-link-button" onClick={() => goToStep(moduleIndex + 1)}>
+                        Change<span className="visually-hidden"> answers in {module.title}</span>
+                      </button>
+                    </div>
+                    <dl>
+                      {moduleAnswers.map((question) => (
+                        <div key={question.questionCode}>
+                          <dt>{pipeQuestionText(question, answers)}</dt>
+                          <dd>{formatSummaryAnswer(answers[question.questionCode])}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </section>
+                );
+              })}
             </div>
 
             <h3 className="h5 mt-4">Your documents</h3>

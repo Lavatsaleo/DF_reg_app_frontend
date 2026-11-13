@@ -475,3 +475,7 @@
     font-size: 1.2rem !important;
   }
 }
+
+.df-pathway-title span {
+  display: block;
+}
