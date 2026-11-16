@@ -64,15 +64,18 @@ function HeroBanner({ onCheckStatus, onContinueApplication }) {
             <img
               src={heroPhoto}
               alt="Smiling young woman in a bucket hat and a white T-shirt, in a training room"
-              style={{ objectPosition: "50% 20%" }}
+              aria-describedby="df-hero-photo-disclaimer"
               fetchPriority="high"
             />
-            {/* Required on Digital Futures promotional images (programme team, November 2026). */}
-            <figcaption className="df-hero-photo-disclaimer">
-              Content promoting Digital Futures includes participants of other Sightsavers inclusion projects.
-            </figcaption>
           </figure>
         </div>
+      </div>
+
+      {/* Required on Digital Futures promotional images (programme team, November 2026). */}
+      <div className="container">
+        <p id="df-hero-photo-disclaimer" className="df-hero-photo-disclaimer">
+          Content promoting Digital Futures includes participants of other Sightsavers inclusion projects.
+        </p>
       </div>
     </section>
   );
