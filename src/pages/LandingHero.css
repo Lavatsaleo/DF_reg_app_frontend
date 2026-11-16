@@ -295,3 +295,53 @@ html.ss-high-contrast .df-hero-countries li {
   font-weight: 600;
   line-height: 1.55 !important;
 }
+
+/* Disclaimer on promotional photos: a readable caption over the bottom of the image. */
+.df-hero-photo-disclaimer {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1;
+  margin: 0;
+  padding: 0.55rem 0.9rem;
+  color: #ffffff;
+  background: #111111;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+@media (min-width: 992px) {
+  .df-hero-photo-disclaimer {
+    left: auto;
+    max-width: min(30rem, 90%);
+    border-top-left-radius: 8px;
+  }
+}
+
+html.ss-high-contrast .df-hero-photo-disclaimer {
+  background: #000000;
+}
+
+/* The photo panel takes the photo's own shape (1600 x 1760), so the whole picture shows at every
+   screen size instead of being zoomed and cropped to fill a wide or short panel. */
+.df-hero-slide-photo {
+  aspect-ratio: 1600 / 1760;
+  max-height: none;
+  max-width: 509px;
+  margin-inline: auto;
+}
+
+@media (min-width: 992px) {
+  .df-hero-photo {
+    left: auto;
+    width: auto;
+    max-width: 50%;
+    aspect-ratio: 1600 / 1760;
+  }
+
+  .df-hero-slide-photo {
+    max-width: none;
+  }
+}

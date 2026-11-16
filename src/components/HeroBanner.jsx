@@ -1,6 +1,7 @@
-// The earlier wheelchair photo was replaced because its off-shoulder dress does not suit the cultural
-// context in Northern Nigeria (Nigeria review, November 2026).
-import heroPhoto from "../assets/hero-slide-braids.webp";
+// The wheelchair photo was replaced because its off-shoulder dress does not suit the cultural context in
+// Northern Nigeria (Nigeria review, November 2026). This photo is framed wide enough to show the whole head
+// and shoulders in the half-screen panel.
+import heroPhoto from "../assets/hero-slide-hat.webp";
 
 const PROGRAMME_COUNTRIES = ["Ghana", "Nigeria", "Kenya", "Zambia"];
 
@@ -62,10 +63,14 @@ function HeroBanner({ onCheckStatus, onContinueApplication }) {
           <figure className="df-hero-slide-photo">
             <img
               src={heroPhoto}
-              alt="Smiling young woman with long braids, wearing a blue collared shirt"
-              style={{ objectPosition: "50% 30%" }}
+              alt="Smiling young woman in a bucket hat and a white T-shirt, in a training room"
+              style={{ objectPosition: "50% 20%" }}
               fetchPriority="high"
             />
+            {/* Required on Digital Futures promotional images (programme team, November 2026). */}
+            <figcaption className="df-hero-photo-disclaimer">
+              Content promoting Digital Futures includes participants of other Sightsavers inclusion projects.
+            </figcaption>
           </figure>
         </div>
       </div>
