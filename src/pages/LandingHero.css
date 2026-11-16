@@ -313,14 +313,51 @@ html.ss-high-contrast .df-hero-countries li {
     padding-right: 4.5rem;
   }
 
-  /* On very wide screens a half-width panel would zoom the photo in; keep it the size it is at 1440px. */
-  .df-hero-photo {
-    width: min(50%, 740px);
-  }
 }
 
 /* The photo covers the band's right half (mobile: full width). It is anchored to the top of the
    picture so the face and hat always stay in view; any trimming happens at the bottom. */
 .df-hero-slide-photo img {
   object-position: 50% 0%;
+}
+
+/* Wide screens: the photo covers the whole right half of the hero, from its top edge down to the
+   disclaimer line. The heading stays in the left half so it never sits on the photo. */
+@media (min-width: 992px) {
+  .df-hero-band {
+    --df-hero-disclaimer-height: 3.6rem;
+  }
+
+  .df-hero-band-title {
+    max-width: calc(50% - 2rem);
+    font-size: clamp(2rem, 3.4vw, 3.4rem) !important;
+  }
+
+  /* Position the photo against the whole band, not just the area under the heading. */
+  .df-hero-band-body {
+    position: static;
+  }
+
+  .df-hero-photo {
+    top: 0;
+    right: 0;
+    bottom: var(--df-hero-disclaimer-height);
+    width: 50%;
+  }
+
+  /* Only a short fade on the left edge, so the photo reads as filling the space. */
+  .df-hero-slide-photo {
+    mask-image: linear-gradient(90deg, transparent 0%, #000000 12%);
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000000 12%);
+    mask-composite: add;
+    -webkit-mask-composite: source-over;
+  }
+
+  .df-hero-photo-disclaimer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    min-height: var(--df-hero-disclaimer-height);
+    padding-block: 0;
+  }
 }
