@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import axios from "axios";
 import AccessibilityMenu from "./components/AccessibilityMenu";
 import AppNavbar from "./components/AppNavbar";
@@ -6,16 +6,19 @@ import ConfirmDialog from "./components/ConfirmDialog";
 import SiteFooter from "./components/SiteFooter";
 import LandingPage from "./pages/LandingPage";
 import ContextualApplicationPage from "./pages/ContextualApplicationPage";
-import StatusCheckPage from "./pages/StatusCheckPage";
-import SkillsTestPage from "./pages/SkillsTestPage";
-import ParticipantRegistrationPage from "./pages/ParticipantRegistrationPage";
-import CommitteeDashboardPage from "./pages/CommitteeDashboardPage";
-import ApplicationDashboardPage from "./pages/ApplicationDashboardPage";
-import ConsentRecordsPage from "./pages/ConsentRecordsPage";
-import StaffLoginPage from "./pages/StaffLoginPage";
-import ResetPasswordPage from "./pages/ResetPasswordPage";
-import ParticipantsPage from "./pages/ParticipantsPage";
-import ParticipantProfilePage from "./pages/ParticipantProfilePage";
+// Only the home page and the application form load up front. Every other page is downloaded when it is
+// first opened, so applicants on slow connections are not held up by the staff tools.
+const StatusCheckPage = lazy(() => import("./pages/StatusCheckPage"));
+const SkillsTestPage = lazy(() => import("./pages/SkillsTestPage"));
+const ParticipantRegistrationPage = lazy(() => import("./pages/ParticipantRegistrationPage"));
+const CommitteeDashboardPage = lazy(() => import("./pages/CommitteeDashboardPage"));
+const ApplicationDashboardPage = lazy(() => import("./pages/ApplicationDashboardPage"));
+const ConsentRecordsPage = lazy(() => import("./pages/ConsentRecordsPage"));
+const StaffLoginPage = lazy(() => import("./pages/StaffLoginPage"));
+const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
+const ParticipantsPage = lazy(() => import("./pages/ParticipantsPage"));
+const ParticipantProfilePage = lazy(() => import("./pages/ParticipantProfilePage"));
+
 import { useAccessibilityPreferences } from "./hooks/useAccessibilityPreferences";
 import { DRAFT_STORAGE_PREFIX, useRegistrationForm } from "./hooks/useRegistrationForm";
 import { clearStaffSession, loadStaffSession, saveStaffSession } from "./utils/staffAuthStorage";
@@ -109,6 +112,16 @@ const VIEW_TITLES = {
   consents: "Signed consent records",
   participants: "Participants",
 };
+
+// Shown while a page's code downloads.
+function PageLoading() {
+  return (
+    <main id="main-content" className="df-page-loading" aria-busy="true">
+      <span className="spinner-border" aria-hidden="true" />
+      <p role="status">Loading…</p>
+    </main>
+  );
+}
 
 function App() {
   const registration = useRegistrationForm();
@@ -435,6 +448,7 @@ function App() {
         onResetPreferences={accessibility.resetPreferences}
       />
 
+      <Suspense fallback={<PageLoading />}>
       {currentView === "staff-login" ? (
         <StaffLoginPage onLogin={handleStaffLogin} onBackHome={handleShowHome} />
       ) : currentView === "reset-password" ? (
@@ -544,6 +558,7 @@ function App() {
           onStepChange={registration.handleCurrentStepChange}
         />
       )}
+      </Suspense>
 
       {!["staff-login", "reset-password", "dashboard", "committee", "consents", "participants"].includes(currentView) && <SiteFooter />}
 

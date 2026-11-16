@@ -12,7 +12,24 @@
     <title>Digital Futures</title>
   </head>
   <body>
-    <div id="root"></div>
+    <!-- Shown until the app has downloaded, so slow connections see progress instead of a blank page. -->
+    <style>
+      .df-boot { min-height: 70vh; display: grid; place-content: center; gap: 0.75rem; padding: 2rem 1rem; text-align: center; font-family: Arial, Helvetica, sans-serif; color: #111111; }
+      .df-boot-mark { font-family: "Arial Black", Arial, sans-serif; font-size: 1.9rem; font-weight: 900; color: #d22a2f; }
+      .df-boot-spinner { width: 2.4rem; height: 2.4rem; margin: 0 auto; border: 4px solid #4fcdb0; border-right-color: transparent; border-radius: 50%; animation: df-boot-spin 0.9s linear infinite; }
+      .df-boot-slow { max-width: 32rem; margin: 0; color: #55514d; opacity: 0; animation: df-boot-show 0.4s ease 12s forwards; }
+      @keyframes df-boot-spin { to { transform: rotate(360deg); } }
+      @keyframes df-boot-show { to { opacity: 1; } }
+      @media (prefers-reduced-motion: reduce) { .df-boot-spinner { animation-duration: 3s; } }
+    </style>
+    <div id="root">
+      <div class="df-boot" role="status">
+        <div class="df-boot-mark">Digital Futures</div>
+        <div class="df-boot-spinner" aria-hidden="true"></div>
+        <p style="margin:0;font-weight:700">Loading the application portal…</p>
+        <p class="df-boot-slow">This is taking longer than usual, possibly because of a slow internet connection. Please keep this page open.</p>
+      </div>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

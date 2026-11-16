@@ -4548,3 +4548,18 @@ html.ss-high-contrast .ss-committee-corner.active {
 .pr-answer-module dl { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); gap: 0.6rem 1.2rem; margin: 0; }
 .pr-answer-module dt { color: var(--df-muted, #55514d); font-size: 0.86rem; font-weight: 600; line-height: 1.4; }
 .pr-answer-module dd { margin: 0.15rem 0 0; font-weight: 700; overflow-wrap: anywhere; }
+
+/* Shown while a page's code downloads (pages other than home and the application form load on demand). */
+.df-page-loading {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 0.75rem;
+  min-height: 50vh;
+  padding: 2rem 1rem;
+}
+
+.df-page-loading p {
+  margin: 0;
+  font-weight: 700;
+}

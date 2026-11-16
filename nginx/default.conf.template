@@ -19,8 +19,13 @@ server {
   # Application documents (ID, certificates) are uploaded through the API; the API itself limits each file to 10 MB.
   client_max_body_size ${CLIENT_MAX_BODY_SIZE};
 
+  # Compress scripts and styles: the app's code is about 1 MB uncompressed and about 300 KB compressed.
   gzip on;
-  gzip_types text/plain text/css application/javascript application/json image/svg+xml;
+  gzip_vary on;
+  gzip_comp_level 6;
+  gzip_min_length 1024;
+  gzip_proxied any;
+  gzip_types text/plain text/css application/javascript text/javascript application/json image/svg+xml font/woff;
 
   # For load balancer and container health checks.
   location = /healthz {
