@@ -5,6 +5,7 @@ import { groupQuestionsBySection, isQuestionVisible } from "../utils/formUtils";
 import { calculateFormProgress, validateAnswers } from "../utils/validationUtils";
 import { useLocalDraft } from "./useLocalDraft";
 import { clearAllDeviceDrafts, writeDeviceDraft } from "../utils/deviceDraftStorage";
+import { hasFinishedConsent } from "../utils/applicationProgress";
 import { resolveQuestionText } from "../utils/questionDisplay";
 
 function createLocalReference(pathwayId) {
@@ -168,6 +169,7 @@ export function useRegistrationForm() {
     draftToken: serverDraftToken,
     currentStep,
     onRestoreDraft: restoreDraft,
+    canRestore: (draft) => hasFinishedConsent(draft.answers),
   });
 
   /* eslint-disable react-hooks/set-state-in-effect */
@@ -289,7 +291,8 @@ export function useRegistrationForm() {
   // Opens a draft saved on the portal (found on the status page after an email code) on this device.
   function resumeSavedDraft(pathway, draft) {
     const payload = {
-      answers: draft.answers || {},
+      // A portal draft is saved only after consent, from the application form itself.
+      answers: { ...(draft.answers || {}), ENTRY_STAGE: draft.answers?.ENTRY_STAGE || "application" },
       documentType: draft.documentType,
       draftReference: draft.draftReference,
       draftToken: draft.draftToken,
@@ -348,6 +351,7 @@ export function useRegistrationForm() {
   }
 
   function handleBackToPathways() {
+    clearAllDeviceDrafts();
     setSelectedPathway(null);
     setAnswers({});
     setDocuments([]);

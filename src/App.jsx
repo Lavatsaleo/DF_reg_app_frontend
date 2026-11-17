@@ -23,7 +23,8 @@ const ParticipantProfilePage = lazy(() => import("./pages/ParticipantProfilePage
 import { useAccessibilityPreferences } from "./hooks/useAccessibilityPreferences";
 import { useRegistrationForm } from "./hooks/useRegistrationForm";
 import { useInactivityLock } from "./hooks/useInactivityLock";
-import { clearRegistrationSession, purgeLegacyApplicantData } from "./utils/deviceDraftStorage";
+import { clearRegistrationSession, purgeLegacyApplicantData, readDeviceDraft } from "./utils/deviceDraftStorage";
+import { hasFinishedConsent, hasStartedBeforeConsent } from "./utils/applicationProgress";
 import { clearStaffSession, loadStaffSession, saveStaffSession } from "./utils/staffAuthStorage";
 import { pathways } from "./data/pathways";
 
@@ -68,6 +69,11 @@ function getPathwayFromBrowserPath() {
   return pathways.find((pathway) => PATHWAY_SLUGS[pathway.id] === match[1] && pathway.status === "open") || null;
 }
 
+// An application is picked up again on return only once its consent and jurat are both signed.
+function canResumeApplication(pathway) {
+  return Boolean(pathway && hasFinishedConsent(readDeviceDraft(pathway.id)?.answers));
+}
+
 function staffView(session, requested = "committee") {
   if (!session?.token) return "staff-login";
   if (session.user?.role === "VIEWER") return "dashboard";
@@ -82,7 +88,10 @@ function getInitialView() {
   if (getInitialSkillsTestToken() || window.location.pathname === "/basic-skills-test") return "skills-test";
   if (window.location.pathname === "/status") return "status";
   if (window.location.pathname === "/continue") return "continue";
-  if (getPathwayFromBrowserPath()) return "application";
+  const linkedPathway = getPathwayFromBrowserPath();
+  if (linkedPathway && canResumeApplication(linkedPathway)) return "application";
+  // Consent not finished: start again from the home page.
+  if (linkedPathway) window.history.replaceState({ digitalFutures: true }, "", "/");
   return "home";
 }
 
@@ -149,6 +158,8 @@ function App() {
   const [pendingSwitch, setPendingSwitch] = useState(null);
   const [switchError, setSwitchError] = useState("");
   const [switching, setSwitching] = useState(false);
+  // A page change asked for before consent is finished, waiting for the applicant to confirm.
+  const [pendingLeave, setPendingLeave] = useState(null);
   // Shown on the home page after an applicant page was closed (Exit, or no activity).
   const [privacyNotice, setPrivacyNotice] = useState("");
   // Where focus should land after the next view change, when not the page heading.
@@ -173,6 +184,36 @@ function App() {
     window.addEventListener("beforeunload", protectApplicationProgress);
     return () => window.removeEventListener("beforeunload", protectApplicationProgress);
   }, [currentView, registration.selectedPathway, registration.submitResult]);
+
+  // Before the consent and jurat are signed, leaving the application means starting again.
+  const leavingLosesProgress = Boolean(
+    currentView === "application" &&
+      registration.selectedPathway &&
+      !registration.submitResult &&
+      hasStartedBeforeConsent(registration.answers)
+  );
+  const leaveState = useRef({ losesProgress: false, reset: () => {} });
+  useEffect(() => {
+    leaveState.current = { losesProgress: leavingLosesProgress, reset: registration.handleBackToPathways };
+  });
+
+  function requestLeave(action) {
+    if (!leavingLosesProgress) {
+      action();
+      return;
+    }
+    setPendingLeave({ action });
+  }
+
+  function confirmLeave() {
+    const action = pendingLeave?.action;
+    setPendingLeave(null);
+    registration.handleBackToPathways();
+    action?.();
+  }
+
+  // For links and buttons that leave the application page.
+  const guarded = (handler) => (handler ? (...args) => requestLeave(() => handler(...args)) : handler);
 
   // Any page holding an applicant's information closes itself when nobody is using it.
   const hasApplicationInMemory = Boolean(
@@ -200,6 +241,7 @@ function App() {
 
   useEffect(() => {
     function handleBrowserNavigation() {
+      if (leaveState.current.losesProgress && !getPathwayFromBrowserPath()) leaveState.current.reset();
       const participantRegistrationTokenFromPath = getInitialParticipantRegistrationToken();
       const invitedToken = getInitialSkillsTestToken();
       const pathway = getPathwayFromBrowserPath();
@@ -476,16 +518,16 @@ function App() {
       <AppNavbar
         selectedPathway={registration.selectedPathway}
         currentView={["staff-login", "reset-password"].includes(currentView) ? "committee" : currentView}
-        onBackToPathways={handleShowHome}
-        onShowPortal={handleShowPortal}
-        onCheckStatus={handleShowStatus}
+        onBackToPathways={guarded(handleShowHome)}
+        onShowPortal={guarded(handleShowPortal)}
+        onCheckStatus={guarded(handleShowStatus)}
         showStatusButton={showStatusButton}
-        onShowCommittee={staffSession?.user?.role === "VIEWER" ? undefined : handleShowCommittee}
-        onShowDashboard={handleShowDashboard}
+        onShowCommittee={staffSession?.user?.role === "VIEWER" ? undefined : guarded(handleShowCommittee)}
+        onShowDashboard={guarded(handleShowDashboard)}
         showDashboardButton={Boolean(staffSession?.token && ["ADMIN", "VIEWER"].includes(staffSession?.user?.role))}
-        onShowConsents={handleShowConsents}
+        onShowConsents={guarded(handleShowConsents)}
         showConsentsButton={canViewConsentArchive}
-        onShowParticipants={handleShowParticipants}
+        onShowParticipants={guarded(handleShowParticipants)}
         showParticipantsButton={canViewParticipants}
       />
 
@@ -594,10 +636,10 @@ function App() {
           draftSaveStatus={registration.draftSaveStatus}
           draftSaveMessage={registration.draftSaveMessage}
           currentStep={registration.currentStep}
-          onBackToPathways={handleShowHome}
+          onBackToPathways={guarded(handleShowHome)}
           onStartNewApplication={handleStartNewApplication}
-          onCheckStatus={handleShowStatus}
-          onContinueApplication={handleShowContinue}
+          onCheckStatus={guarded(handleShowStatus)}
+          onContinueApplication={guarded(handleShowContinue)}
           onTakeSkillsTest={handleShowSkillsTest}
           onAnswerChange={registration.handleAnswerChange}
           onMultiSelectChange={registration.handleMultiSelectChange}
@@ -628,6 +670,20 @@ function App() {
         </p>
         <p>
           If you switch, your answers for {registration.selectedPathway?.title} will be deleted, from this browser and from the portal, and you will start a new application for {pendingSwitch?.title}.
+        </p>
+      </ConfirmDialog>
+
+      <ConfirmDialog
+        open={Boolean(pendingLeave)}
+        title="Leave before finishing the consent?"
+        confirmLabel="Leave and start again later"
+        cancelLabel="Stay and finish the consent"
+        focusCancel
+        onConfirm={confirmLeave}
+        onCancel={() => setPendingLeave(null)}
+      >
+        <p>
+          You have not finished signing the consent and the jurat yet. If you leave this page now, your progress will not be kept and you will start again from the beginning.
         </p>
       </ConfirmDialog>
 

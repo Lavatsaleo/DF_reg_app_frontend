@@ -4604,3 +4604,23 @@ html.ss-high-contrast .ss-committee-corner.active {
     flex-wrap: wrap;
   }
 }
+
+/* Consent pages: leaving before signing means starting again. */
+.df-consent-leave-note {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+  max-width: 52rem;
+  margin-top: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-left: 4px solid #f5b800;
+  border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.85);
+  color: #1f1f1f;
+  font-size: 0.95rem;
+}
+
+.df-consent-leave-note .bi {
+  margin-top: 0.15rem;
+  color: #8a5a00;
+}

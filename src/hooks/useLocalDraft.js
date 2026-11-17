@@ -11,6 +11,7 @@ export function useLocalDraft({
   draftToken,
   currentStep,
   onRestoreDraft,
+  canRestore = () => true,
 }) {
   const [lastSavedAt, setLastSavedAt] = useState(null);
   const hasCompletedInitialRestore = useRef(false);
@@ -27,7 +28,12 @@ export function useLocalDraft({
 
     hasCompletedInitialRestore.current = false;
 
-    const storedDraft = readDeviceDraft(pathwayId);
+    let storedDraft = readDeviceDraft(pathwayId);
+    // A copy that may not be picked up again (consent not finished) is removed: start from the beginning.
+    if (storedDraft && !canRestore(storedDraft)) {
+      removeDeviceDraft(pathwayId);
+      storedDraft = null;
+    }
 
     if (storedDraft) {
       onRestoreDraft?.({
@@ -45,6 +51,8 @@ export function useLocalDraft({
     window.requestAnimationFrame(() => {
       hasCompletedInitialRestore.current = true;
     });
+    // canRestore is a fixed rule; only a new pathway or restore handler should re-run this.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled, pathwayId, onRestoreDraft]);
   /* eslint-enable react-hooks/set-state-in-effect */
 

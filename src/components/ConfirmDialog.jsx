@@ -5,9 +5,11 @@ import { useEffect, useId, useRef } from "react";
  * moves focus inside, keeps it there, closes on Escape and returns focus to the control
  * that opened it, so screen reader and keyboard users always know where they are.
  */
-function ConfirmDialog({ open, title, children, confirmLabel = "Continue", cancelLabel = "Cancel", error = "", onConfirm, onCancel }) {
+// focusCancel: start on the cancel button when confirming would lose something.
+function ConfirmDialog({ open, title, children, confirmLabel = "Continue", cancelLabel = "Cancel", error = "", onConfirm, onCancel, focusCancel = false }) {
   const dialogRef = useRef(null);
   const confirmRef = useRef(null);
+  const cancelRef = useRef(null);
   const titleId = useId();
   const bodyId = useId();
 
@@ -16,11 +18,11 @@ function ConfirmDialog({ open, title, children, confirmLabel = "Continue", cance
     if (!dialog) return;
     if (open && !dialog.open) {
       dialog.showModal();
-      confirmRef.current?.focus();
+      (focusCancel ? cancelRef : confirmRef).current?.focus();
     } else if (!open && dialog.open) {
       dialog.close();
     }
-  }, [open]);
+  }, [open, focusCancel]);
 
   return (
     <dialog
@@ -40,7 +42,7 @@ function ConfirmDialog({ open, title, children, confirmLabel = "Continue", cance
         <button ref={confirmRef} type="button" className="btn ss-btn-primary" onClick={onConfirm}>
           {confirmLabel}
         </button>
-        <button type="button" className="btn ss-btn-outline" onClick={onCancel}>
+        <button ref={cancelRef} type="button" className="btn ss-btn-outline" onClick={onCancel}>
           {cancelLabel}
         </button>
       </div>

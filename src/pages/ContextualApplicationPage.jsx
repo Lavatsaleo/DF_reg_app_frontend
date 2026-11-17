@@ -685,6 +685,13 @@ function ContextualApplicationPage({
                 ? "Please confirm whether you completed the consent section yourself or received assistance."
                 : "Please read the participant application consent information carefully before deciding."}
             </p>
+            <p className="df-consent-leave-note" role="note">
+              <i className="bi bi-exclamation-circle" aria-hidden="true" />
+              <span>
+                Please finish the consent{showAssistance ? "" : " and the next page about who completed it"} before you leave.
+                If you leave or close this page before then, your progress will not be kept and you will start again from the beginning.
+              </span>
+            </p>
           </div>
         </section>
 
