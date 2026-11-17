@@ -1,39 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { readDeviceDraft, removeDeviceDraft, writeDeviceDraft } from "../utils/deviceDraftStorage";
 
-function safeRead(storageKey) {
-  try {
-    const rawDraft = window.localStorage.getItem(storageKey);
-    return rawDraft ? JSON.parse(rawDraft) : null;
-  } catch (error) {
-    console.warn("Unable to read saved registration draft", error);
-    return null;
-  }
-}
-
-function safeWrite(storageKey, payload) {
-  try {
-    window.localStorage.setItem(storageKey, JSON.stringify(payload));
-    return true;
-  } catch (error) {
-    console.warn("Unable to save registration draft", error);
-    return false;
-  }
-}
-
-function safeRemove(storageKey) {
-  try {
-    window.localStorage.removeItem(storageKey);
-  } catch (error) {
-    console.warn("Unable to clear registration draft", error);
-  }
-}
-
+// Keeps the application being filled in for this browser tab only (see deviceDraftStorage).
 export function useLocalDraft({
-  storageKey,
+  pathwayId,
   enabled,
   answers,
   documentType,
   draftReference,
+  draftToken,
   currentStep,
   onRestoreDraft,
 }) {
@@ -42,28 +17,24 @@ export function useLocalDraft({
   const skipNextSave = useRef(false);
 
   const draftPayload = useMemo(
-    () => ({
-      answers,
-      documentType,
-      draftReference,
-      currentStep,
-    }),
-    [answers, documentType, draftReference, currentStep]
+    () => ({ answers, documentType, draftReference, draftToken, currentStep }),
+    [answers, documentType, draftReference, draftToken, currentStep]
   );
 
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
-    if (!enabled || !storageKey) return;
+    if (!enabled || !pathwayId) return;
 
     hasCompletedInitialRestore.current = false;
 
-    const storedDraft = safeRead(storageKey);
+    const storedDraft = readDeviceDraft(pathwayId);
 
     if (storedDraft) {
       onRestoreDraft?.({
         answers: storedDraft.answers || {},
         documentType: storedDraft.documentType,
         draftReference: storedDraft.draftReference,
+        draftToken: storedDraft.draftToken,
         currentStep: storedDraft.currentStep,
       });
       setLastSavedAt(storedDraft.savedAt || null);
@@ -74,11 +45,11 @@ export function useLocalDraft({
     window.requestAnimationFrame(() => {
       hasCompletedInitialRestore.current = true;
     });
-  }, [enabled, storageKey, onRestoreDraft]);
+  }, [enabled, pathwayId, onRestoreDraft]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
   useEffect(() => {
-    if (!enabled || !storageKey || !hasCompletedInitialRestore.current) return;
+    if (!enabled || !pathwayId || !hasCompletedInitialRestore.current) return;
 
     if (skipNextSave.current) {
       skipNextSave.current = false;
@@ -86,24 +57,18 @@ export function useLocalDraft({
     }
 
     const saveTimeout = window.setTimeout(() => {
-      const savedAt = new Date().toISOString();
-      const saved = safeWrite(storageKey, {
-        ...draftPayload,
-        savedAt,
-      });
-
-      if (saved) {
-        setLastSavedAt(savedAt);
+      if (writeDeviceDraft(pathwayId, draftPayload)) {
+        setLastSavedAt(new Date().toISOString());
       }
     }, 450);
 
     return () => window.clearTimeout(saveTimeout);
-  }, [enabled, storageKey, draftPayload]);
+  }, [enabled, pathwayId, draftPayload]);
 
   function clearDraft() {
-    if (!storageKey) return;
+    if (!pathwayId) return;
     skipNextSave.current = true;
-    safeRemove(storageKey);
+    removeDeviceDraft(pathwayId);
     setLastSavedAt(null);
   }
 

@@ -185,6 +185,7 @@ function ContextualApplicationPage({
   onDocumentsChange,
   onDocumentTypeChange,
   onClearDraft,
+  onExitApplication,
   onStepChange,
 }) {
   const [entryStage, setEntryStage] = useState(() => answers.COUNTRY ? "consent" : "country");
@@ -672,6 +673,11 @@ function ContextualApplicationPage({
                   <i className="bi bi-geo-alt" aria-hidden="true" /> {residenceCountry} · Change
                 </button>
               )}
+              {onExitApplication && (
+                <button type="button" className="btn btn-sm ss-country-context-button" onClick={onExitApplication}>
+                  <i className="bi bi-box-arrow-right" aria-hidden="true" /> Save and exit
+                </button>
+              )}
             </div>
             <h1>{selectedPathway.title} application</h1>
             <p>
@@ -1127,6 +1133,19 @@ function ContextualApplicationPage({
               >
                 <i className="bi bi-shield-check" aria-hidden="true" /> Consent
               </button>
+              {onExitApplication && (
+                <button
+                  type="button"
+                  className="btn btn-sm ss-btn-outline"
+                  onClick={onExitApplication}
+                  aria-describedby="exit-application-help"
+                >
+                  <i className="bi bi-box-arrow-right" aria-hidden="true" /> Save and exit
+                </button>
+              )}
+              <p id="exit-application-help" className="visually-hidden">
+                Leaves the application and removes your answers from this browser. Answers saved to the portal can be continued later with a code we email you.
+              </p>
               <details className="df-floating-support">
                 <summary className="btn btn-sm ss-btn-outline">
                   <i className="bi bi-life-preserver" aria-hidden="true" />
@@ -1176,6 +1195,7 @@ function ContextualApplicationPage({
               onNavigateStep={moveToApplicationStep}
               onBackStep={moveBackOneFlowStep}
               onCheckStatus={onCheckStatus}
+              onContinueApplication={onContinueApplication}
             />
         </div>
       </section>

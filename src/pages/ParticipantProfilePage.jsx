@@ -602,15 +602,33 @@ function DocumentsTab({ participantId, documents, identity, token, onSessionExpi
 function ActivityTab({ profile }) {
   const events = useMemo(() => {
     const list = [];
+    const tracking = profile.tracking || {};
+    if (tracking.applicationStartedAt) list.push({ date: tracking.applicationStartedAt, icon: "bi-pencil-square", tone: "neutral", title: "Application started", text: "First saved to the portal" });
+    if (tracking.applicationConsent) {
+      const consent = tracking.applicationConsent;
+      list.push({ date: consent.signedAt, icon: "bi-pen", tone: "teal", title: "Application consent signed", text: [consent.assisted ? "With assistance" : "By the applicant", consent.signatureMethod, consent.version && `version ${consent.version}`].filter(Boolean).join(" · ") });
+    }
+    if (tracking.registrationConsent) {
+      const consent = tracking.registrationConsent;
+      list.push({ date: consent.signedAt, icon: "bi-pen", tone: "teal", title: "Participant registration consent", text: [consent.decision, consent.assisted ? "with assistance" : null].filter(Boolean).join(" · ") });
+    }
     list.push({ date: profile.participant.createdAt, icon: "bi-send", tone: "teal", title: "Application submitted", text: formatPathwayLabel(profile.participant.pathway, "") });
     profile.statusHistory.forEach((item) => list.push({ date: item.createdAt, icon: "bi-flag", tone: "neutral", title: formatStatusLabel(item.status), text: item.note }));
-    profile.skillsTest.invitations.forEach((item) => item.sentAt && list.push({ date: item.sentAt, icon: "bi-envelope", tone: "orange", title: "Skills test invitation sent", text: item.emailTo }));
+    profile.skillsTest.invitations.forEach((item) => {
+      if (item.sentAt) list.push({ date: item.sentAt, icon: "bi-envelope", tone: "orange", title: "Skills test invitation sent", text: item.emailTo });
+      if (!item.sentAt && item.emailError) list.push({ date: item.createdAt, icon: "bi-envelope-x", tone: "red", title: "Skills test invitation not delivered", text: item.emailError });
+      if (item.openedAt) list.push({ date: item.openedAt, icon: "bi-box-arrow-up-right", tone: "neutral", title: "Skills test link opened" });
+    });
     profile.skillsTest.attempts.forEach((item) => item.submittedAt && list.push({ date: item.submittedAt, icon: "bi-laptop", tone: item.passed ? "green" : "red", title: `Skills test ${item.passed ? "passed" : "not passed"}`, text: `${Math.round(item.percentage)}%` }));
+    profile.committee.history.forEach((item) => list.push({ date: item.createdAt, icon: "bi-person-check", tone: "neutral", title: `Committee: ${formatStatusLabel(item.changeType)}`, text: [item.to && `to ${item.to}`, item.from && `from ${item.from}`, item.by && `by ${item.by}`, item.reason].filter(Boolean).join(" · ") }));
     profile.committee.reviews.forEach((item) => list.push({ date: item.reviewedAt, icon: "bi-people", tone: item.decision === "SELECTED" ? "green" : "red", title: `Committee: ${formatDecision(item.decision)}`, text: item.memberName }));
     profile.registration.invitations.forEach((item) => {
       if (item.sentAt) list.push({ date: item.sentAt, icon: "bi-envelope-check", tone: "orange", title: "Registration invitation sent", text: item.emailTo });
+      if (!item.sentAt && item.emailError) list.push({ date: item.createdAt, icon: "bi-envelope-x", tone: "red", title: "Registration invitation not delivered", text: item.emailError });
+      if (item.openedAt) list.push({ date: item.openedAt, icon: "bi-box-arrow-up-right", tone: "neutral", title: "Registration link opened" });
       if (item.submittedAt) list.push({ date: item.submittedAt, icon: "bi-clipboard-check", tone: "green", title: "Participant registration submitted" });
     });
+    if (profile.outcome?.emailSentAt) list.push({ date: profile.outcome.emailSentAt, icon: "bi-envelope-paper", tone: "neutral", title: "Outcome email sent", text: profile.outcome.reasonLabel || null });
     (profile.documents || []).forEach((item) => list.push({ date: item.createdAt, icon: "bi-paperclip", tone: "neutral", title: `${DOCUMENT_TYPE_LABELS[item.documentType] || "Document"} uploaded`, text: item.originalName }));
     profile.dhis2.syncLogs.forEach((item) => list.push({ date: item.createdAt, icon: "bi-cloud-arrow-up", tone: item.status === "FAILED" ? "red" : "neutral", title: `DHIS2: ${formatStatusLabel(item.action)} (${formatStatusLabel(item.status)})`, text: item.errorMessage }));
     return list.filter((item) => item.date).sort((a, b) => new Date(b.date) - new Date(a.date));

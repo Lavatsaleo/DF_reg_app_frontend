@@ -1,12 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { API_BASE_URL } from "../config/api";
 import MissingLinkHelp, { SupportContact } from "../components/MissingLinkHelp";
 import { formatPathwayLabel, formatStatusLabel } from "../utils/displayLabels";
-import {
-  findSubmittedApplication,
-  listSubmittedApplications,
-} from "../utils/applicationStatusStorage";
 
 const STATUS_STEPS = [
   {
@@ -375,8 +371,6 @@ function StatusCheckPage({ onBackHome, onStartApplication, onResumeDraft, mode =
   const [resendIn, setResendIn] = useState(0);
   const codeInputRef = useRef(null);
 
-  const recentApplications = useMemo(() => listSubmittedApplications().slice(0, 3), []);
-
   useEffect(() => {
     if (resendIn <= 0) return undefined;
     const timer = window.setTimeout(() => setResendIn((value) => value - 1), 1000);
@@ -408,19 +402,12 @@ function StatusCheckPage({ onBackHome, onStartApplication, onResumeDraft, mode =
       setStage("code");
       setResendIn(RESEND_WAIT_SECONDS);
     } catch (error) {
-      if (error.response) {
-        setLookupMessage(error.response.data?.message || "We could not send a code. Please try again.");
-        return;
-      }
-      const localResult = findSubmittedApplication(cleanIdentifier);
-      if (localResult) {
-        setLookupResult(localResult);
-        setLookupMessage(
-          "Showing the confirmation saved on this device because the official status lookup could not be reached."
-        );
-      } else {
-        setLookupMessage("We could not reach the portal. Check your internet connection and try again.");
-      }
+      // Nothing about an application is kept on this device: the status is only shown after the emailed code.
+      setLookupMessage(
+        error.response
+          ? error.response.data?.message || "We could not send a code. Please try again."
+          : "We could not reach the portal. Check your internet connection and try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -473,14 +460,6 @@ function StatusCheckPage({ onBackHome, onStartApplication, onResumeDraft, mode =
     setCodeError("");
     setLookupMessage("");
     setLookupResult(null);
-  }
-
-  function handleRecentClick(application) {
-    const recentReference = getReferenceFromResult(application);
-    setIdentifier(recentReference);
-    setStage("details");
-    setLookupResult(application);
-    setLookupMessage("Showing a recently submitted application saved on this device. Check status to see the latest progress.");
   }
 
   return (
@@ -623,28 +602,6 @@ function StatusCheckPage({ onBackHome, onStartApplication, onResumeDraft, mode =
                   <li><strong>Registration Completed:</strong> the participant registration and supporting documents are awaiting verification.</li>
                 </ul>
               </div>
-
-              {!isContinue && recentApplications.length > 0 && (
-                <div className="ss-help-card mt-4">
-                  <span className="ss-small-label dark">Recent on this device</span>
-                  <div className="ss-recent-reference-list">
-                    {recentApplications.map((application) => {
-                      const recentReference = getReferenceFromResult(application);
-                      return (
-                        <button
-                          key={recentReference}
-                          type="button"
-                          className="ss-recent-reference"
-                          onClick={() => handleRecentClick(application)}
-                        >
-                          <strong>{recentReference}</strong>
-                          <span>{application.pathwayTitle || application.pathway || "Physical Academy"}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
 
               <div className="ss-help-card mt-4">
                 <span className="ss-small-label dark">No reference yet?</span>

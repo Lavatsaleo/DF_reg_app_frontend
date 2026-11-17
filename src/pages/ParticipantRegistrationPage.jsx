@@ -5,6 +5,8 @@ import ConsentReadSection from "../components/ConsentReadSection";
 import ElectronicSignature from "../components/ElectronicSignature";
 import QuestionField from "../components/QuestionField";
 import { API_BASE_URL } from "../config/api";
+import RegistrationCodeGate from "../components/RegistrationCodeGate";
+import { clearRegistrationSession, readRegistrationSession, writeRegistrationSession } from "../utils/deviceDraftStorage";
 import { isQuestionVisible } from "../utils/formUtils";
 import "./ParticipantRegistration.css";
 
@@ -169,6 +171,10 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
     initialToken ? "" : MISSING_INVITATION_MESSAGE
   );
   const [formData, setFormData] = useState(null);
+  // After the emailed code: the session this tab sends with every request (see RegistrationCodeGate).
+  const [sessionToken, setSessionToken] = useState(() => readRegistrationSession(initialToken));
+  const sessionTokenRef = useRef(sessionToken);
+  const [codeGate, setCodeGate] = useState(null);
   const [applicant, setApplicant] = useState(null);
   const [invitation, setInvitation] = useState(null);
   const [alreadySubmitted, setAlreadySubmitted] = useState(false);
@@ -229,12 +235,20 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
         setLoadError("");
 
         const response = await axios.get(
-          `${API_BASE_URL}/api/participant-registration/invite/${encodeURIComponent(initialToken)}`
+          `${API_BASE_URL}/api/participant-registration/invite/${encodeURIComponent(initialToken)}`,
+          { headers: sessionToken ? { "X-Registration-Session": sessionToken } : {} }
         );
 
         if (!active) return;
 
         const data = response.data || {};
+        if (data.verificationRequired) {
+          // No session, or it ended: the code screen comes first.
+          if (sessionToken) clearRegistrationSession();
+          setCodeGate((current) => ({ maskedEmail: data.maskedEmail, notice: current?.notice || "" }));
+          return;
+        }
+        setCodeGate(null);
         setFormData(data.form || null);
         setApplicant(data.applicant || null);
         setInvitation(data.invitation || null);
@@ -287,7 +301,31 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
     return () => {
       active = false;
     };
-  }, [initialToken]);
+  }, [initialToken, sessionToken]);
+
+  function sessionHeaders() {
+    return { "X-Registration-Session": sessionTokenRef.current };
+  }
+
+  function handleVerified(newSessionToken) {
+    writeRegistrationSession(initialToken, newSessionToken);
+    sessionTokenRef.current = newSessionToken;
+    setCodeGate(null);
+    setSessionToken(newSessionToken);
+  }
+
+  // The session ended (no saving for a long time, or the code was entered on another device).
+  function handleSessionLost(error) {
+    if (error?.response?.status !== 401 || error.response.data?.reasonCode !== "REGISTRATION_CODE_REQUIRED") return false;
+    clearRegistrationSession();
+    sessionTokenRef.current = "";
+    setSessionToken("");
+    setCodeGate({
+      maskedEmail: codeGate?.maskedEmail || "",
+      notice: "For your security, your session ended. Your answers up to your last save are kept. Enter a new code to continue.",
+    });
+    return true;
+  }
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
@@ -328,11 +366,13 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
       try {
         const response = await axios.put(
           `${API_BASE_URL}/api/participant-registration/invite/${encodeURIComponent(initialToken)}/draft`,
-          payload
+          payload,
+          { headers: sessionHeaders() }
         );
         setSaveState({ status: "saved", savedAt: response.data?.savedAt || new Date().toISOString() });
         return true;
-      } catch {
+      } catch (error) {
+        handleSessionLost(error);
         setSaveState((current) => ({ ...current, status: "error" }));
         return false;
       }
@@ -445,11 +485,13 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
       try {
         const response = await axios.post(
           `${API_BASE_URL}/api/participant-registration/invite/${encodeURIComponent(initialToken)}/documents/${encodeURIComponent(field)}`,
-          body
+          body,
+          { headers: sessionHeaders() }
         );
         setSavedDocuments((current) => ({ ...current, [field]: response.data?.document }));
         setSaveState({ status: "saved", savedAt: response.data?.savedAt || new Date().toISOString() });
       } catch (error) {
+        if (handleSessionLost(error)) return;
         setErrors((current) => ({
           ...current,
           [question.questionCode]: error.response?.data?.message || "The upload did not finish. Please choose the file again.",
@@ -715,13 +757,15 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
 
       const response = await axios.post(
         `${API_BASE_URL}/api/participant-registration/invite/${encodeURIComponent(initialToken)}/submit`,
-        payload
+        payload,
+        { headers: sessionHeaders() }
       );
 
       setSubmittedResult(response.data || {});
       setStage("submitted");
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (error) {
+      if (handleSessionLost(error)) return;
       const data = error.response?.data;
       const nextErrors = {};
 
@@ -767,6 +811,18 @@ function ParticipantRegistrationPage({ initialToken = "", onBackHome, onCheckSta
           <p>Please wait while we verify your secure invitation.</p>
         </section>
       </main>
+    );
+  }
+
+  if (codeGate && !loadError) {
+    return (
+      <RegistrationCodeGate
+        linkToken={initialToken}
+        maskedEmail={codeGate.maskedEmail}
+        notice={codeGate.notice}
+        onVerified={handleVerified}
+        onBackHome={onBackHome}
+      />
     );
   }
 

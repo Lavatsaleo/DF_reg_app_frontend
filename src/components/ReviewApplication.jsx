@@ -84,7 +84,7 @@ function ReviewApplication({
 
         <div className="ss-submit-once-note" role="note">
           <i className="bi bi-shield-check" aria-hidden="true" />
-          <p>Submit this Application only once. If the same Application is submitted again, the system will open the existing application summary instead of creating a duplicate record.</p>
+          <p>Submit this application only once. You can have one active application at a time: a second application with the same mobile number, email address or ID number will not be accepted.</p>
         </div>
 
         <div className="ss-wizard-actions final">

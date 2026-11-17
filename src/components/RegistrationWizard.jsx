@@ -204,10 +204,13 @@ function describeLevels(levels) {
 function getSaveStatusLabel(status) {
   if (status === "saving") return "Saving...";
   if (status === "existing_application") return "Not saved: an application already exists";
-  if (status === "error") return "Saved on this device only";
+  if (status === "existing_draft") return "Not saved: you have already started an application";
+  if (status === "locked") return "Not saved: continue with the code we email you";
+  if (status === "error") return "Not saved to the portal: kept in this browser tab only";
   // Until a mobile number and email are entered the draft can't be reopened elsewhere.
-  if (status === "waiting_for_mobile") return "Saved on this device only: add your mobile number and email to save online";
-  return "Progress saved";
+  if (status === "waiting_for_mobile") return "Kept in this browser tab only: add your mobile number and email to save it";
+  if (status === "submitted") return "Application submitted";
+  return "Progress saved to the portal";
 }
 
 function RegistrationWizard({
@@ -231,6 +234,7 @@ function RegistrationWizard({
   onNavigateStep,
   onBackStep,
   onCheckStatus,
+  onContinueApplication,
 }) {
   const sectionEntries = useMemo(
     () => groupSurveyPages(groupedQuestions),
@@ -373,12 +377,44 @@ function RegistrationWizard({
       <div className="ss-survey-toolbar">
         <div>
           <span className="ss-small-label dark">{selectedPathway.title}</span>
-          <strong>{getSaveStatusLabel(draftSaveStatus)}</strong>
+          <strong className={`ss-save-status is-${draftSaveStatus}`} role="status">{getSaveStatusLabel(draftSaveStatus)}</strong>
         </div>
-        <button type="button" className="btn btn-sm ss-link-button" onClick={onClearDraft}>
-          Clear draft
-        </button>
+        <div className="ss-survey-toolbar-actions">
+          <button type="button" className="btn btn-sm ss-link-button" onClick={onClearDraft}>
+            Delete my answers
+          </button>
+        </div>
       </div>
+
+      {draftSaveStatus === "existing_draft" && (
+        <div className="alert ss-alert-warning ss-existing-application-alert" role="alert">
+          <i className="bi bi-exclamation-triangle" aria-hidden="true" />
+          <div>
+            <strong className="d-block mb-1">You have already started an application</strong>
+            <p className="mb-2">{draftSaveMessage}</p>
+            {onContinueApplication && (
+              <button type="button" className="btn ss-btn-outline" onClick={onContinueApplication}>
+                <i className="bi bi-arrow-repeat" aria-hidden="true" /> Continue my saved application
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {draftSaveStatus === "locked" && (
+        <div className="alert ss-alert-warning ss-existing-application-alert" role="alert">
+          <i className="bi bi-shield-lock" aria-hidden="true" />
+          <div>
+            <strong className="d-block mb-1">Your answers are no longer being saved here</strong>
+            <p className="mb-2">{draftSaveMessage}</p>
+            {onContinueApplication && (
+              <button type="button" className="btn ss-btn-outline" onClick={onContinueApplication}>
+                <i className="bi bi-arrow-repeat" aria-hidden="true" /> Continue my saved application
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {draftSaveStatus === "existing_application" && (
         <div className="alert ss-alert-warning ss-existing-application-alert" role="alert">
@@ -481,7 +517,7 @@ function RegistrationWizard({
             errors={fieldErrors}
             onPrevious={() => onBackStep ? onBackStep() : goToStep(activeStep - 1)}
             onContinue={() => continueFromSection(activeStep, currentSectionEntry[1])}
-            disableContinue={earlyEligibilityFeedback?.type === "not-eligible" || draftSaveStatus === "existing_application"}
+            disableContinue={earlyEligibilityFeedback?.type === "not-eligible" || ["existing_application", "existing_draft"].includes(draftSaveStatus)}
             onAnswerChange={onAnswerChange}
             onMultiSelectChange={onMultiSelectChange}
           />

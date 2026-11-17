@@ -4563,3 +4563,44 @@ html.ss-high-contrast .ss-committee-corner.active {
   margin: 0;
   font-weight: 700;
 }
+
+/* Application toolbar: save status, Delete my answers and Save and exit (wraps on phones). */
+.ss-survey-toolbar {
+  flex-wrap: wrap;
+}
+
+.ss-survey-toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ss-survey-toolbar strong.ss-save-status:not(.is-saved):not(.is-submitted) {
+  color: #5b5b5b;
+}
+
+.ss-survey-toolbar strong.ss-save-status:not(.is-saved):not(.is-submitted)::before {
+  content: "\2022";
+}
+
+/* Shown on the home page after an applicant page was closed for privacy. */
+.df-privacy-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.df-privacy-notice > p {
+  flex: 1;
+}
+
+@media (max-width: 575.98px) {
+  .ss-survey-toolbar-actions {
+    width: 100%;
+  }
+
+  .df-privacy-notice {
+    flex-wrap: wrap;
+  }
+}

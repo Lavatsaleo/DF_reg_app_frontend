@@ -4,7 +4,7 @@ import { API_BASE_URL } from "../config/api";
 import { groupQuestionsBySection, isQuestionVisible } from "../utils/formUtils";
 import { calculateFormProgress, validateAnswers } from "../utils/validationUtils";
 import { useLocalDraft } from "./useLocalDraft";
-import { saveSubmittedApplication } from "../utils/applicationStatusStorage";
+import { clearAllDeviceDrafts, writeDeviceDraft } from "../utils/deviceDraftStorage";
 import { resolveQuestionText } from "../utils/questionDisplay";
 
 function createLocalReference(pathwayId) {
@@ -66,12 +66,14 @@ function getDigitsOnly(value) {
 }
 
 // A portal draft is reopened later with a code sent to its email, so it needs a mobile number and an email.
-function hasEnoughInformationForPortalDraft({ draftReference, answers }) {
-  if (draftReference) return true;
+function hasEnoughInformationForPortalDraft({ answers }) {
   return getDigitsOnly(answers?.CONTACT_NUMBER).length >= 7 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(answers?.EMAIL || "").trim());
 }
 
-export const DRAFT_STORAGE_PREFIX = "sightsavers-registration-draft-v4-";
+export { DRAFT_STORAGE_PREFIX } from "../utils/deviceDraftStorage";
+
+const WAITING_FOR_CONTACT_MESSAGE =
+  "Your answers are kept only in this browser tab. Enter your mobile number and email address to save them to the portal, so you can continue later with a code we email you.";
 
 const LOCATION_DEPENDENT_QUESTIONS = {
   COUNTRY: ["COUNTY", "SUB_COUNTY", "STATE", "REGION", "DISTRICT"],
@@ -126,16 +128,14 @@ export function useRegistrationForm() {
   const [fieldErrors, setFieldErrors] = useState({});
   const [pathwayMessage, setPathwayMessage] = useState("");
   const [serverDraftReference, setServerDraftReference] = useState("");
+  // Private token that lets this tab, and only this tab, keep changing the portal draft.
+  const [serverDraftToken, setServerDraftToken] = useState("");
   const [portalDraftLastSavedAt, setPortalDraftLastSavedAt] = useState(null);
   const [draftSaveStatus, setDraftSaveStatus] = useState("waiting_for_mobile");
   const [draftSaveMessage, setDraftSaveMessage] = useState(
-    "Draft is saved on this device. Enter your mobile number and email address to also save it to the portal, so you can continue on any device."
+    WAITING_FOR_CONTACT_MESSAGE
   );
   const [currentStep, setCurrentStep] = useState(0);
-
-  const draftStorageKey = selectedPathway
-    ? `${DRAFT_STORAGE_PREFIX}${selectedPathway.id}`
-    : "";
 
   const restoreDraft = useCallback((draft) => {
     if (draft.answers && Object.keys(draft.answers).length > 0) {
@@ -147,10 +147,11 @@ export function useRegistrationForm() {
 
     if (draft.documentType) setDocumentType(draft.documentType);
 
-    if (draft.draftReference) {
+    if (draft.draftReference && draft.draftToken) {
       setServerDraftReference(draft.draftReference);
+      setServerDraftToken(draft.draftToken);
       setDraftSaveStatus("saved");
-      setDraftSaveMessage("Draft restored from this device and linked to the portal draft record.");
+      setDraftSaveMessage("Draft saved to the portal.");
     }
 
     if (Number.isFinite(Number(draft.currentStep))) {
@@ -159,11 +160,12 @@ export function useRegistrationForm() {
   }, [selectedPathway]);
 
   const { lastSavedAt: draftLastSavedAt, clearDraft } = useLocalDraft({
-    storageKey: draftStorageKey,
+    pathwayId: selectedPathway?.id || "",
     enabled: Boolean(selectedPathway),
     answers,
     documentType,
     draftReference: serverDraftReference,
+    draftToken: serverDraftToken,
     currentStep,
     onRestoreDraft: restoreDraft,
   });
@@ -179,13 +181,16 @@ export function useRegistrationForm() {
 
     if (!hasAnswers) {
       setDraftSaveStatus("waiting_for_mobile");
-      setDraftSaveMessage("Draft is saved on this device. Enter your mobile number and email address to also save it to the portal, so you can continue on any device.");
+      setDraftSaveMessage(WAITING_FOR_CONTACT_MESSAGE);
       return;
     }
 
-    if (!hasEnoughInformationForPortalDraft({ draftReference: serverDraftReference, answers })) {
+    // A portal draft this tab may no longer change (continued on another device, or closed).
+    if (draftSaveStatus === "locked") return;
+
+    if (!hasEnoughInformationForPortalDraft({ answers })) {
       setDraftSaveStatus("waiting_for_mobile");
-      setDraftSaveMessage("Draft is saved on this device. Enter your mobile number and email address to also save it to the portal, so you can continue on any device.");
+      setDraftSaveMessage(WAITING_FOR_CONTACT_MESSAGE);
       return;
     }
 
@@ -197,6 +202,7 @@ export function useRegistrationForm() {
 
         const response = await axios.post(`${API_BASE_URL}/api/registrations/drafts`, {
           draftReference: serverDraftReference || undefined,
+          draftToken: serverDraftToken || undefined,
           pathway: selectedPathway.id,
           documentType,
           currentStep,
@@ -210,6 +216,7 @@ export function useRegistrationForm() {
 
         const savedDraft = response.data?.data || {};
         setServerDraftReference(savedDraft.draftReference || serverDraftReference || "");
+        if (savedDraft.draftToken) setServerDraftToken(savedDraft.draftToken);
         setPortalDraftLastSavedAt(savedDraft.lastSavedAt || savedDraft.savedAt || new Date().toISOString());
         setDraftSaveStatus("saved");
         setDraftSaveMessage("Draft saved to the portal.");
@@ -217,8 +224,14 @@ export function useRegistrationForm() {
         if (!isCurrentSave) return;
         const apiMessage = error.response?.data?.message;
         // Tell the applicant straight away, before they fill in the rest of the form.
-        if (error.response?.status === 409 && error.response?.data?.reasonCode === "APPLICATION_EXISTS") {
-          setDraftSaveStatus("existing_application");
+        const reasonCode = error.response?.data?.reasonCode;
+        if (reasonCode === "APPLICATION_EXISTS" || reasonCode === "DRAFT_EXISTS") {
+          setDraftSaveStatus(reasonCode === "DRAFT_EXISTS" ? "existing_draft" : "existing_application");
+          setDraftSaveMessage(apiMessage);
+          return;
+        }
+        if (reasonCode === "DRAFT_LOCKED" || reasonCode === "DRAFT_CLOSED") {
+          setDraftSaveStatus("locked");
           setDraftSaveMessage(apiMessage);
           return;
         }
@@ -231,7 +244,7 @@ export function useRegistrationForm() {
       isCurrentSave = false;
       window.clearTimeout(saveTimeout);
     };
-  }, [answers, currentStep, documentType, selectedPathway, serverDraftReference]);
+  }, [answers, currentStep, documentType, selectedPathway, serverDraftReference, serverDraftToken, draftSaveStatus]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
   useEffect(() => {
@@ -279,14 +292,11 @@ export function useRegistrationForm() {
       answers: draft.answers || {},
       documentType: draft.documentType,
       draftReference: draft.draftReference,
+      draftToken: draft.draftToken,
       currentStep: draft.currentStep || 0,
-      savedAt: draft.lastSavedAt || new Date().toISOString(),
     };
-    try {
-      window.localStorage.setItem(`${DRAFT_STORAGE_PREFIX}${pathway.id}`, JSON.stringify(payload));
-    } catch {
-      // Storage can be unavailable (private mode); the draft is still restored below for this visit.
-    }
+    // Storage can be unavailable (private mode); the draft is still restored below for this visit.
+    writeDeviceDraft(pathway.id, payload);
 
     setPathwayMessage("");
     setSubmitResult(null);
@@ -300,6 +310,7 @@ export function useRegistrationForm() {
     }
     // A new pathway key makes useLocalDraft restore the payload written above.
     setServerDraftReference("");
+    setServerDraftToken("");
     setCurrentStep(0);
     setAnswers({ COURSE_APPLIED_FOR: pathway.title });
     setSelectedPathway(pathway);
@@ -317,9 +328,10 @@ export function useRegistrationForm() {
     setErrorMessage("");
     setFieldErrors({});
     setServerDraftReference("");
+    setServerDraftToken("");
     setPortalDraftLastSavedAt(null);
     setDraftSaveStatus("waiting_for_mobile");
-    setDraftSaveMessage("Draft is saved on this device. Enter your mobile number and email address to also save it to the portal, so you can continue on any device.");
+    setDraftSaveMessage(WAITING_FOR_CONTACT_MESSAGE);
     setCurrentStep(0);
 
     if (pathway.status !== "open") {
@@ -346,7 +358,7 @@ export function useRegistrationForm() {
     setServerDraftReference("");
     setPortalDraftLastSavedAt(null);
     setDraftSaveStatus("waiting_for_mobile");
-    setDraftSaveMessage("Draft is saved on this device. Enter your mobile number and email address to also save it to the portal, so you can continue on any device.");
+    setDraftSaveMessage(WAITING_FOR_CONTACT_MESSAGE);
     setCurrentStep(0);
   }
 
@@ -463,6 +475,7 @@ export function useRegistrationForm() {
       formData.append("registrationMode", selectedPathway.mode);
       formData.append("documentType", documentType);
       if (serverDraftReference) formData.append("draftReference", serverDraftReference);
+      if (serverDraftToken) formData.append("draftToken", serverDraftToken);
       formData.append("responses", JSON.stringify(buildResponsesPayload()));
 
       for (const file of documents) formData.append("documents", file);
@@ -472,13 +485,13 @@ export function useRegistrationForm() {
       });
 
       const normalizedResult = normalizeSubmissionResult(response.data, selectedPathway, answers.CONTACT_NUMBER);
-      saveSubmittedApplication(normalizedResult, selectedPathway);
       setSubmitResult(normalizedResult);
       setAnswers({});
       setDocuments([]);
       setFieldErrors({});
       clearDraft();
       setServerDraftReference("");
+      setServerDraftToken("");
       setPortalDraftLastSavedAt(null);
       setDraftSaveStatus("submitted");
       setDraftSaveMessage("Application submitted. Draft closed.");
@@ -490,13 +503,13 @@ export function useRegistrationForm() {
 
       if (error.response?.status === 409 && responseData.duplicate) {
         const duplicateResult = normalizeSubmissionResult({ ...responseData, duplicate: true }, selectedPathway, answers.CONTACT_NUMBER);
-        saveSubmittedApplication(duplicateResult, selectedPathway);
         setSubmitResult(duplicateResult);
         setAnswers({});
         setDocuments([]);
         setFieldErrors({});
         clearDraft();
         setServerDraftReference("");
+        setServerDraftToken("");
         setPortalDraftLastSavedAt(null);
         setDraftSaveStatus("submitted");
         setDraftSaveMessage("Application submitted. Draft closed.");
@@ -531,18 +544,71 @@ export function useRegistrationForm() {
     }
   }
 
-  function handleClearDraft() {
+  // Deletes the portal copy too, so the mobile number, email and ID are free for a new application.
+  async function discardPortalDraft() {
+    if (!serverDraftReference || !serverDraftToken) return true;
+    try {
+      await axios.post(`${API_BASE_URL}/api/registrations/drafts/discard`, {
+        draftReference: serverDraftReference,
+        draftToken: serverDraftToken,
+      });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async function handleClearDraft() {
+    const deleted = await discardPortalDraft();
     clearDraft();
-    setAnswers({});
+    setAnswers(selectedPathway ? { COURSE_APPLIED_FOR: selectedPathway.title } : {});
     setDocuments([]);
     setDocumentType("DISABILITY_DOCUMENT");
     setServerDraftReference("");
+    setServerDraftToken("");
     setPortalDraftLastSavedAt(null);
     setDraftSaveStatus("waiting_for_mobile");
-    setDraftSaveMessage("Draft cleared from this device. Enter your mobile number and email address to save a new draft to the portal.");
+    setDraftSaveMessage(
+      deleted
+        ? "Your answers were deleted from this browser and from the portal."
+        : "Your answers were deleted from this browser. We could not reach the portal to delete the saved copy; it will be deleted automatically if you do not continue it."
+    );
     setCurrentStep(0);
     setFieldErrors({});
     setErrorMessage("");
+    return deleted;
+  }
+
+  // Switching pathway: one application at a time, so the current one is deleted everywhere.
+  async function discardForPathwaySwitch() {
+    await discardPortalDraft();
+    clearAllDeviceDrafts();
+  }
+
+  /*
+    Leaves the application and removes it from this browser (Exit button, or no activity on a
+    shared computer). Returns whether the answers are saved on the portal, so the applicant can
+    be told how to continue.
+  */
+  function exitAndClearDevice() {
+    const savedOnPortal = Boolean(serverDraftReference) && draftSaveStatus === "saved";
+    clearAllDeviceDrafts();
+    setSelectedPathway(null);
+    setQuestions([]);
+    setAnswers({});
+    setDocuments([]);
+    setDocumentType("DISABILITY_DOCUMENT");
+    setSubmitResult(null);
+    setServerDraftReference("");
+    setServerDraftToken("");
+    setPortalDraftLastSavedAt(null);
+    setDraftSaveStatus("waiting_for_mobile");
+    setDraftSaveMessage(WAITING_FOR_CONTACT_MESSAGE);
+    setCurrentStep(0);
+    setFieldErrors({});
+    setErrorMessage("");
+    setPathwayMessage("");
+    return { savedOnPortal };
   }
 
   return {
@@ -573,6 +639,8 @@ export function useRegistrationForm() {
     handleSubmit,
     handleValidateQuestions,
     handleClearDraft,
+    discardForPathwaySwitch,
+    exitAndClearDevice,
     handleCurrentStepChange: setCurrentStep,
     setDocuments,
     setDocumentType,

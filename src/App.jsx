@@ -3,6 +3,7 @@ import axios from "axios";
 import AccessibilityMenu from "./components/AccessibilityMenu";
 import AppNavbar from "./components/AppNavbar";
 import ConfirmDialog from "./components/ConfirmDialog";
+import InactivityDialog from "./components/InactivityDialog";
 import SiteFooter from "./components/SiteFooter";
 import LandingPage from "./pages/LandingPage";
 import ContextualApplicationPage from "./pages/ContextualApplicationPage";
@@ -20,7 +21,9 @@ const ParticipantsPage = lazy(() => import("./pages/ParticipantsPage"));
 const ParticipantProfilePage = lazy(() => import("./pages/ParticipantProfilePage"));
 
 import { useAccessibilityPreferences } from "./hooks/useAccessibilityPreferences";
-import { DRAFT_STORAGE_PREFIX, useRegistrationForm } from "./hooks/useRegistrationForm";
+import { useRegistrationForm } from "./hooks/useRegistrationForm";
+import { useInactivityLock } from "./hooks/useInactivityLock";
+import { clearRegistrationSession, purgeLegacyApplicantData } from "./utils/deviceDraftStorage";
 import { clearStaffSession, loadStaffSession, saveStaffSession } from "./utils/staffAuthStorage";
 import { pathways } from "./data/pathways";
 
@@ -113,6 +116,13 @@ const VIEW_TITLES = {
   participants: "Participants",
 };
 
+// Applicant pages close after this long with no activity (shared and public computers).
+const INACTIVITY_WARN_AFTER_MS = 15 * 60 * 1000;
+const INACTIVITY_GRACE_MS = 2 * 60 * 1000;
+
+// Earlier versions left applicant answers in this browser's permanent storage: remove them.
+purgeLegacyApplicantData();
+
 // Shown while a page's code downloads.
 function PageLoading() {
   return (
@@ -138,6 +148,9 @@ function App() {
   // A pathway switch waiting for the applicant to confirm in the dialog.
   const [pendingSwitch, setPendingSwitch] = useState(null);
   const [switchError, setSwitchError] = useState("");
+  const [switching, setSwitching] = useState(false);
+  // Shown on the home page after an applicant page was closed (Exit, or no activity).
+  const [privacyNotice, setPrivacyNotice] = useState("");
   // Where focus should land after the next view change, when not the page heading.
   const focusTargetAfterViewChange = useRef("");
 
@@ -160,6 +173,22 @@ function App() {
     window.addEventListener("beforeunload", protectApplicationProgress);
     return () => window.removeEventListener("beforeunload", protectApplicationProgress);
   }, [currentView, registration.selectedPathway, registration.submitResult]);
+
+  // Any page holding an applicant's information closes itself when nobody is using it.
+  const hasApplicationInMemory = Boolean(
+    registration.selectedPathway &&
+      (registration.submitResult ||
+        Object.entries(registration.answers).some(([code, answer]) =>
+          !["COURSE_APPLIED_FOR", "APPLICATION_FORM_VERSION"].includes(code) &&
+          answer !== "" && answer != null && !(Array.isArray(answer) && answer.length === 0)
+        ))
+  );
+  const inactivityLock = useInactivityLock({
+    enabled: hasApplicationInMemory || ["status", "continue", "participant-registration"].includes(currentView),
+    warnAfterMs: INACTIVITY_WARN_AFTER_MS,
+    graceMs: INACTIVITY_GRACE_MS,
+    onTimeout: () => handleExitApplication("timeout"),
+  });
 
   // A direct link to /apply/<pathway> restores the same application and its local draft.
   useEffect(() => {
@@ -250,6 +279,8 @@ function App() {
     setSkillsTestReference("");
     setSkillsTestToken("");
     setParticipantRegistrationToken("");
+    // Leaving the participant registration ends its session in this tab (a new code is needed to return).
+    clearRegistrationSession();
     // Keep the selected pathway and all draft answers while returning to the homepage.
   }
 
@@ -263,6 +294,32 @@ function App() {
     }
     focusTargetAfterViewChange.current = "pathways";
     handleShowHome();
+  }
+
+  /*
+    Leaves any applicant page and removes the applicant's information from this browser:
+    the Exit button on the form, or no activity on a shared computer.
+  */
+  function handleExitApplication(reason = "exit") {
+    const wasRegistration = currentView === "participant-registration";
+    const { savedOnPortal } = registration.exitAndClearDevice();
+    clearRegistrationSession();
+    setPendingSwitch(null);
+    setParticipantRegistrationToken("");
+    setSkillsTestToken("");
+    setSkillsTestReference("");
+    navigateTo("/");
+    setCurrentView("home");
+
+    const opening = reason === "timeout"
+      ? "For your privacy, we closed the page because it was not used for a while, and removed your information from this browser."
+      : "You have left the application, and your information has been removed from this browser.";
+    const howToContinue = wasRegistration
+      ? "Your registration answers are saved. To continue, open the link in your email again and enter the new code we send you."
+      : savedOnPortal
+        ? "Your answers are saved on the portal. To continue, choose Continue my application and enter the code we email you."
+        : "";
+    setPrivacyNotice([opening, howToContinue, "On a shared computer, also close the browser when you finish."].filter(Boolean).join(" "));
   }
 
   function handleStartNewApplication() {
@@ -383,21 +440,13 @@ function App() {
     setCurrentView("application");
   }
 
-  function confirmPathwaySwitch() {
-    // The normal autosave is debounced; persist answers synchronously before switching.
-    try {
-      const storageKey = DRAFT_STORAGE_PREFIX + registration.selectedPathway.id;
-      window.localStorage.setItem(storageKey, JSON.stringify({
-        answers: registration.answers,
-        documentType: registration.documentType,
-        draftReference: registration.draftReference,
-        currentStep: registration.currentStep,
-        savedAt: new Date().toISOString(),
-      }));
-    } catch {
-      setSwitchError("We could not save your current application on this device. Please stay on this pathway and try again.");
-      return;
-    }
+  // One application at a time: switching deletes the unfinished one (here and on the portal).
+  async function confirmPathwaySwitch() {
+    if (switching) return;
+    setSwitching(true);
+    setSwitchError("");
+    await registration.discardForPathwaySwitch();
+    setSwitching(false);
     const pathway = pendingSwitch;
     setPendingSwitch(null);
     openPathway(pathway);
@@ -520,6 +569,8 @@ function App() {
         />
       ) : currentView !== "application" || !registration.selectedPathway ? (
         <LandingPage
+          privacyNotice={privacyNotice}
+          onDismissPrivacyNotice={() => setPrivacyNotice("")}
           pathwayMessage={registration.pathwayMessage}
           onPathwaySelect={handlePathwaySelect}
           onCheckStatus={handleShowStatus}
@@ -555,6 +606,7 @@ function App() {
           onDocumentsChange={registration.setDocuments}
           onDocumentTypeChange={registration.setDocumentType}
           onClearDraft={registration.handleClearDraft}
+          onExitApplication={() => handleExitApplication("exit")}
           onStepChange={registration.handleCurrentStepChange}
         />
       )}
@@ -565,19 +617,35 @@ function App() {
       <ConfirmDialog
         open={Boolean(pendingSwitch)}
         title="Switch to a different pathway?"
-        confirmLabel={pendingSwitch ? `Save and switch to ${pendingSwitch.title}` : "Save and switch"}
+        confirmLabel={switching ? "Switching…" : pendingSwitch ? `Delete and switch to ${pendingSwitch.title}` : "Delete and switch"}
         cancelLabel={registration.selectedPathway ? `Stay on ${registration.selectedPathway.title}` : "Stay on this pathway"}
         error={switchError}
         onConfirm={confirmPathwaySwitch}
         onCancel={() => setPendingSwitch(null)}
       >
         <p>
-          You have started an application for {registration.selectedPathway?.title}. You can apply for one pathway only.
+          You have started an application for {registration.selectedPathway?.title}. You can apply for one pathway at a time.
         </p>
         <p>
-          If you switch, we will save your current answers on this device so you can come back to them, and start a new application for {pendingSwitch?.title}.
+          If you switch, your answers for {registration.selectedPathway?.title} will be deleted, from this browser and from the portal, and you will start a new application for {pendingSwitch?.title}.
         </p>
       </ConfirmDialog>
+
+      <InactivityDialog
+        open={inactivityLock.warning}
+        secondsLeft={inactivityLock.secondsLeft}
+        detail={
+          currentView === "participant-registration"
+            ? "You can open the link in your email again to continue your registration."
+            : registration.selectedPathway && hasApplicationInMemory && !registration.submitResult
+              ? registration.draftSaveStatus === "saved"
+                ? "Your answers are saved on the portal. You can continue later from Continue my application, with a code we email you."
+                : "Your answers are not saved on the portal yet, so they will be lost. They are saved once you enter your mobile number and email address."
+              : ""
+        }
+        onStay={inactivityLock.stayActive}
+        onExit={() => handleExitApplication("exit")}
+      />
     </>
   );
 }

@@ -188,6 +188,49 @@ function IneligibleConfirmation({ result, selectedPathway, onStartNewApplication
   );
 }
 
+// Shown when the person already has an active application. For privacy, nothing about that
+// application is shown here: the applicant follows it on Check status, with the code we email them.
+function ExistingApplicationNotice({ message, onCheckStatus, onStartNewApplication }) {
+  const headingRef = useFocusOnMount();
+  return (
+    <main id="main-content" tabIndex="-1" className="ss-confirmation-page">
+      <section className="ss-confirmation-hero" aria-labelledby="confirmation-title">
+        <div className="container">
+          <div className="row justify-content-center">
+            <div className="col-12 col-xl-10">
+              <div className="ss-confirmation-card review">
+                <div className="ss-confirmation-icon" aria-hidden="true">
+                  <i className="bi bi-info-circle" />
+                </div>
+                <span className="ss-small-label dark">Existing application</span>
+                <h1 id="confirmation-title" tabIndex="-1" ref={headingRef}>
+                  You already have an active application
+                </h1>
+                <p className="ss-confirmation-lead">
+                  {message || "There is already an active application with these details. You can apply for one pathway at a time. If that application is not successful, you can apply again."}
+                </p>
+                <p className="ss-confirmation-lead">
+                  A new application was not created. To see your application, go to Check status and enter the code we email you.
+                </p>
+                <div className="ss-confirmation-actions">
+                  {onCheckStatus && (
+                    <button type="button" className="btn ss-btn-primary" onClick={onCheckStatus}>
+                      <i className="bi bi-clipboard2-check" aria-hidden="true" /> Check status
+                    </button>
+                  )}
+                  <button type="button" className="btn ss-btn-outline" onClick={onStartNewApplication}>
+                    <i className="bi bi-house" aria-hidden="true" /> Return to pathways
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  );
+}
+
 function ApplicationConfirmation({ result, selectedPathway, onStartNewApplication, onCheckStatus }) {
   const headingRef = useFocusOnMount();
   const screeningStatus = getScreeningStatus(result);
@@ -204,6 +247,16 @@ function ApplicationConfirmation({ result, selectedPathway, onStartNewApplicatio
   const existingPathwayId = result?.pathway;
   const appliedForOtherPathway = isDuplicate && existingPathwayId && selectedPathway?.id && existingPathwayId !== selectedPathway.id;
   const awaitingSkillsTest = isDuplicate && result?.status === "ELIGIBLE_PENDING_SKILLS_TEST" && Boolean(reference);
+
+  if (isDuplicate) {
+    return (
+      <ExistingApplicationNotice
+        message={result?.message}
+        onCheckStatus={onCheckStatus}
+        onStartNewApplication={onStartNewApplication}
+      />
+    );
+  }
 
   if (isIneligible && !isDuplicate) {
     return (

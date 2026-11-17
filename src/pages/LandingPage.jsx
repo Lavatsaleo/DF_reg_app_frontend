@@ -3,9 +3,20 @@ import PathwayCard from "../components/PathwayCard";
 import HeroBanner from "../components/HeroBanner";
 import "./LandingHero.css";
 
-function LandingPage({ pathwayMessage, onPathwaySelect, onCheckStatus, onContinueApplication }) {
+function LandingPage({ privacyNotice, onDismissPrivacyNotice, pathwayMessage, onPathwaySelect, onCheckStatus, onContinueApplication }) {
   return (
     <main id="main-content" tabIndex="-1" className="df-home-page df-home-clean">
+      {privacyNotice && (
+        <div className="container pt-3">
+          <div className="alert ss-alert-info df-privacy-notice" role="status">
+            <i className="bi bi-shield-lock" aria-hidden="true" />
+            <p className="mb-0">{privacyNotice}</p>
+            <button type="button" className="btn btn-sm ss-link-button" onClick={onDismissPrivacyNotice}>
+              Dismiss
+            </button>
+          </div>
+        </div>
+      )}
       <HeroBanner onCheckStatus={onCheckStatus} onContinueApplication={onContinueApplication} />
 
       <section id="pathways" className="df-clean-pathway-section" aria-labelledby="pathways-title" tabIndex="-1">
