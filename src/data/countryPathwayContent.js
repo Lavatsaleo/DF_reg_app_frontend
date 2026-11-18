@@ -1,7 +1,8 @@
 /*
  * Country pages shown after an applicant chooses their country, before consent.
  * Source: "Web page prompts" documents from the country programme managers (November 2026; Nigeria
- * updated 13 November 2026 from "Web page prompts for Nigeria"),
+ * updated 13 November 2026 from "Web page prompts for Nigeria"; Zambia added 17 November 2026 from
+ * "Web page prompts for Zambia", with the programme-wide age ranges),
  * pending copy-edit review. Revise each application cycle.
  *
  * Text blocks: a string is a paragraph; an array of strings is a bulleted list.
@@ -717,9 +718,193 @@ const NIGERIA = {
   ],
 };
 
+const ZAMBIA = {
+  journey: [
+    "Select the IT academy pathway that best fits you: physical academy, virtual academy or Digital Entrepreneurship. You can only select one pathway.",
+    "Check your eligibility by reading the eligibility criteria for your pathway.",
+    "Complete the consent check.",
+    "Fill out your application. All required fields must be completed.",
+    "Submit your application.",
+    "Check your application status.",
+    "Complete the basic IT skills assessment, done remotely.",
+    "Complete an interview, held remotely.",
+  ],
+  pathways: {
+    PHYSICAL_ACADEMY: {
+      summary: "In-person IT training from mid-April to mid-December 2027: Cisco Networking at the University of Zambia in Lusaka, or Data Analytics at Zambia University College of Technology in Ndola.",
+      learning: [
+        "Build practical skills through hands-on classroom learning and lab-based exercises. The programme prepares participants for globally recognised Cisco or data analytics certifications and entry-level careers in the IT sector and in data analysis.",
+        "Training combines classroom instruction, practical lab exercises and independent study. It also covers digital problem-solving and workplace readiness skills.",
+      ],
+      courses: [
+        {
+          name: "Cisco Networking (University of Zambia, Lusaka)",
+          description: "Learn network fundamentals, switching, routing, wireless, security and automation, with lab work, academy assessments and completion certificates that prepare you for the separate professional exam.",
+          learn: [
+            "Single-area OSPFv2 concepts and configuration, network security concepts, ACLs for IPv4 configuration, NAT for IPv4, WAN concepts, VPN and IPsec concepts, QoS concepts, network management, network troubleshooting, network virtualisation and network automation.",
+            "Classes run between 3pm and 5pm.",
+          ],
+          certification: "Cisco IT Essentials / Cisco Certified Network Associate (CCNA)",
+          careers: "Network Support Technician, IT Support Officer, Junior Cybersecurity Analyst",
+        },
+        {
+          name: "Data Analytics and Business Intelligence (Zambia University College of Technology, Ndola)",
+          description: "Learn to collect, analyse and present data so organisations can make better decisions.",
+          learn: [
+            [
+              "Foundations: data literacy and ethics, spreadsheet analytics, statistics for analytics, and databases and SQL",
+              "Analysis and visualisation: Python for data analysis, data wrangling and exploratory analysis, and data visualisation and dashboards",
+              "Applied analytics and capstone: inferential statistics and predictive modelling, data storytelling and communication, a capstone project, and career readiness",
+            ],
+            "Classes run between 2pm and 5pm.",
+          ],
+          certification: "Python Essentials and a portfolio assessment",
+          careers: "Junior Data Analyst, Operations Analyst",
+        },
+      ],
+      location: [
+        "Training takes place at two centres. Both are fully accessible and have facilities for hands-on technical training.",
+        [
+          "University of Zambia, Great East Road Campus (Main Campus), Lusaka: Cisco Networking",
+          "Zambia University College of Technology (ZUT), Kalewa Road, Northrise, Ndola, Copperbelt Province: Data Analytics and Business Intelligence",
+        ],
+      ],
+      dates: ["Training is expected to run from mid-April 2027 to mid-December 2027, followed by internship and employment preparation activities."],
+      provides: [
+        "Technical training delivered by qualified instructors",
+        "Access to learning materials and practical labs",
+        "Certification preparation support",
+        "Career readiness and employability training",
+        "Mentorship and coaching",
+        "Support with referrals to internship and job placement opportunities where available",
+      ],
+      eligibility: [
+        "Be aged 18–33 at the time of application",
+        "Be a person with a disability",
+        "Be available to attend training for the full period, from mid-April to mid-December 2027",
+        "Show an interest in a career in IT and technology",
+        "Hold a bachelor's degree in any field",
+      ],
+    },
+    VIRTUAL_ACADEMY: {
+      summary: "Four months of mainly online, self-paced IT training with trainer support and one face-to-face day each month.",
+      learning: [
+        "The training is delivered mainly online, so you can learn from home, the office, a library or any suitable location. Learning is self-paced with trainer support, with one face-to-face session each month for interaction, guidance and practical learning. This blended approach offers flexibility while making sure you are in regular contact with your trainer.",
+        "Online classes run in the morning (8am to 12pm) and the afternoon (2pm to 5pm).",
+      ],
+      courses: [
+        {
+          name: "Data Analytics (University of Zambia)",
+          description: "Learn data preparation, Excel analysis, introductory SQL and Power BI, then build a dashboard and explain findings from a practical dataset.",
+          learn: [
+            "Online classes, with one face-to-face day each month. Face-to-face sessions are held in Lusaka, Chilanga, Kafue, Chongwe, Chisamba and Chibombo, but people from other provinces can apply.",
+          ],
+          certification: "University of Zambia (UNZA) Advanced Certificate",
+          careers: "Junior Data Analyst, Business Intelligence (BI) Analyst, Reporting or Operations Analyst",
+        },
+        {
+          name: "Digital Marketing, E-Commerce and Content Creation (Zambia University College of Technology)",
+          description: "Learn to promote products and services, reach target audiences, build customer relationships and measure marketing performance using digital technologies.",
+          learn: [
+            "Online classes, with one face-to-face day each month. Face-to-face sessions are held in Ndola, Kitwe, Chingola, Mufulira, Luanshya, Kalulushi and Masaiti, but people from other provinces can apply.",
+          ],
+          careers: "Self-employed, supporting business owners, or working for a company to monitor and improve marketing and sales",
+        },
+      ],
+      location: [
+        "Mainly online, with one face-to-face day each month:",
+        [
+          "Data Analytics: Lusaka, Chilanga, Kafue, Chongwe, Chisamba and Chibombo",
+          "Digital Marketing: Ndola, Kitwe, Chingola, Mufulira, Luanshya, Kalulushi and Masaiti",
+        ],
+        "People from other provinces can apply.",
+      ],
+      dates: ["Training runs for four months. Dates will be shared with selected applicants."],
+      eligibility: [
+        "Be aged 18–33 at the time of application",
+        "Be a person with a disability",
+        "Have access to a laptop, iPad, Android phone or iPhone",
+        "Be available to attend training for the full four months",
+        "Show an interest in a career in IT and technology",
+        "Hold a diploma in any field",
+      ],
+    },
+    DIGITAL_ENTREPRENEURSHIP: {
+      summary: "A four-month blended programme in Lusaka for young people with disabilities who want to start or grow a digital business.",
+      learning: [
+        "The curriculum uses a blended approach. Face-to-face sessions are for discussion, mentoring, practical exercises and peer learning. Self-paced digital lessons, templates and tasks are delivered through low-bandwidth platforms such as WhatsApp, SMS or a simple learning platform. This gives flexibility while making sure you have regular trainer support.",
+        "Most of the time is in person (22.5 hours) for trust-building, hands-on practice and peer learning. The digital parts (17.5 hours) are for preparation, tool walkthroughs and take-home tasks. Face-to-face sessions are two days a week and online sessions one day a week.",
+      ],
+      courses: [
+        {
+          name: "Digital Entrepreneurship",
+          description: "Develop the skills to start and run a technology-enabled business.",
+          learn: [[
+            "Entrepreneurial skills: spotting opportunities, planning, problem-solving and financial decision-making",
+            "Digital and technical skills: using platforms, digital marketing, e-commerce operations, and AI and automation tools",
+            "Social and business skills: customer relationship management, negotiation and networking",
+            "Personal management skills: goal setting, resilience, and managing workload and burnout",
+          ]],
+          certification: "Certificate of completion. You are assessed through module worksheets, checklists and short demos, and a final capstone pitch and launch plan. To complete, you need to attend at least 80% of sessions and finish the capstone.",
+          careers: "AI-driven and tech-driven micro-ventures, digital marketing agency founder, affiliate and network marketer, drop-shipping and product subscription business owner",
+        },
+      ],
+      location: ["Lusaka"],
+      dates: ["Training runs for four months. Dates will be shared with selected applicants."],
+      eligibility: [
+        "Be aged 18–45 at the time of application",
+        "Be a person with a disability",
+        "Have access to a laptop, iPad, Android phone or iPhone",
+        "Be available to attend training for the full four months",
+        "Show an interest in digital entrepreneurship",
+        "Hold a diploma in any field",
+      ],
+    },
+  },
+  faqs: [
+    whoCanApply("Zambia"),
+    GENERAL_FAQS.multiplePathways,
+    GENERAL_FAQS.onBehalf,
+    familyMember("Zambia"),
+    GENERAL_FAQS.successful,
+    GENERAL_FAQS.defer,
+    tuitionFees("Zambia", "fkalusa@sightsavers.org"),
+    GENERAL_FAQS.provides,
+    {
+      ...GENERAL_FAQS.device,
+      answerByPathway: {
+        VIRTUAL_ACADEMY: [
+          "The virtual academy is mainly online, so you need regular access to a laptop, iPad, Android phone or iPhone and an internet connection for the whole course.",
+          "We cannot guarantee to provide a device or internet access. If you do not have them yet, you are welcome to apply in a later intake once you do. You could also look at the physical academy, where you learn in the computer labs at the training centre.",
+        ],
+      },
+    },
+    GENERAL_FAQS.certificate,
+    {
+      question: "Where will the training take place?",
+      answer: [[
+        "Physical academy: University of Zambia, Great East Road Campus, Lusaka, and Zambia University College of Technology, Ndola",
+        "Virtual academy: mainly online, with one face-to-face day a month in the Lusaka area (Data Analytics) or the Copperbelt (Digital Marketing)",
+        "Digital Entrepreneurship: Lusaka, with face-to-face sessions two days a week and online sessions one day a week",
+      ]],
+    },
+    {
+      question: "How long does the training last?",
+      answer: [
+        [
+          "Physical academy: mid-April to mid-December 2027",
+          "Virtual academy: four months",
+          "Digital Entrepreneurship: four months",
+        ],
+        "The physical academy is followed by internship and employment preparation activities.",
+      ],
+    },
+  ],
+};
+
 export const COUNTRY_PATHWAY_CONTENT = {
   Ghana: GHANA,
   Kenya: KENYA,
   Nigeria: NIGERIA,
-  Zambia: { comingSoon: true },
+  Zambia: ZAMBIA,
 };
