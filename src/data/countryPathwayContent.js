@@ -1,8 +1,8 @@
 /*
  * Country pages shown after an applicant chooses their country, before consent.
  * Source: "Web page prompts" documents from the country programme managers (November 2026; Nigeria
- * updated 13 November 2026 from "Web page prompts for Nigeria"; Zambia added 17 November 2026 from
- * "Web page prompts for Zambia", with the programme-wide age ranges),
+ * updated 13 November 2026 from "Web page prompts for Nigeria"; Zambia added 17 November 2026 and
+ * updated 19 November 2026 from "Web page prompts for Zambia", with the programme-wide age ranges),
  * pending copy-edit review. Revise each application cycle.
  *
  * Text blocks: a string is a paragraph; an array of strings is a bulleted list.
@@ -731,10 +731,10 @@ const ZAMBIA = {
   ],
   pathways: {
     PHYSICAL_ACADEMY: {
-      summary: "In-person IT training from mid-April to mid-December 2027: Cisco Networking at the University of Zambia in Lusaka, or Data Analytics at Zambia University College of Technology in Ndola.",
+      summary: "In-person IT training from April to December 2027: Cisco Networking at the University of Zambia in Lusaka, or Data Analytics and Business Intelligence at Zambia University College of Technology in Ndola.",
       learning: [
-        "Build practical skills through hands-on classroom learning and lab-based exercises. The programme prepares participants for globally recognised Cisco or data analytics certifications and entry-level careers in the IT sector and in data analysis.",
-        "Training combines classroom instruction, practical lab exercises and independent study. It also covers digital problem-solving and workplace readiness skills.",
+        "Build practical skills in networking, cybersecurity, digital infrastructure and data analysis through hands-on classroom learning and lab-based exercises. The programme prepares participants for globally recognised Cisco or data analytics certifications and entry-level careers in the IT sector and in data analysis.",
+        "Participants learn networking fundamentals, cybersecurity concepts, Linux essentials, Python essentials, digital problem-solving and workplace readiness skills, and complete a portfolio assessment. Training combines classroom instruction, practical lab exercises and independent study.",
       ],
       courses: [
         {
@@ -742,7 +742,8 @@ const ZAMBIA = {
           description: "Learn network fundamentals, switching, routing, wireless, security and automation, with lab work, academy assessments and completion certificates that prepare you for the separate professional exam.",
           learn: [
             "Single-area OSPFv2 concepts and configuration, network security concepts, ACLs for IPv4 configuration, NAT for IPv4, WAN concepts, VPN and IPsec concepts, QoS concepts, network management, network troubleshooting, network virtualisation and network automation.",
-            "Classes run between 3pm and 5pm.",
+            "Training runs from April to December 2027. Classes run between 3pm and 5pm.",
+            "Equipment for this course: a laptop with an Intel Core Ultra 7 processor, Windows 11 and an Nvidia graphics card (GPU), and a 16 GB USB storage device for class projects.",
           ],
           certification: "Cisco IT Essentials / Cisco Certified Network Associate (CCNA)",
           careers: "Network Support Technician, IT Support Officer, Junior Cybersecurity Analyst",
@@ -756,9 +757,9 @@ const ZAMBIA = {
               "Analysis and visualisation: Python for data analysis, data wrangling and exploratory analysis, and data visualisation and dashboards",
               "Applied analytics and capstone: inferential statistics and predictive modelling, data storytelling and communication, a capstone project, and career readiness",
             ],
-            "Classes run between 2pm and 5pm.",
+            "Training runs from mid-April to mid-December 2027. Classes run between 2pm and 5pm.",
           ],
-          certification: "Python Essentials and a portfolio assessment",
+          certification: "Data analytics certification: Python Essentials and a portfolio assessment",
           careers: "Junior Data Analyst, Operations Analyst",
         },
       ],
@@ -769,7 +770,13 @@ const ZAMBIA = {
           "Zambia University College of Technology (ZUT), Kalewa Road, Northrise, Ndola, Copperbelt Province: Data Analytics and Business Intelligence",
         ],
       ],
-      dates: ["Training is expected to run from mid-April 2027 to mid-December 2027, followed by internship and employment preparation activities."],
+      dates: [
+        "Training is expected to run from April 2027 to December 2027, followed by internship and employment preparation activities:",
+        [
+          "Cisco Networking (University of Zambia): April to December 2027",
+          "Data Analytics and Business Intelligence (ZUT): mid-April to mid-December 2027",
+        ],
+      ],
       provides: [
         "Technical training delivered by qualified instructors",
         "Access to learning materials and practical labs",
@@ -781,16 +788,16 @@ const ZAMBIA = {
       eligibility: [
         "Be aged 18–33 at the time of application",
         "Be a person with a disability",
-        "Be available to attend training for the full period, from mid-April to mid-December 2027",
+        "Be available to attend training for the full period, from April to December 2027",
         "Show an interest in a career in IT and technology",
         "Hold a bachelor's degree in any field",
       ],
     },
     VIRTUAL_ACADEMY: {
-      summary: "Four months of mainly online, self-paced IT training with trainer support and one face-to-face day each month.",
+      summary: "Four-month intakes of mainly online, self-paced IT training with trainer support and one face-to-face day each month.",
       learning: [
-        "The training is delivered mainly online, so you can learn from home, the office, a library or any suitable location. Learning is self-paced with trainer support, with one face-to-face session each month for interaction, guidance and practical learning. This blended approach offers flexibility while making sure you are in regular contact with your trainer.",
-        "Online classes run in the morning (8am to 12pm) and the afternoon (2pm to 5pm).",
+        "The training is delivered mainly online, so you can learn from home, the office, a library or any suitable location. Learning is self-paced with trainer support, with one face-to-face session each month for interaction, guidance and practical learning as needed. This blended approach offers flexibility while making sure you are in regular contact with your trainer.",
+        "Classes run in the morning (8am to 12pm) and the afternoon (2pm to 5pm). The monthly face-to-face day also has morning and afternoon sessions.",
       ],
       courses: [
         {
@@ -808,6 +815,7 @@ const ZAMBIA = {
           learn: [
             "Online classes, with one face-to-face day each month. Face-to-face sessions are held in Ndola, Kitwe, Chingola, Mufulira, Luanshya, Kalulushi and Masaiti, but people from other provinces can apply.",
           ],
+          certification: "Google Digital Marketing",
           careers: "Self-employed, supporting business owners, or working for a company to monitor and improve marketing and sales",
         },
       ],
@@ -819,7 +827,11 @@ const ZAMBIA = {
         ],
         "People from other provinces can apply.",
       ],
-      dates: ["Training runs for four months. Dates will be shared with selected applicants."],
+      dates: [
+        "Training runs between April and December 2027 in two four-month intakes:",
+        ["April to July 2027", "October 2027 to January 2028"],
+        "Selected applicants will be told which intake they join.",
+      ],
       eligibility: [
         "Be aged 18–33 at the time of application",
         "Be a person with a disability",
@@ -830,7 +842,7 @@ const ZAMBIA = {
       ],
     },
     DIGITAL_ENTREPRENEURSHIP: {
-      summary: "A four-month blended programme in Lusaka for young people with disabilities who want to start or grow a digital business.",
+      summary: "A blended programme in Lusaka, with intakes from April to December 2027, for young people with disabilities who want to start or grow a digital business.",
       learning: [
         "The curriculum uses a blended approach. Face-to-face sessions are for discussion, mentoring, practical exercises and peer learning. Self-paced digital lessons, templates and tasks are delivered through low-bandwidth platforms such as WhatsApp, SMS or a simple learning platform. This gives flexibility while making sure you have regular trainer support.",
         "Most of the time is in person (22.5 hours) for trust-building, hands-on practice and peer learning. The digital parts (17.5 hours) are for preparation, tool walkthroughs and take-home tasks. Face-to-face sessions are two days a week and online sessions one day a week.",
@@ -850,12 +862,16 @@ const ZAMBIA = {
         },
       ],
       location: ["Lusaka"],
-      dates: ["Training runs for four months. Dates will be shared with selected applicants."],
+      dates: [
+        "Training runs between April and December 2027 in three intakes:",
+        ["April to June 2027", "July to September 2027", "October to December 2027"],
+        "Selected applicants will be told which intake they join.",
+      ],
       eligibility: [
         "Be aged 18–45 at the time of application",
         "Be a person with a disability",
         "Have access to a laptop, iPad, Android phone or iPhone",
-        "Be available to attend training for the full four months",
+        "Be available to attend the full training in your intake",
         "Show an interest in digital entrepreneurship",
         "Hold a diploma in any field",
       ],
@@ -892,9 +908,9 @@ const ZAMBIA = {
       question: "How long does the training last?",
       answer: [
         [
-          "Physical academy: mid-April to mid-December 2027",
-          "Virtual academy: four months",
-          "Digital Entrepreneurship: four months",
+          "Physical academy: April to December 2027",
+          "Virtual academy: four months, in intakes from April to July 2027 or October 2027 to January 2028",
+          "Digital Entrepreneurship: three-month intakes from April to June, July to September or October to December 2027",
         ],
         "The physical academy is followed by internship and employment preparation activities.",
       ],
