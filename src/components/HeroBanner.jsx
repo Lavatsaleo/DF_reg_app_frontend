@@ -6,9 +6,9 @@ import heroPhoto from "../assets/hero-slide-hat.webp";
 // "About Digital Futures" is the first thing a visitor sees (donor content review, November 2026):
 // what the programme is and what it offers, beside the photo, with one main next step.
 const OFFERS = [
-  { icon: "bi-mortarboard", text: "Free IT and business training" },
+  { icon: "bi-mortarboard", text: "Training in computer and business skills" },
   { icon: "bi-universal-access", text: "Support for your disability" },
-  { icon: "bi-people", text: "Mentoring and career coaching" },
+  { icon: "bi-people", text: "A mentor to guide and advise you" },
   { icon: "bi-award", text: "A certificate when you finish" },
 ];
 
@@ -22,7 +22,7 @@ function HeroBanner({ onCheckStatus, onContinueApplication }) {
       <div className="container">
         <p className="df-hero-eyebrow">About Digital Futures</p>
         <h1 id="digital-futures-title" className="df-hero-band-title">
-          Free digital skills training for young people with disabilities
+          Free computer and digital skills training for young people with disabilities
         </h1>
       </div>
 
@@ -30,8 +30,12 @@ function HeroBanner({ onCheckStatus, onContinueApplication }) {
         <div className="container">
           <div className="df-hero-band-copy">
             <p className="df-hero-band-intro">
-              Digital Futures is run by Sightsavers in Ghana, Nigeria, Kenya and Zambia. It helps you gain the skills,
-              certificates and contacts to get a job in the digital economy or start your own business.
+              Digital Futures is a training programme run by Sightsavers. It is for young
+              people with disabilities who live in Ghana, Kenya, Nigeria or Zambia.
+            </p>
+            <p className="df-hero-band-intro">
+              You learn skills for using computers and the internet at work. These skills can help you get a job, or
+              start or grow your own business.
             </p>
 
             <ul className="df-hero-offers">
@@ -44,12 +48,12 @@ function HeroBanner({ onCheckStatus, onContinueApplication }) {
 
             <p className="df-hero-free">
               <i className="bi bi-shield-check" aria-hidden="true" />
-              <span><strong>It is free.</strong> You will never be asked to pay to apply or train.</span>
+              <span><strong>It is free.</strong> You never pay anything to apply, to train or to get your certificate.</span>
             </p>
 
             <div className="df-hero-actions">
               <a className="btn ss-btn-primary df-hero-action" href="#eligibility">
-                Find out if it is for you <i className="bi bi-arrow-down" aria-hidden="true" />
+                Find out if you can apply <i className="bi bi-arrow-down" aria-hidden="true" />
               </a>
             </div>
 

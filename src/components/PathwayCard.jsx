@@ -49,7 +49,7 @@ function PathwayCard({ pathway, onSelect, simplified = false }) {
         disabled={!isOpen}
       >
         {isOpen ? (
-          <>See details and eligibility <span className="visually-hidden">for {pathway.title}</span> <i className="bi bi-arrow-right" aria-hidden="true" /></>
+          <>See details and who can apply <span className="visually-hidden">for {pathway.title}</span> <i className="bi bi-arrow-right" aria-hidden="true" /></>
         ) : (
           `${pathway.title} not yet available`
         )}

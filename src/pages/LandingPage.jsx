@@ -13,20 +13,20 @@ import "./LandingSections.css";
 // ("Help me choose", "What is included" on each card, the collapsed comparison, each pathway's details page).
 
 const ELIGIBILITY = [
-  { icon: "bi-person-check", text: <>You are a <strong>person with a disability</strong></> },
+  { icon: "bi-person-check", text: <>You have a <strong>disability</strong></> },
   { icon: "bi-geo-alt", text: <>You <strong>live in Ghana, Kenya, Nigeria or Zambia</strong></> },
-  { icon: "bi-calendar3", text: <>You are aged <strong>18 to 33</strong>, or <strong>18 to 45</strong> for Digital Entrepreneurship</> },
+  { icon: "bi-calendar3", text: <>You are <strong>18 to 33 years old</strong>, or <strong>18 to 45</strong> for Digital Entrepreneurship</> },
   { icon: "bi-phone", text: <>You can <strong>use a smartphone or computer</strong></> },
-  { icon: "bi-journal-check", text: <>You have the <strong>minimum education</strong> for your pathway</> },
-  { icon: "bi-hourglass-split", text: <>You can <strong>take part for the whole training</strong> (places cannot be deferred)</> },
+  { icon: "bi-journal-check", text: <>You have finished the <strong>school or college level</strong> your pathway asks for</> },
+  { icon: "bi-hourglass-split", text: <>You can take part from the <strong>start to the end</strong> of the training</> },
 ];
 
 const JOURNEY = [
-  { title: "Choose a pathway", text: "Read the details and eligibility for your country." },
-  { title: "Apply online", text: "Give your consent and fill in the application form." },
-  { title: "IT skills test", text: "A short online test, if you meet the eligibility criteria." },
-  { title: "Interview", text: "A remote interview with the programme team." },
-  { title: "Join your pathway", text: "If you are selected, we email you the start date and next steps." },
+  { title: "Choose a pathway", text: "Pick the one that suits you best. You can choose only one." },
+  { title: "Fill in the form", text: "Agree to how we use your information, then answer the questions." },
+  { title: "Computer skills test", text: "A short online test, for the two academies only." },
+  { title: "Interview", text: "A talk with our team. You do not need to travel for it." },
+  { title: "Start your training", text: "If you are chosen, we email you the start date and what to do next." },
 ];
 
 function LandingPage({ privacyNotice, onDismissPrivacyNotice, pathwayMessage, onPathwaySelect, onCheckStatus, onContinueApplication }) {
@@ -67,8 +67,8 @@ function LandingPage({ privacyNotice, onDismissPrivacyNotice, pathwayMessage, on
         <div className="container df-split">
           <div className="df-section-heading">
             <span className="df-eyebrow">How to apply</span>
-            <h2 id="journey-title">What happens after you apply</h2>
-            <p>Applying takes about 10 to 15 minutes. These are the steps from start to finish.</p>
+            <h2 id="journey-title">Applying, step by step</h2>
+            <p>The online form takes about 10 to 15 minutes. You can save it and finish later.</p>
           </div>
           <ol className="df-landing-journey">
             {JOURNEY.map((step) => (
@@ -88,11 +88,12 @@ function LandingPage({ privacyNotice, onDismissPrivacyNotice, pathwayMessage, on
           <div className="df-clean-pathway-heading df-split-heading">
             <div>
               <span className="df-eyebrow">Training pathways</span>
-              <h2 id="pathways-title">Three ways to take part</h2>
+              <h2 id="pathways-title">Choose your pathway</h2>
             </div>
             <p>
-              You can apply for <strong>one pathway only</strong>. Selecting a pathway shows its full details first:
-              your application only starts when you choose to continue.
+              There are three ways to take part. We call them <strong>pathways</strong>. You can apply for
+              <strong> one pathway only</strong>. When you select a pathway, you see all its details first. Your
+              application does not start until you choose to continue.
             </p>
           </div>
 

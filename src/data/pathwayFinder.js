@@ -11,7 +11,7 @@
 export const QUESTIONS = [
   {
     id: "goal",
-    legend: "What do you most want from Digital Futures?",
+    legend: "What do you want most from Digital Futures?",
     options: [
       { value: "job", label: "A job in IT or digital work" },
       { value: "business", label: "To start or grow my own business" },
@@ -20,29 +20,29 @@ export const QUESTIONS = [
   },
   {
     id: "time",
-    legend: "How much time could you give to training?",
+    legend: "How much time can you give to training?",
     options: [
-      { value: "full", label: "Full-time: most of every weekday, for up to nine months" },
-      { value: "part", label: "Part-time: about 10 to 15 hours a week, for three to four months" },
+      { value: "full", label: "Full-time: most of every weekday, for up to 9 months" },
+      { value: "part", label: "Part-time: about 10 to 15 hours a week, for 3 to 4 months" },
       { value: "little", label: "Less than 10 hours a week" },
     ],
   },
   {
     id: "education",
-    legend: "What is your highest completed qualification?",
+    legend: "What is the highest level of education you have finished?",
     options: [
-      { value: "degree", label: "A bachelor's degree (or an HND in Nigeria)" },
-      { value: "diploma", label: "A diploma (or an OND or NCE in Nigeria)" },
+      { value: "degree", label: "A university degree (or an HND in Nigeria)" },
+      { value: "diploma", label: "A college diploma (or an OND or NCE in Nigeria)" },
       { value: "secondary", label: "Secondary school" },
       { value: "none", label: "None of these" },
     ],
   },
   {
     id: "device",
-    legend: "Which of these can you use regularly, with internet access?",
+    legend: "Which of these can you use often, with internet?",
     options: [
       { value: "computer", label: "A laptop or computer" },
-      { value: "phone", label: "A smartphone or tablet only" },
+      { value: "phone", label: "Only a smartphone or tablet" },
       { value: "neither", label: "Neither" },
     ],
   },
@@ -60,8 +60,8 @@ export function suggestPathway({ goal, time, education, device }) {
   if (time === "little") {
     return {
       pathwayId: null,
-      reasons: ["Every pathway needs at least about 10 hours a week for the whole training."],
-      notes: ["If your time frees up, you are welcome to apply in a later intake."],
+      reasons: ["Every pathway needs at least about 10 hours a week, from the start to the end of the training."],
+      notes: ["If you have more time later, you are welcome to apply next time."],
     };
   }
 
@@ -78,7 +78,7 @@ export function suggestPathway({ goal, time, education, device }) {
     notes.push("The Virtual Academy needs a laptop or computer in most countries. In Zambia, a tablet or smartphone may be enough.");
   }
   if (education === "none" && fits.has("DIGITAL_ENTREPRENEURSHIP")) {
-    notes.push("Digital Entrepreneurship asks for secondary school in most countries. Check the requirements for your country before you apply.");
+    notes.push("Digital Entrepreneurship asks for secondary school in most countries. Check what your country asks for before you apply.");
   }
 
   let pathwayId = null;
@@ -91,30 +91,30 @@ export function suggestPathway({ goal, time, education, device }) {
 
   const reasons = [];
   if (pathwayId === "PHYSICAL_ACADEMY") {
-    reasons.push("You can train full-time, and you have the degree this academy asks for.");
-    if (device !== "computer") reasons.push("You do not need your own computer: you learn in the training centre's computer labs.");
+    reasons.push("You can train full-time, and you have the university degree this academy asks for.");
+    if (device !== "computer") reasons.push("You do not need your own computer. The training centre has computers.");
   }
   if (pathwayId === "VIRTUAL_ACADEMY") {
     reasons.push(time === "part"
-      ? "It is part-time and online, so it fits around your other commitments."
-      : "It is a shorter, online option. The Physical Academy needs a bachelor's degree (or an HND in Nigeria).");
-    reasons.push("You have the diploma this academy asks for.");
+      ? "It is part-time and online, so you can fit it around the rest of your life."
+      : "It is shorter and online. The Physical Academy needs a university degree (or an HND in Nigeria).");
+    reasons.push("You have the college diploma this academy asks for.");
   }
   if (pathwayId === "DIGITAL_ENTREPRENEURSHIP") {
     reasons.push(goal === "business"
       ? "You want to start or grow your own business."
-      : "The IT academies ask for a diploma or a degree, while this pathway has the lowest education requirement.");
-    reasons.push("It is part-time, mixing in-person workshops and online sessions.");
-    if (goal !== "business") notes.push("This pathway is about earning through your own business or freelance work, rather than a job with an employer.");
+      : "The two academies need a college diploma or a university degree. This pathway needs less education.");
+    reasons.push("It is part-time, with workshops in person and sessions online.");
+    if (goal !== "business") notes.push("This pathway helps you earn money through your own business or freelance work, not a job with an employer.");
   }
 
   // Mention a second option when the answers leave one open.
   const alternativeId = [...fits].find((id) => id !== pathwayId && !(id === "DIGITAL_ENTREPRENEURSHIP" && goal === "job"));
   if (!pathwayId) {
     reasons.push(device === "neither"
-      ? "Our part-time pathways need a device and internet access, and the Physical Academy needs a bachelor's degree."
-      : "Based on your answers, none of the pathways is a clear match.");
-    notes.push("Check the eligibility for your country in the comparison below, or contact the programme team for advice.");
+      ? "The part-time pathways need a phone or computer with internet. The Physical Academy needs a university degree."
+      : "From your answers, no pathway is a clear match.");
+    notes.push("Check what your country asks for in the comparison, or contact our team for advice.");
   }
 
   return { pathwayId, alternativeId: alternativeId || null, reasons, notes };

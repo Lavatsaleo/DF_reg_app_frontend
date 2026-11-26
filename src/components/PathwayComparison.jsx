@@ -7,7 +7,7 @@ const COUNTRIES = Object.keys(COUNTRY_PATHWAY_CONTENT).sort();
 
 // Country rows replace the general wording with that country's own summary, courses, dates and eligibility.
 const COUNTRY_ROWS = [
-  { key: "bestFor", label: "Best for you if", icon: "bi-person-heart" },
+  { key: "bestFor", label: "This may suit you if", icon: "bi-person-heart" },
   { key: "courses", label: "Courses", icon: "bi-mortarboard" },
   { key: "eligibility", label: "Who can apply", icon: "bi-person-check" },
   { key: "dates", label: "Training dates", icon: "bi-calendar-event" },
@@ -29,7 +29,17 @@ function countryValue(pathway, country, key) {
   return null;
 }
 
+// A value is a sentence, a list, or { intro, items, outro } for a short lead-in followed by a list.
 function Value({ value }) {
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    return (
+      <>
+        {value.intro && <p>{value.intro}</p>}
+        <Value value={value.items} />
+        {value.outro && <p>{value.outro}</p>}
+      </>
+    );
+  }
   if (Array.isArray(value)) {
     return (
       <ul className="df-compare-list">
@@ -71,8 +81,8 @@ function PathwayComparison({ pathways, onSelect }) {
           <div>
             <h2 id="compare-title" ref={headingRef} tabIndex="-1">Compare the pathways side by side</h2>
             <p>
-              See time, courses, education, equipment, support and what happens after you finish, for all pathways or
-              for your country.
+              See all three pathways next to each other: how long they take, what you learn, what you need and the
+              support you get. You can also choose your country.
             </p>
           </div>
           <button

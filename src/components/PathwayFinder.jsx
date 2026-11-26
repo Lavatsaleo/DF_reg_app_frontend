@@ -55,7 +55,7 @@ function PathwayFinder({ pathways, onSelect }) {
       <div className="df-finder df-finder-closed">
         <div>
           <h3>Not sure which pathway to choose?</h3>
-          <p>Answer four quick questions and we will suggest the pathway that may suit you best.</p>
+          <p>Answer 4 short questions. We will suggest a pathway that may suit you.</p>
         </div>
         <button ref={openButtonRef} type="button" className="btn ss-btn-primary" onClick={() => setIsOpen(true)}>
           <i className="bi bi-signpost-split" aria-hidden="true" /> Help me choose
@@ -129,8 +129,8 @@ function PathwayFinder({ pathways, onSelect }) {
             <p>You could also look at the <strong>{PATHWAY_TITLES[result.alternativeId]}</strong>.</p>
           )}
           <p className="df-finder-disclaimer">
-            This is a suggestion only. Please read the full details and eligibility for your country. During recruitment,
-            the programme team may recommend a different pathway.
+            This is only a suggestion. Please read the full details for your country before you apply. Later, our team
+            may suggest a different pathway for you.
           </p>
           <div className="df-finder-actions">
             {result.pathwayId && byId[result.pathwayId] && (

@@ -102,11 +102,14 @@ function ActionPanel({ countryContent, onContinue, onBackToPathways }) {
       <div className="df-info-aside-card">
         <span className="ss-small-label dark">Next step</span>
         <h2 id="df-info-next-title">Ready to apply?</h2>
-        <p>Continue to the consent check. It takes about 10 to 15 minutes to complete the full application.</p>
+        <p>
+          First, you agree to how we use your information. Then you fill in the form. It takes about 10 to 15 minutes.
+          You can save it and finish later.
+        </p>
         <button type="button" className="btn ss-btn-primary w-100" onClick={onContinue}>
-          Continue to consent check <i className="bi bi-arrow-right" aria-hidden="true" />
+          Start my application <i className="bi bi-arrow-right" aria-hidden="true" />
         </button>
-        <p className="df-info-aside-hint">Not the right pathway for you? Compare the other pathways and choose again.</p>
+        <p className="df-info-aside-hint">Not sure this is the right pathway? Go back and compare all three.</p>
         <button type="button" className="btn ss-btn-outline w-100" onClick={onBackToPathways}>
           <i className="bi bi-arrow-left" aria-hidden="true" /> Back to pathways
         </button>
@@ -180,7 +183,7 @@ function CountryPathwayInfo({ pathway, country, onContinue, onChangeCountry, onB
                   </p>
                   <div className="d-flex flex-wrap gap-2 mt-3">
                     <button type="button" className="btn ss-btn-primary" onClick={onContinue}>
-                      Continue to consent check <i className="bi bi-arrow-right" aria-hidden="true" />
+                      Start my application <i className="bi bi-arrow-right" aria-hidden="true" />
                     </button>
                     <button type="button" className="btn ss-btn-outline" onClick={onBackToPathways}>
                       <i className="bi bi-arrow-left" aria-hidden="true" /> Back to pathways

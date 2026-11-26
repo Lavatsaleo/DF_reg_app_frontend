@@ -692,3 +692,10 @@
     max-width: none;
   }
 }
+
+/* Comparison cells with a lead-in, a list and a closing sentence. */
+.df-compare-table p + .df-compare-list,
+.df-compare-card p + .df-compare-list,
+.df-compare-list + p {
+  margin-top: 0.4rem;
+}
