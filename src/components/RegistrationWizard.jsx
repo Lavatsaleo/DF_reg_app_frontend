@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { selectChoiceOnEnter } from "../utils/formUtils";
+import AlertDialog from "./AlertDialog";
 import ResultAlert from "./ResultAlert";
 import ReviewApplication from "./ReviewApplication";
 import WizardSection from "./WizardSection";
@@ -119,6 +120,7 @@ function getEarlyEligibilityFeedback(answers, selectedPathway, questions) {
   if (isEntrepreneurship && availability === "No") {
     return {
       type: "not-eligible",
+      field: "TRAINING_AVAILABILITY",
       title: "You do not meet this pathway's availability requirement.",
       message:
         "Digital Entrepreneurship requires you to be available for the full training period. You can change your answer if it was entered incorrectly.",
@@ -138,6 +140,7 @@ function getEarlyEligibilityFeedback(answers, selectedPathway, questions) {
       if (!isEntrepreneurship) {
         return {
           type: "not-eligible",
+          field: "DATE_OF_BIRTH",
           title: "You do not meet the age requirement for this academy.",
           message: `Applicants must be aged ${rangeText}. Based on your date of birth, you do not meet this requirement. You can correct your date of birth if it was entered incorrectly.`,
         };
@@ -154,6 +157,7 @@ function getEarlyEligibilityFeedback(answers, selectedPathway, questions) {
   if (answers.HAS_DISABILITY === "No") {
     return {
       type: "not-eligible",
+      field: "HAS_DISABILITY",
       title: "This programme is for people with disabilities.",
       message:
         "Digital Futures is for young people with disabilities, so you cannot continue with this application. You can change your answer if it was entered incorrectly.",
@@ -166,6 +170,7 @@ function getEarlyEligibilityFeedback(answers, selectedPathway, questions) {
   if (minimumEducation && educationLevel && educationLevel !== "Other" && !minimumEducation.includes(educationLevel)) {
     return {
       type: "not-eligible",
+      field: "EDUCATION_LEVEL",
       title: "You do not meet the education requirement for this pathway.",
       message: `${selectedPathway.title} applicants need a completed ${describeLevels(minimumEducation)} qualification. You can change your answer if it was entered incorrectly, or choose another pathway.`,
     };
@@ -175,6 +180,7 @@ function getEarlyEligibilityFeedback(answers, selectedPathway, questions) {
   if (!isEntrepreneurship && availability === "No") {
     return {
       type: "not-eligible",
+      field: "TRAINING_AVAILABILITY",
       title: "You do not meet this academy's availability requirement.",
       message: selectedPathway?.id === "VIRTUAL_ACADEMY"
         ? "The virtual academy requires you to take part in online training for the full four months. You can change your answer if it was entered incorrectly, or look at another pathway."
@@ -235,6 +241,7 @@ function RegistrationWizard({
   onBackStep,
   onCheckStatus,
   onContinueApplication,
+  onBackToHome,
 }) {
   const sectionEntries = useMemo(
     () => groupSurveyPages(groupedQuestions),
@@ -247,6 +254,44 @@ function RegistrationWizard({
   const finalSubmitIntentRef = useRef(false);
   const pendingInvalidFocusRef = useRef(false);
   const reviewErrorFocusRef = useRef(false);
+  // Pop-ups: the eligibility result that stopped Continue, and the duplicate status the applicant has seen.
+  const [ineligibleDialog, setIneligibleDialog] = useState(null);
+  const [dismissedDuplicateStatus, setDismissedDuplicateStatus] = useState("");
+  const isDuplicateStatus = ["existing_application", "existing_draft"].includes(draftSaveStatus);
+  const duplicateDialogOpen = isDuplicateStatus && dismissedDuplicateStatus !== draftSaveStatus;
+
+  // A new duplicate result (for example after the contact details change) shows the pop-up again.
+  const [wasDuplicateStatus, setWasDuplicateStatus] = useState(isDuplicateStatus);
+  if (wasDuplicateStatus !== isDuplicateStatus) {
+    setWasDuplicateStatus(isDuplicateStatus);
+    if (!isDuplicateStatus) setDismissedDuplicateStatus("");
+  }
+
+  function focusQuestion(questionCode) {
+    window.requestAnimationFrame(() => {
+      const card = questionCode && document.getElementById(questionCode + "-card");
+      const control = card?.querySelector('input:not([type="hidden"]), select, textarea, button');
+      control?.focus({ preventScroll: true });
+      control?.scrollIntoView({ block: "center" });
+    });
+  }
+
+  function closeIneligibleDialog() {
+    const field = ineligibleDialog?.field;
+    setIneligibleDialog(null);
+    setAnnouncement("You can now change your answer.");
+    focusQuestion(field);
+  }
+
+  function leaveToHome(closeDialog) {
+    closeDialog();
+    onBackToHome();
+  }
+
+  function leaveDuplicateDialogFor(action) {
+    setDismissedDuplicateStatus(draftSaveStatus);
+    action();
+  }
 
   useEffect(() => {
     const errorCodes = Object.keys(fieldErrors || {});
@@ -305,6 +350,18 @@ function RegistrationWizard({
   }
 
   function continueFromSection(index, questions) {
+    // An application already exists: show the pop-up again rather than moving on.
+    if (isDuplicateStatus) {
+      setDismissedDuplicateStatus("");
+      return;
+    }
+
+    // The applicant chose to move on: explain in a pop-up why this answer ends the application.
+    if (earlyEligibilityFeedback?.type === "not-eligible") {
+      setIneligibleDialog(earlyEligibilityFeedback);
+      return;
+    }
+
     const isValid = onValidateQuestions(questions);
     if (!isValid) {
       pendingInvalidFocusRef.current = true;
@@ -318,6 +375,13 @@ function RegistrationWizard({
   }
 
   function handleWizardSubmit(event) {
+    if (isDuplicateStatus) {
+      event.preventDefault();
+      finalSubmitIntentRef.current = false;
+      setDismissedDuplicateStatus("");
+      return;
+    }
+
     // An implicit Enter from a field must never submit the full questionnaire.
     if (activeStep !== reviewStepIndex || !finalSubmitIntentRef.current) {
       event.preventDefault();
@@ -387,7 +451,7 @@ function RegistrationWizard({
       </div>
 
       {draftSaveStatus === "existing_draft" && (
-        <div className="alert ss-alert-warning ss-existing-application-alert" role="alert">
+        <div className="alert ss-alert-warning ss-existing-application-alert">
           <i className="bi bi-exclamation-triangle" aria-hidden="true" />
           <div>
             <strong className="d-block mb-1">You have already started an application</strong>
@@ -417,7 +481,7 @@ function RegistrationWizard({
       )}
 
       {draftSaveStatus === "existing_application" && (
-        <div className="alert ss-alert-warning ss-existing-application-alert" role="alert">
+        <div className="alert ss-alert-warning ss-existing-application-alert">
           <i className="bi bi-exclamation-triangle" aria-hidden="true" />
           <div>
             <strong className="d-block mb-1">You already have an active application</strong>
@@ -490,16 +554,10 @@ function RegistrationWizard({
       <ResultAlert result={submitResult} />
 
       <div className="ss-survey-page">
-        {earlyEligibilityFeedback && (
-          <div
-            className={`ss-early-eligibility ${earlyEligibilityFeedback.type}`}
-            role={earlyEligibilityFeedback.type === "not-eligible" ? "alert" : "status"}
-            aria-live="polite"
-          >
-            <i
-              className={`bi ${earlyEligibilityFeedback.type === "not-eligible" ? "bi-exclamation-circle" : "bi-info-circle"}`}
-              aria-hidden="true"
-            />
+        {/* Non-blocking notes stay on the page; a "not eligible" result opens a pop-up when Continue is pressed. */}
+        {earlyEligibilityFeedback?.type === "review" && (
+          <div className="ss-early-eligibility review" role="status" aria-live="polite">
+            <i className="bi bi-info-circle" aria-hidden="true" />
             <div>
               <strong>{earlyEligibilityFeedback.title}</strong>
               <p>{earlyEligibilityFeedback.message}</p>
@@ -517,7 +575,6 @@ function RegistrationWizard({
             errors={fieldErrors}
             onPrevious={() => onBackStep ? onBackStep() : goToStep(activeStep - 1)}
             onContinue={() => continueFromSection(activeStep, currentSectionEntry[1])}
-            disableContinue={earlyEligibilityFeedback?.type === "not-eligible" || ["existing_application", "existing_draft"].includes(draftSaveStatus)}
             onAnswerChange={onAnswerChange}
             onMultiSelectChange={onMultiSelectChange}
           />
@@ -538,6 +595,46 @@ function RegistrationWizard({
           />
         )}
       </div>
+
+      <AlertDialog
+        open={Boolean(ineligibleDialog)}
+        title={ineligibleDialog?.title || ""}
+        icon="bi-exclamation-circle"
+        onClose={closeIneligibleDialog}
+        actions={[
+          { label: "Change my answer", icon: "bi-pencil", variant: "primary", initialFocus: true, onClick: closeIneligibleDialog },
+          onBackToHome && { label: "Back to home page", icon: "bi-house", onClick: () => leaveToHome(() => setIneligibleDialog(null)) },
+        ].filter(Boolean)}
+      >
+        <p>{ineligibleDialog?.message}</p>
+        {onBackToHome && (
+          <p className="df-alert-dialog-note">
+            Going back to the home page clears the answers saved on this device. From there you can compare the other pathways.
+          </p>
+        )}
+      </AlertDialog>
+
+      <AlertDialog
+        open={duplicateDialogOpen}
+        title={draftSaveStatus === "existing_draft" ? "You have already started an application" : "You already have an application"}
+        icon="bi-files"
+        onClose={() => setDismissedDuplicateStatus(draftSaveStatus)}
+        actions={[
+          draftSaveStatus === "existing_draft" && onContinueApplication && {
+            label: "Continue my saved application", icon: "bi-arrow-repeat", variant: "primary", initialFocus: true,
+            onClick: () => leaveDuplicateDialogFor(onContinueApplication),
+          },
+          draftSaveStatus === "existing_application" && onCheckStatus && {
+            label: "Check your application status", icon: "bi-clipboard2-check", variant: "primary", initialFocus: true,
+            onClick: () => leaveDuplicateDialogFor(onCheckStatus),
+          },
+          onBackToHome && { label: "Back to home page", icon: "bi-house", onClick: () => leaveToHome(() => setDismissedDuplicateStatus(draftSaveStatus)) },
+          { label: "Close", variant: "link", onClick: () => setDismissedDuplicateStatus(draftSaveStatus) },
+        ].filter(Boolean)}
+      >
+        <p>{draftSaveMessage || "We found an application with the same details."}</p>
+        <p className="df-alert-dialog-note">You can only apply once in each application cycle, for one pathway.</p>
+      </AlertDialog>
     </form>
   );
 }

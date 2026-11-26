@@ -1203,6 +1203,7 @@ function ContextualApplicationPage({
               onBackStep={moveBackOneFlowStep}
               onCheckStatus={onCheckStatus}
               onContinueApplication={onContinueApplication}
+              onBackToHome={onStartNewApplication || onBackToPathways}
             />
         </div>
       </section>

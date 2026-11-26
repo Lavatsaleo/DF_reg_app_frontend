@@ -176,7 +176,7 @@ function IneligibleConfirmation({ result, selectedPathway, onStartNewApplication
 
                 <div className="ss-confirmation-actions">
                   <button type="button" className="btn ss-btn-primary" onClick={onStartNewApplication}>
-                    <i className="bi bi-house" aria-hidden="true" /> Return to pathways
+                    <i className="bi bi-house" aria-hidden="true" /> Back to home page
                   </button>
                 </div>
               </div>
@@ -219,7 +219,7 @@ function ExistingApplicationNotice({ message, onCheckStatus, onStartNewApplicati
                     </button>
                   )}
                   <button type="button" className="btn ss-btn-outline" onClick={onStartNewApplication}>
-                    <i className="bi bi-house" aria-hidden="true" /> Return to pathways
+                    <i className="bi bi-house" aria-hidden="true" /> Back to home page
                   </button>
                 </div>
               </div>
@@ -382,7 +382,7 @@ function ApplicationConfirmation({ result, selectedPathway, onStartNewApplicatio
                     </button>
                   )}
                   <button type="button" className="btn ss-btn-outline" onClick={onStartNewApplication}>
-                    <i className="bi bi-house" aria-hidden="true" /> Return to pathways
+                    <i className="bi bi-house" aria-hidden="true" /> Back to home page
                   </button>
                 </div>
 

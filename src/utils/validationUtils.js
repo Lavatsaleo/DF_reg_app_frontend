@@ -62,6 +62,10 @@ function isValidNationalId(value, answers) {
   const clean = String(value || "").trim();
   if (answers.COUNTRY === "Nigeria") return /^\d{11}$/.test(clean);
   if (answers.COUNTRY === "Ghana") return /^GHA-[A-Za-z0-9-]{11}$/.test(clean);
+  // Kenya ID, Zambia NRC and passports all have at least 6 digits; this refuses "NONE", "N/A" or "0000".
+  if (answers.COUNTRY === "Kenya" || answers.COUNTRY === "Zambia") {
+    return isValidIdentification(clean) && clean.replace(/\D/g, "").length >= 6;
+  }
   return isValidIdentification(clean);
 }
 
@@ -127,6 +131,8 @@ export function validateAnswers({ questions, answers, isQuestionVisible }) {
       errors[question.questionCode] = {
         Nigeria: "Your NIN must be exactly 11 digits, numbers only.",
         Ghana: "Your Ghana Card number must be 15 characters and begin with GHA-.",
+        Kenya: "Enter your ID or passport number exactly as printed. It must include at least 6 digits.",
+        Zambia: "Enter your ID or passport number exactly as printed. It must include at least 6 digits.",
       }[answers.COUNTRY] || "Enter a valid identification number using letters, numbers or the punctuation used on the identification document.";
       continue;
     }

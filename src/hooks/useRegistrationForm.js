@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import { API_BASE_URL } from "../config/api";
 import { groupQuestionsBySection, isQuestionVisible } from "../utils/formUtils";
@@ -137,6 +137,16 @@ export function useRegistrationForm() {
     WAITING_FOR_CONTACT_MESSAGE
   );
   const [currentStep, setCurrentStep] = useState(0);
+  // The autosave reads the latest status from a ref, so a status change never re-runs the save by itself.
+  // (It used to: a duplicate result re-posted every ~1.2s until the duplicate-notice rate limit answered
+  // with a plain 429, which was treated as an ordinary save error and lifted the duplicate block.)
+  const draftSaveStatusRef = useRef(draftSaveStatus);
+  useEffect(() => {
+    draftSaveStatusRef.current = draftSaveStatus;
+  }, [draftSaveStatus]);
+  // The identity details (country, mobile, email, national ID) that matched an existing application.
+  // Saving stays paused until the applicant changes one of them.
+  const duplicateIdentityRef = useRef("");
 
   const restoreDraft = useCallback((draft) => {
     if (draft.answers && Object.keys(draft.answers).length > 0) {
@@ -188,7 +198,14 @@ export function useRegistrationForm() {
     }
 
     // A portal draft this tab may no longer change (continued on another device, or closed).
-    if (draftSaveStatus === "locked") return;
+    if (draftSaveStatusRef.current === "locked") return;
+
+    // Already told this person they have an application: do not ask again until the details change.
+    const identityKey = [answers.COUNTRY, answers.CONTACT_NUMBER, answers.EMAIL, answers.NATIONAL_ID_NUMBER]
+      .map((value) => String(value ?? "").trim().toLowerCase())
+      .join("|");
+    const isDuplicate = ["existing_application", "existing_draft"].includes(draftSaveStatusRef.current);
+    if (isDuplicate && duplicateIdentityRef.current === identityKey) return;
 
     if (!hasEnoughInformationForPortalDraft({ answers })) {
       setDraftSaveStatus("waiting_for_mobile");
@@ -199,8 +216,11 @@ export function useRegistrationForm() {
     let isCurrentSave = true;
     const saveTimeout = window.setTimeout(async () => {
       try {
-        setDraftSaveStatus("saving");
-        setDraftSaveMessage("Saving draft to the portal...");
+        // While changed details are rechecked, keep the duplicate block in place until the server clears it.
+        if (!isDuplicate) {
+          setDraftSaveStatus("saving");
+          setDraftSaveMessage("Saving draft to the portal...");
+        }
 
         const response = await axios.post(`${API_BASE_URL}/api/registrations/drafts`, {
           draftReference: serverDraftReference || undefined,
@@ -220,6 +240,7 @@ export function useRegistrationForm() {
         setServerDraftReference(savedDraft.draftReference || serverDraftReference || "");
         if (savedDraft.draftToken) setServerDraftToken(savedDraft.draftToken);
         setPortalDraftLastSavedAt(savedDraft.lastSavedAt || savedDraft.savedAt || new Date().toISOString());
+        duplicateIdentityRef.current = "";
         setDraftSaveStatus("saved");
         setDraftSaveMessage("Draft saved to the portal.");
       } catch (error) {
@@ -228,6 +249,7 @@ export function useRegistrationForm() {
         // Tell the applicant straight away, before they fill in the rest of the form.
         const reasonCode = error.response?.data?.reasonCode;
         if (reasonCode === "APPLICATION_EXISTS" || reasonCode === "DRAFT_EXISTS") {
+          duplicateIdentityRef.current = identityKey;
           setDraftSaveStatus(reasonCode === "DRAFT_EXISTS" ? "existing_draft" : "existing_application");
           setDraftSaveMessage(apiMessage);
           return;
@@ -237,6 +259,8 @@ export function useRegistrationForm() {
           setDraftSaveMessage(apiMessage);
           return;
         }
+        // A failed recheck (network error, rate limit) must not lift an existing duplicate block.
+        if (isDuplicate) return;
         setDraftSaveStatus("error");
         setDraftSaveMessage(apiMessage || "Draft is still saved on this device, but it could not be saved to the portal.");
       }
@@ -246,7 +270,7 @@ export function useRegistrationForm() {
       isCurrentSave = false;
       window.clearTimeout(saveTimeout);
     };
-  }, [answers, currentStep, documentType, selectedPathway, serverDraftReference, serverDraftToken, draftSaveStatus]);
+  }, [answers, currentStep, documentType, selectedPathway, serverDraftReference, serverDraftToken]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
   useEffect(() => {
@@ -352,6 +376,7 @@ export function useRegistrationForm() {
 
   function handleBackToPathways() {
     clearAllDeviceDrafts();
+    duplicateIdentityRef.current = "";
     setSelectedPathway(null);
     setAnswers({});
     setDocuments([]);

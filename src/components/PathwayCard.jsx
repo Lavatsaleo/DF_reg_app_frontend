@@ -19,15 +19,27 @@ function PathwayCard({ pathway, onSelect, simplified = false }) {
       </h3>
       <p className="df-clean-pathway-description">{pathway.description}</p>
 
-      {!simplified && (
-        <ul className="ss-highlight-list">
-          {pathway.highlights.map((highlight) => (
-            <li key={highlight}>
-              <i className="bi bi-check2-circle" aria-hidden="true" />
-              <span>{highlight}</span>
-            </li>
+      {pathway.facts && (
+        <ul className="df-card-facts" aria-label={`${pathway.title} at a glance`}>
+          {pathway.facts.map((fact) => (
+            <li key={fact.label}><i className={`bi ${fact.icon}`} aria-hidden="true" /> {fact.label}</li>
           ))}
         </ul>
+      )}
+
+      {/* The full list stays one click away, so the three cards read quickly side by side. */}
+      {!simplified && (
+        <details className="df-card-included">
+          <summary>What is included<span className="visually-hidden"> in the {pathway.title}</span></summary>
+          <ul className="ss-highlight-list">
+            {pathway.highlights.map((highlight) => (
+              <li key={highlight}>
+                <i className="bi bi-check2-circle" aria-hidden="true" />
+                <span>{highlight}</span>
+              </li>
+            ))}
+          </ul>
+        </details>
       )}
 
       <button
@@ -37,7 +49,7 @@ function PathwayCard({ pathway, onSelect, simplified = false }) {
         disabled={!isOpen}
       >
         {isOpen ? (
-          <>Apply for {pathway.title} <i className="bi bi-arrow-right" aria-hidden="true" /></>
+          <>See details and eligibility <span className="visually-hidden">for {pathway.title}</span> <i className="bi bi-arrow-right" aria-hidden="true" /></>
         ) : (
           `${pathway.title} not yet available`
         )}

@@ -1,0 +1,694 @@
+/* Landing page sections below the hero: About, eligibility, pathway comparison and application journey.
+   Uses the Digital Futures brand tokens from digital-futures-brand.css. Text stays #111 / --df-muted on light
+   backgrounds for at least 7:1 contrast. */
+
+.df-landing-section,
+.df-compare-section {
+  padding: clamp(2.75rem, 5vw, 4.5rem) 0;
+}
+
+/* Order: hero → who can apply (grey) → how to apply (white) → compare (white, boxed bar) → pathways (grey). */
+.df-journey-section,
+.df-compare-section {
+  background: var(--df-white);
+}
+
+.df-eligibility-section {
+  background: var(--df-bg);
+}
+
+/* How to apply and the comparison bar sit together on white; no double gap between them. */
+.df-journey-section {
+  padding-bottom: 0;
+}
+
+.df-landing-section:focus,
+.df-compare-section:focus {
+  outline: none;
+}
+
+.df-section-heading {
+  max-width: 780px;
+  margin-bottom: 1.75rem;
+}
+
+.df-section-heading h2 {
+  margin: 0;
+  font-size: clamp(1.9rem, 3.4vw, 3rem) !important;
+  line-height: 1.15;
+}
+
+.df-section-heading p {
+  margin: 0.85rem 0 0;
+  color: var(--df-muted);
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+/* About: what the programme offers. */
+.df-offer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
+  gap: 1rem;
+  margin: 0 0 1.5rem;
+  padding: 0;
+  list-style: none;
+}
+
+.df-offer {
+  padding: 1.25rem;
+  border: 1px solid var(--df-border);
+  border-top: 5px solid var(--df-teal);
+  border-radius: var(--df-radius-lg);
+  background: var(--df-white);
+}
+
+.df-offer > i {
+  font-size: 1.6rem;
+  color: var(--df-black);
+}
+
+.df-offer h3 {
+  margin: 0.6rem 0 0.35rem;
+  font-size: 1.1rem !important;
+}
+
+.df-offer p {
+  margin: 0;
+  color: var(--df-muted);
+  line-height: 1.55;
+}
+
+.df-free-note {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+  max-width: 780px;
+  margin: 0 0 1.25rem;
+  padding: 0.9rem 1.1rem;
+  border-radius: var(--df-radius);
+  background: var(--df-soft-yellow);
+  line-height: 1.5;
+}
+
+.df-free-note i {
+  font-size: 1.25rem;
+}
+
+/* Eligibility checklist. */
+.df-eligibility-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr));
+  gap: 0.25rem 2rem;
+  max-width: 1060px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* A plain checklist rather than six boxes: easier to scan, less visual noise. */
+.df-eligibility-list li {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  padding: 0.35rem 0;
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+
+.df-eligibility-list i {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--df-white);
+  border: 1px solid var(--df-border);
+  font-size: 1rem;
+  color: var(--df-red-text);
+}
+
+.df-eligibility-more {
+  max-width: 780px;
+  margin: 1.25rem 0 0;
+  color: var(--df-muted);
+}
+
+.df-compare-link {
+  margin: 1.75rem 0 0;
+  font-weight: 700;
+}
+
+/* Comparison: country picker. */
+.df-compare-country {
+  margin: 0 0 1.5rem;
+  padding: 0;
+  border: 0;
+}
+
+.df-compare-country legend {
+  float: none;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.df-compare-country-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.df-compare-country-options label {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0.45rem 1.1rem;
+  border: 2px solid var(--df-border);
+  border-radius: 999px;
+  background: var(--df-white);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.df-compare-country-options label.is-active {
+  border-color: var(--df-black);
+  background: var(--df-soft-teal);
+}
+
+.df-compare-country-options input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.df-compare-country-options label:focus-within {
+  outline: 3px solid var(--df-black);
+  outline-offset: 2px;
+}
+
+/* Comparison: table (wide screens). */
+.df-compare-table-wrap {
+  display: none;
+}
+
+.df-compare-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: fixed;
+}
+
+.df-compare-table th,
+.df-compare-table td {
+  padding: 1rem;
+  vertical-align: top;
+  border-bottom: 1px solid var(--df-border);
+  text-align: left;
+  line-height: 1.5;
+}
+
+.df-compare-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--df-soft-teal);
+  border-top: 5px solid var(--df-teal);
+  font-size: 1.15rem;
+}
+
+.df-compare-table thead td,
+.df-compare-table tfoot td {
+  border-bottom: 0;
+}
+
+.df-compare-table tbody th {
+  width: 17%;
+  font-size: 0.95rem;
+  color: var(--df-black);
+}
+
+.df-compare-table tbody th i {
+  color: var(--df-red-text);
+  margin-right: 0.25rem;
+}
+
+.df-compare-table tbody tr:nth-child(even) td,
+.df-compare-table tbody tr:nth-child(even) th {
+  background: #faf9f8;
+}
+
+.df-compare-table p,
+.df-compare-card p {
+  margin: 0;
+}
+
+.df-compare-list {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.df-compare-list li + li {
+  margin-top: 0.3rem;
+}
+
+/* Comparison: stacked cards (phones and tablets). */
+.df-compare-stack {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.df-compare-card {
+  padding: 1.25rem;
+  border: 1px solid var(--df-border);
+  border-top: 5px solid var(--df-teal);
+  border-radius: var(--df-radius-lg);
+  background: var(--df-white);
+}
+
+.df-compare-card h3 {
+  margin: 0 0 0.75rem;
+  font-size: 1.3rem !important;
+}
+
+.df-compare-card dl {
+  margin: 0 0 1rem;
+}
+
+.df-compare-card-row {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--df-border);
+}
+
+.df-compare-card-row dt {
+  margin-bottom: 0.25rem;
+  font-weight: 700;
+}
+
+.df-compare-card-row dt i {
+  color: var(--df-red-text);
+}
+
+.df-compare-card-row dd {
+  margin: 0;
+  line-height: 1.5;
+}
+
+@media (min-width: 992px) {
+  .df-compare-table-wrap {
+    display: block;
+  }
+
+  .df-compare-stack {
+    display: none;
+  }
+}
+
+/* Application journey. */
+.df-landing-journey {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: df-step;
+}
+
+.df-landing-journey li {
+  position: relative;
+  padding: 3.25rem 1.1rem 1.1rem;
+  border: 1px solid var(--df-border);
+  border-radius: var(--df-radius-lg);
+  background: var(--df-white);
+  counter-increment: df-step;
+}
+
+.df-landing-journey li::before {
+  content: counter(df-step);
+  position: absolute;
+  top: 1rem;
+  left: 1.1rem;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--df-yellow);
+  color: var(--df-black);
+  font-weight: 800;
+}
+
+.df-landing-journey h3 {
+  margin: 0 0 0.35rem;
+  font-size: 1.05rem !important;
+}
+
+.df-landing-journey p {
+  margin: 0;
+  color: var(--df-muted);
+  line-height: 1.5;
+}
+
+/* Pathway cards: three quick facts, full list behind "What is included". */
+.df-card-facts {
+  display: grid;
+  gap: 0.4rem;
+  margin: 0 0 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: var(--df-radius);
+  background: var(--df-bg);
+  list-style: none;
+  font-weight: 700;
+}
+
+.df-card-facts i {
+  color: var(--df-red-text);
+  margin-right: 0.35rem;
+}
+
+.df-card-included {
+  margin: 0 0 1.25rem;
+}
+
+.df-card-included summary {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.df-card-included[open] summary {
+  margin-bottom: 0.5rem;
+}
+
+/* Comparison: show-more toggle. */
+.df-compare-toggle {
+  margin: 0 0 1.25rem;
+  text-align: left;
+}
+
+/* Pathway finder. */
+.df-finder {
+  margin: 0 0 2rem;
+  padding: clamp(1.1rem, 3vw, 1.75rem);
+  max-width: 1060px;
+  border: 2px solid var(--df-black);
+  border-radius: var(--df-radius-lg);
+  background: var(--df-white);
+}
+
+.df-finder-closed {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 2rem;
+  align-items: center;
+  justify-content: space-between;
+  border-color: var(--df-teal);
+  background: var(--df-soft-teal);
+}
+
+.df-finder h3 {
+  margin: 0 0 0.35rem;
+  font-size: 1.3rem !important;
+}
+
+.df-finder-closed p {
+  margin: 0;
+  color: var(--df-black);
+}
+
+.df-finder fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.df-finder legend {
+  float: none;
+  margin-bottom: 1rem;
+  font-size: clamp(1.2rem, 2.4vw, 1.5rem);
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.df-finder legend:focus,
+.df-finder h3:focus {
+  outline: none;
+}
+
+.df-finder legend:focus-visible,
+.df-finder h3:focus-visible {
+  outline: 3px solid var(--df-black);
+  outline-offset: 4px;
+}
+
+.df-finder-progress {
+  margin: 0 0 0.75rem;
+  color: var(--df-muted);
+  font-weight: 700;
+}
+
+.df-finder-bar {
+  display: block;
+  max-width: 18rem;
+  height: 6px;
+  margin-top: 0.4rem;
+  border-radius: 999px;
+  background: var(--df-border);
+  overflow: hidden;
+}
+
+.df-finder-bar span {
+  display: block;
+  height: 100%;
+  background: var(--df-teal);
+  transition: width 0.2s ease;
+}
+
+.df-finder-options {
+  display: grid;
+  gap: 0.6rem;
+  max-width: 44rem;
+}
+
+.df-finder-options label {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  min-height: 48px;
+  padding: 0.7rem 1rem;
+  border: 2px solid var(--df-border);
+  border-radius: var(--df-radius);
+  background: var(--df-white);
+  cursor: pointer;
+  line-height: 1.4;
+}
+
+.df-finder-options label.is-selected {
+  border-color: var(--df-black);
+  background: var(--df-soft-teal);
+}
+
+.df-finder-options input {
+  flex: none;
+  width: 1.25rem;
+  height: 1.25rem;
+  accent-color: var(--df-black);
+}
+
+.df-finder-options label:focus-within {
+  outline: 3px solid var(--df-black);
+  outline-offset: 2px;
+}
+
+.df-finder-error {
+  margin: 0.75rem 0 0;
+  color: var(--df-red-text);
+  font-weight: 700;
+}
+
+.df-finder-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  margin-top: 1.25rem;
+}
+
+.df-finder-result ul {
+  margin: 0.75rem 0;
+  padding-left: 1.2rem;
+  line-height: 1.55;
+}
+
+.df-finder-result h3 i {
+  color: var(--df-red-text);
+}
+
+.df-finder-disclaimer {
+  margin: 0;
+  color: var(--df-muted);
+  font-size: 0.95rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .df-finder-bar span {
+    transition: none;
+  }
+}
+
+/* Keep focused questions, results and section targets clear of the sticky site header. */
+.df-finder legend,
+.df-finder h3,
+.df-finder,
+#about,
+#eligibility,
+#pathways,
+#compare,
+#next-steps {
+  scroll-margin-top: 120px;
+}
+
+/* Comparison: a single collapsed bar until the visitor opens it. */
+.df-compare-section {
+  padding: clamp(2rem, 4vw, 3rem) 0;
+}
+
+.df-compare-intro {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 2rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: clamp(1.1rem, 3vw, 1.5rem);
+  border: 2px solid var(--df-border);
+  border-radius: var(--df-radius-lg);
+  background: var(--df-bg);
+}
+
+.df-compare-intro > div {
+  flex: 1 1 26rem;
+}
+
+.df-compare-intro h2 {
+  margin: 0 0 0.35rem;
+  font-size: clamp(1.35rem, 2.4vw, 1.75rem) !important;
+  line-height: 1.25;
+}
+
+.df-compare-intro h2:focus {
+  outline: none;
+}
+
+.df-compare-intro h2:focus-visible {
+  outline: 3px solid var(--df-black);
+  outline-offset: 4px;
+}
+
+.df-compare-intro p {
+  margin: 0;
+  color: var(--df-muted);
+  line-height: 1.55;
+}
+
+.df-compare-intro .df-compare-toggle {
+  margin: 0;
+  min-height: 48px;
+  white-space: nowrap;
+}
+
+#df-compare-panel {
+  margin-top: 1.5rem;
+}
+
+/* Wide screens: use the full width. Section headings sit on the left and their content on the right,
+   so short sentences stay on one line instead of wrapping into narrow columns. Phones keep the stacked layout. */
+@media (min-width: 992px) {
+  .df-split {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: 1.5rem clamp(2rem, 5vw, 4.5rem);
+    align-items: start;
+  }
+
+  .df-split > .df-section-heading {
+    max-width: none;
+    margin-bottom: 0;
+  }
+
+  /* Side headings: large enough to lead, small enough to stay on one or two lines. */
+  .df-split > .df-section-heading h2,
+  .df-clean-pathway-heading.df-split-heading h2 {
+    font-size: clamp(1.9rem, 2.6vw, 2.5rem) !important;
+  }
+
+  /* Who can apply: one condition per line. */
+  .df-split .df-eligibility-list {
+    grid-template-columns: 1fr;
+    max-width: none;
+    gap: 0.35rem;
+  }
+
+  .df-split .df-eligibility-list li {
+    padding: 0.55rem 0;
+    border-bottom: 1px solid var(--df-border);
+  }
+
+  .df-split .df-eligibility-list li:last-child {
+    border-bottom: 0;
+  }
+
+  /* How to apply: a vertical list of steps, each step's title and description on one line. */
+  .df-split .df-landing-journey {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .df-split .df-landing-journey li {
+    display: grid;
+    grid-template-columns: 2.5rem 10.5rem minmax(0, 1fr);
+    gap: 1rem;
+    align-items: center;
+    padding: 0.85rem 0;
+    border: 0;
+    border-bottom: 1px solid var(--df-border);
+    border-radius: 0;
+    background: none;
+  }
+
+  .df-split .df-landing-journey li:last-child {
+    border-bottom: 0;
+  }
+
+  .df-split .df-landing-journey li::before {
+    position: static;
+  }
+
+  .df-split .df-landing-journey h3 {
+    margin: 0;
+  }
+
+  /* Training pathways: title on the left, the "one pathway only" note on the right. */
+  .df-split-heading {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: 1rem clamp(2rem, 5vw, 4.5rem);
+    align-items: end;
+    max-width: none !important;
+  }
+
+  .df-split-heading p {
+    margin: 0 !important;
+  }
+
+  .df-home-clean .df-open-pathways,
+  .df-finder {
+    max-width: none;
+  }
+}

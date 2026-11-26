@@ -41,6 +41,12 @@ function contentSecurityPolicy() {
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), contentSecurityPolicy()],
+  // Always serve on 5173. If another app already holds it, fail with a clear error rather than
+  // silently moving to 5174/5175, so the address in the browser always means this app.
+  server: {
+    port: 5173,
+    strictPort: true,
+  },
   build: {
     // Source maps would publish the full source code alongside the site.
     sourcemap: false,

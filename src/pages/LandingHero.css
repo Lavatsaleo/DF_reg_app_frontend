@@ -110,31 +110,6 @@
   line-height: 1.5;
 }
 
-/* About Digital Futures: a calm white panel so programme information reads separately from the steps. */
-.df-hero-about {
-  max-width: 38rem;
-  padding: 1.15rem 1.3rem 1.25rem;
-  background: rgba(255, 255, 255, 0.9);
-  border-left: 6px solid #111111;
-  border-radius: 16px;
-}
-
-.df-hero-about h2 {
-  margin: 0 0 0.5rem;
-  color: #111111;
-  font-family: Arial, Helvetica, sans-serif !important;
-  font-size: 1.15rem !important;
-  font-weight: 800 !important;
-  letter-spacing: 0 !important;
-}
-
-.df-hero-about p {
-  margin: 0 0 1rem;
-  color: #111111;
-  font-size: 1rem;
-  line-height: 1.6;
-}
-
 .df-hero-countries {
   display: flex;
   flex-wrap: wrap;
@@ -232,10 +207,6 @@
   .df-hero-actions .df-hero-action {
     width: 100%;
   }
-
-  .df-hero-about {
-    padding: 1.1rem 1.1rem 1.2rem;
-  }
 }
 
 html.ss-high-contrast .df-hero-band-layer {
@@ -246,21 +217,6 @@ html.ss-high-contrast .df-hero-band,
 html.ss-high-contrast .df-hero-band-title,
 html.ss-high-contrast .df-hero-band-intro,
 html.ss-high-contrast .df-hero-one-pathway {
-  color: #ffffff !important;
-}
-
-html.ss-high-contrast .df-hero-about {
-  color: #ffffff !important;
-  background: #000000;
-  border: 2px solid #ffffff;
-}
-
-html.ss-high-contrast .df-hero-about {
-  border-left-width: 6px;
-}
-
-html.ss-high-contrast .df-hero-about h2,
-html.ss-high-contrast .df-hero-about p {
   color: #ffffff !important;
 }
 
@@ -359,5 +315,129 @@ html.ss-high-contrast .df-hero-countries li {
     justify-content: flex-end;
     min-height: var(--df-hero-disclaimer-height);
     padding-block: 0;
+  }
+}
+
+/* About Digital Futures, in the hero: eyebrow, key offers, free notice, one main action, quieter links. */
+.df-hero-eyebrow {
+  display: inline-block;
+  margin: 0 0 0.75rem;
+  padding: 0.3rem 0.85rem;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #111111;
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+
+.df-hero-offers {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  gap: 0.55rem 1.25rem;
+  max-width: 38rem;
+  margin: 0 0 1.25rem;
+  padding: 0;
+  list-style: none;
+}
+
+.df-hero-offers li {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  color: #111111;
+  font-size: 1.02rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.df-hero-offers i {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #111111;
+  font-size: 1.05rem;
+}
+
+.df-hero-free {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+  max-width: 38rem;
+  margin: 0 0 1.5rem;
+  color: #111111;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.df-hero-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 1.25rem;
+  margin: 0 0 1.5rem;
+  color: #111111;
+  font-size: 1rem;
+}
+
+.df-hero-link {
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #111111;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.df-hero-link:hover {
+  text-decoration-thickness: 2px;
+}
+
+.df-hero-link:focus-visible {
+  outline: 3px solid #111111;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 6px #ffffff;
+}
+
+@media (min-width: 992px) {
+  .df-hero-eyebrow {
+    position: relative;
+    z-index: 2;
+  }
+}
+
+html.ss-high-contrast .df-hero-eyebrow,
+html.ss-high-contrast .df-hero-offers i {
+  background: #000000;
+  color: #ffffff;
+  border: 2px solid #ffffff;
+}
+
+html.ss-high-contrast .df-hero-offers li,
+html.ss-high-contrast .df-hero-free,
+html.ss-high-contrast .df-hero-links,
+html.ss-high-contrast .df-hero-link {
+  color: #ffffff !important;
+}
+
+/* Wide screens: the About text gets a little more than half the width (55/45 with the photo),
+   so the heading and the list of benefits wrap less. */
+@media (min-width: 992px) {
+  .df-hero-band-title,
+  .df-hero-band-copy {
+    max-width: calc(55% - 2rem);
+  }
+
+  .df-hero-photo {
+    width: 45%;
+  }
+
+  .df-hero-offers {
+    max-width: none;
   }
 }

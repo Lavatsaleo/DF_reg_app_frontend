@@ -1158,6 +1158,91 @@ html.ss-high-contrast .df-confirm-dialog {
   border-color: #ffffff;
 }
 
+/* Pop-up messages in the application form (not eligible, application already exists). */
+.df-alert-dialog {
+  width: min(34rem, calc(100vw - 2rem));
+  max-height: calc(100vh - 2rem);
+  overflow: auto;
+  padding: 1.5rem;
+  border: 2px solid #111111;
+  border-top: 8px solid var(--df-red);
+  border-radius: 14px;
+  background: #ffffff;
+  color: #111111;
+  box-shadow: 0 24px 60px rgba(17, 17, 17, 0.3);
+}
+
+.df-alert-dialog::backdrop {
+  background: rgba(17, 17, 17, 0.6);
+}
+
+.df-alert-dialog-head {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+}
+
+.df-alert-dialog-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: var(--df-soft-red);
+  color: var(--df-red-text);
+  font-size: 1.3rem;
+}
+
+.df-alert-dialog-title {
+  margin: 0.2rem 0 0;
+  font-family: Arial, Helvetica, sans-serif !important;
+  font-size: 1.3rem !important;
+  font-weight: 800 !important;
+  line-height: 1.3;
+  letter-spacing: 0 !important;
+}
+
+.df-alert-dialog-body p {
+  margin: 0 0 0.75rem;
+  line-height: 1.55;
+}
+
+.df-alert-dialog-note {
+  color: var(--df-muted);
+  font-size: 0.95rem;
+}
+
+.df-alert-dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  margin-top: 1.25rem;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .df-alert-dialog[open] {
+    animation: df-alert-in 0.18s ease-out;
+  }
+}
+
+@keyframes df-alert-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+
+html.ss-high-contrast .df-alert-dialog {
+  background: #000000;
+  color: #ffffff;
+  border-color: #ffffff;
+}
+
+html.ss-high-contrast .df-alert-dialog-note {
+  color: #ffffff;
+}
+
 /* Status page: help for applicants who can't find their invitation email. */
 .ss-status-help-block {
   margin-top: 1rem;
