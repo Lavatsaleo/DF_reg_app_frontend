@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { selectChoiceOnEnter } from "../utils/formUtils";
+import { isQuestionVisible, selectChoiceOnEnter } from "../utils/formUtils";
 import AlertDialog from "./AlertDialog";
 import ResultAlert from "./ResultAlert";
 import ReviewApplication from "./ReviewApplication";
@@ -61,6 +61,11 @@ const INITIAL_ELIGIBILITY_CODES = [
   "HAS_DISABILITY",
   "DISABILITY_TYPE",
   "OTHER_DISABILITY_TYPE",
+  // Digital Entrepreneurship: having a business idea and owning the business decide eligibility, so
+  // they are asked here, before the personal details, rather than late in the motivation section.
+  "BUSINESS_STAGE",
+  "BUSINESS_ROLE",
+  "BUSINESS_OWNER_COUNT",
 ];
 
 function groupSurveyPages(groupedQuestions) {
@@ -188,6 +193,21 @@ function getEarlyEligibilityFeedback(answers, selectedPathway, questions) {
     };
   }
 
+  return null;
+}
+
+// Answers that end the application, set on the question by the backend (metadata.ineligibleAnswers).
+// Only questions on the current page and currently shown are checked.
+function getAnswerRuleFeedback(answers, questions) {
+  for (const question of questions) {
+    const blocked = question.metadata?.ineligibleAnswers;
+    if (!Array.isArray(blocked) || !isQuestionVisible(question, answers)) continue;
+    const answer = answers[question.questionCode];
+    const selected = Array.isArray(answer) ? answer : [answer];
+    if (selected.some((item) => blocked.includes(item))) {
+      return { type: "not-eligible", field: question.questionCode, ...question.metadata.ineligibleFeedback };
+    }
+  }
   return null;
 }
 
@@ -421,10 +441,14 @@ function RegistrationWizard({
   );
 
   const currentSectionEntry = sectionEntries[activeStep] || null;
-  const earlyEligibilityFeedback =
+  const pageEligibilityFeedback =
     currentSectionEntry?.[0] === "Eligibility check"
       ? getEarlyEligibilityFeedback(answers, selectedPathway, currentSectionEntry[1])
       : null;
+  const answerRuleFeedback = currentSectionEntry ? getAnswerRuleFeedback(answers, currentSectionEntry[1]) : null;
+  // A "not eligible" result wins over a "needs review" note.
+  const earlyEligibilityFeedback =
+    pageEligibilityFeedback?.type === "not-eligible" ? pageEligibilityFeedback : answerRuleFeedback || pageEligibilityFeedback;
 
   return (
     <form
